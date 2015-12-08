@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>CopyToolStateChangeTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.integrationtest.statechange</a> &gt; <span class="el_source">CopyToolStateChangeTest.java</span></div><h1>CopyToolStateChangeTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.integrationtest.statechange;
+
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.Vector;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.impl.Shell;
+
+<span class="fc" id="L18">public class CopyToolStateChangeTest {</span>
+
+	// Static Variables
+	private static File workingDir;
+	private static File tempDir;
+	private static File input;
+	private static String inputStr;
+	private static String workingDirPath;
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+<span class="fc" id="L29">		workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+<span class="fc" id="L30">		tempDir = new File(Files.createDirectory(</span>
+<span class="fc" id="L31">				new File(workingDir.toString() + File.separator + &quot;tempDir&quot;)</span>
+<span class="fc" id="L32">						.toPath()).toString());</span>
+
+<span class="fc" id="L34">		input = new File(tempDir.toString() + File.separator + &quot;input&quot;);</span>
+<span class="fc" id="L35">		input.createNewFile();</span>
+
+<span class="fc" id="L37">		inputStr = &quot;0123456789012345678901234567890123456789&quot;</span>
+<span class="fc" id="L38">				+ System.lineSeparator()</span>
+<span class="fc" id="L39">				+ &quot;0123456789012345678901234567890123456789&quot;</span>
+<span class="fc" id="L40">				+ System.lineSeparator()</span>
+<span class="fc" id="L41">				+ &quot;0123456789 0123456789 0123456789 0123456789&quot;;</span>
+
+<span class="fc" id="L43">		Files.write(input.toPath(), inputStr.getBytes(),</span>
+<span class="fc" id="L44">				StandardOpenOption.APPEND);</span>
+<span class="fc" id="L45">	}</span>
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+
+<span class="fc" id="L50">		Files.delete(input.toPath());</span>
+<span class="fc" id="L51">		Files.delete(tempDir.toPath());</span>
+<span class="fc" id="L52">		workingDir = null;</span>
+
+<span class="fc" id="L54">	}</span>
+
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L58">		workingDirPath = System.getProperty(&quot;user.dir&quot;);</span>
+<span class="fc" id="L59">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L63">		Files.delete(new File(tempDir.toString() + File.separator + &quot;inputNew&quot;)</span>
+<span class="fc" id="L64">				.toPath());</span>
+		// reset the user.dir property to original state prior to the test case
+<span class="fc" id="L66">		System.setProperty(&quot;user.dir&quot;, workingDirPath);</span>
+<span class="fc" id="L67">	}</span>
+
+	// Positive Testing
+
+	@Test
+	public void cdCopyLsWithPiping_FilesListed() {
+
+<span class="fc" id="L74">		final String complexCmdStr = &quot;cd \&quot;&quot; + tempDir.toString() + &quot;\&quot;&quot; </span>
+<span class="fc" id="L75">				+ &quot;|copy \&quot;&quot; + input.toString() + &quot;\&quot; \&quot;&quot; + tempDir.toString()</span>
+<span class="fc" id="L76">				+ File.separator + &quot;inputNew\&quot;&quot; + &quot;|ls&quot;;</span>
+
+<span class="fc" id="L78">		final Vector&lt;String&gt; finalResult = Shell.shellTestExecution(complexCmdStr);</span>
+
+<span class="fc" id="L80">		assertTrue(finalResult.get(0).contains(&quot;inputNew&quot;));</span>
+
+<span class="fc" id="L82">	}</span>
+
+	@Test
+	public void cdCopyLsWithSequentialExecution_FilesListed() {
+
+<span class="fc" id="L87">		final String cdCmdStr = &quot;cd \&quot;&quot; + tempDir.toString() + &quot;\&quot;&quot;;</span>
+<span class="fc" id="L88">		final String copyCmdStr = &quot;copy \&quot;&quot; + input.toString() + &quot;\&quot; \&quot;&quot;</span>
+<span class="fc" id="L89">				+ tempDir.toString() + File.separator + &quot;inputNew\&quot;&quot;;</span>
+<span class="fc" id="L90">		final String lsCmdStr = &quot;ls&quot;;</span>
+
+<span class="fc" id="L92">		final Vector&lt;String&gt; finalResult = Shell.shellTestExecution(cdCmdStr,</span>
+<span class="fc" id="L93">				copyCmdStr, lsCmdStr);</span>
+		
+		
+<span class="fc" id="L96">		assertTrue(finalResult.get(0).contains(&quot;inputNew&quot;));</span>
+
+<span class="fc" id="L98">	}</span>
+
+	// Negative Testing
+
+	@Test
+	public void cdCopyCdMoveWithPiping_FileNotFound() {
+
+<span class="fc" id="L105">		final String complexCmdStr = &quot;cd &quot; + tempDir.getName()</span>
+<span class="fc" id="L106">				+ &quot;|copy \&quot;&quot; + input.toString() + &quot;\&quot; \&quot;&quot; + tempDir.toString()</span>
+<span class="fc" id="L107">				+ File.separator + &quot;inputNew\&quot;&quot;</span>
+<span class="fc" id="L108">				+ &quot;|cd ..|move inputNew inputNew2&quot;;</span>
+
+<span class="fc" id="L110">		final Vector&lt;String&gt; finalResult = Shell.shellTestExecution(complexCmdStr);</span>
+
+<span class="fc" id="L112">		assertTrue(finalResult.get(0).contains(</span>
+<span class="fc" id="L113">				&quot;move: 'inputNew': No such file or directory&quot;));</span>
+
+<span class="fc" id="L115">	}</span>
+
+	@Test
+	public void cdCopyCdMoveWithSequentialExecution_FileNotFound() {
+
+<span class="fc" id="L120">		final String cdCmdStr = &quot;cd &quot; + tempDir.getName();</span>
+<span class="fc" id="L121">		final String copyCmdStr = &quot;copy \&quot;&quot; + input.toString() + &quot;\&quot; \&quot;&quot;</span>
+<span class="fc" id="L122">				+ tempDir.toString() + File.separator + &quot;inputNew\&quot;&quot;;</span>
+<span class="fc" id="L123">		final String cdCmdRootStr = &quot;cd ..&quot;;</span>
+<span class="fc" id="L124">		final String moveCmdStr = &quot;move inputNew inputNew2&quot;;</span>
+
+<span class="fc" id="L126">		final Vector&lt;String&gt; finalResult = Shell.shellTestExecution(cdCmdStr,</span>
+<span class="fc" id="L127">				copyCmdStr, cdCmdRootStr, moveCmdStr);</span>
+
+<span class="fc" id="L129">		assertTrue(finalResult.get(0).contains(</span>
+<span class="fc" id="L130">				&quot;move: 'inputNew': No such file or directory&quot;));</span>
+
+<span class="fc" id="L132">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

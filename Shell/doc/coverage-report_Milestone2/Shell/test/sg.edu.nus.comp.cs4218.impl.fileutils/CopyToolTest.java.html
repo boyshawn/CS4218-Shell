@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>CopyToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.fileutils</a> &gt; <span class="el_source">CopyToolTest.java</span></div><h1>CopyToolTest.java</h1><pre class="source lang-java linenums">/**
+ * Assumption(s) Made: 
+ * The Copy command only supports the following functions:
+ * 
+ * 1. Copy file1 destination file2
+ * 2. Copy file1 into directory
+ * 3. Copy multiple files into directory
+ *
+ * These functions are tested in the test cases below.
+ * 
+ */
+package sg.edu.nus.comp.cs4218.impl.fileutils;
+
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.fileutils.ICopyTool;
+
+<span class="fc" id="L26">public class CopyToolTest {</span>
+	// Variables
+	private ICopyTool copyTool;
+	private File workingDir;
+	private File sourceDir;
+	private File destDir;
+
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L35">		this.copyTool = new CopyTool(null);</span>
+<span class="fc" id="L36">		this.workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+<span class="fc" id="L37">		this.sourceDir = createDir(&quot;sourceDir&quot;);</span>
+<span class="fc" id="L38">		this.destDir = createDir(&quot;testDir&quot;);</span>
+<span class="fc" id="L39">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L43">		this.copyTool = null;</span>
+
+<span class="fc" id="L45">		this.removeFiles(this.sourceDir);</span>
+<span class="fc" id="L46">		this.removeFiles(this.destDir);</span>
+<span class="fc" id="L47">		Files.delete(this.sourceDir.toPath());</span>
+<span class="fc" id="L48">		Files.delete((this.destDir.toPath()));</span>
+
+<span class="fc" id="L50">		this.workingDir = null;</span>
+<span class="fc" id="L51">		this.sourceDir = null;</span>
+<span class="fc" id="L52">		this.destDir = null;</span>
+		
+<span class="fc" id="L54">		File file = new File(&quot;copiedFolder&quot;);</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">		if (file.exists()) {</span>
+<span class="fc" id="L56">			deleteFolder(file);</span>
+		}
+<span class="fc" id="L58">	}</span>
+
+	// Black Box Positive Testing
+	@Test
+	public void copy_FileToFileTest() throws IOException {
+
+<span class="fc" id="L64">		File from = File</span>
+<span class="fc" id="L65">				.createTempFile(&quot;newFileToCopy&quot;, &quot;.txt&quot;, this.sourceDir);</span>
+<span class="fc" id="L66">		File to = new File(this.destDir.toString() + &quot;/newFileCopied.txt&quot;);</span>
+
+<span class="fc" id="L68">		boolean fileCopied = this.copyTool.copy(from, to);</span>
+
+<span class="fc" id="L70">		assertTrue(fileCopied == true);</span>
+<span class="fc" id="L71">		assertEquals(this.copyTool.getStatusCode(), 0);</span>
+<span class="fc" id="L72">	}</span>
+
+	@Test
+	public void copy_FileToDirectoryTest() throws IOException {
+
+<span class="fc" id="L77">		File from = File</span>
+<span class="fc" id="L78">				.createTempFile(&quot;newFileToCopy&quot;, &quot;.txt&quot;, this.sourceDir);</span>
+<span class="fc" id="L79">		File directory = createDir(&quot;copiedFolder&quot;);</span>
+
+<span class="fc" id="L81">		boolean fileCopied = this.copyTool.copy(from, directory);</span>
+
+<span class="fc" id="L83">		assertTrue(fileCopied == true);</span>
+<span class="fc" id="L84">		assertEquals(this.copyTool.getStatusCode(), 0);</span>
+
+<span class="fc" id="L86">	}</span>
+
+	@Test
+	public void execute_FileToFileTest() throws IOException {
+
+<span class="fc" id="L91">		File source = File.createTempFile(&quot;newFileToCopy&quot;, &quot;.txt&quot;,</span>
+<span class="fc" id="L92">				this.sourceDir);</span>
+
+<span class="fc" id="L94">		String[] args = { source.toString(),</span>
+<span class="fc" id="L95">				this.destDir.toString() + &quot;/newFileToFile.txt&quot; };</span>
+
+<span class="fc" id="L97">		this.copyTool = new CopyTool(args);</span>
+<span class="fc" id="L98">		String returnMessage = this.copyTool.execute(this.workingDir, null);</span>
+<span class="fc" id="L99">		assertEquals(this.copyTool.getStatusCode(), 0);</span>
+<span class="fc" id="L100">		assertEquals(returnMessage, new String());</span>
+
+<span class="fc" id="L102">	}</span>
+
+	@Test
+	public void execute_SingleFileToDirectoryTest() throws IOException {
+
+<span class="fc" id="L107">		File source = File.createTempFile(&quot;newFileToCopy&quot;, &quot;.txt&quot;,</span>
+<span class="fc" id="L108">				this.sourceDir);</span>
+
+<span class="fc" id="L110">		String[] args = { source.toString(), this.destDir.toString() };</span>
+
+<span class="fc" id="L112">		this.copyTool = new CopyTool(args);</span>
+<span class="fc" id="L113">		String returnMessage = this.copyTool.execute(this.workingDir, null);</span>
+
+<span class="fc" id="L115">		assertEquals(this.copyTool.getStatusCode(), 0);</span>
+<span class="fc" id="L116">		assertEquals(returnMessage, new String());</span>
+
+<span class="fc" id="L118">	}</span>
+
+	@Test
+	public void execute_MultipleFilesToDirectoryTest() throws IOException {
+
+<span class="fc" id="L123">		File aFile = null;</span>
+
+<span class="fc" id="L125">		String[] args = new String[5];</span>
+
+<span class="fc bfc" id="L127" title="All 2 branches covered.">		for (int i = 0; i &lt; args.length - 1; i++) {</span>
+<span class="fc" id="L128">			aFile = File.createTempFile(&quot;newFileToCopy_&quot; + i + &quot;_&quot;, &quot;.txt&quot;,</span>
+<span class="fc" id="L129">					this.sourceDir);</span>
+<span class="fc" id="L130">			args[i] = aFile.toString();</span>
+		}
+
+<span class="fc" id="L133">		args[args.length - 1] = this.destDir.toString();</span>
+
+<span class="fc" id="L135">		this.copyTool = new CopyTool(args);</span>
+<span class="fc" id="L136">		String returnMessage = this.copyTool.execute(this.workingDir, null);</span>
+
+<span class="fc" id="L138">		assertEquals(this.copyTool.getStatusCode(), 0);</span>
+<span class="fc" id="L139">		assertEquals(returnMessage, new String());</span>
+
+<span class="fc" id="L141">	}</span>
+
+	// Black Box Negative Testing
+
+	@Test
+	public void copy_FileNotFoundTest() throws IOException {
+
+<span class="fc" id="L148">		File from = new File(this.sourceDir.toString() + &quot;/fileNotFound.txt&quot;);</span>
+<span class="fc" id="L149">		File to = new File(this.destDir.toString());</span>
+
+<span class="fc" id="L151">		boolean fileCopied = this.copyTool.copy(from, to);</span>
+
+<span class="fc" id="L153">		assertFalse(fileCopied == true);</span>
+<span class="fc" id="L154">		assertEquals(this.copyTool.getStatusCode(), 1);</span>
+<span class="fc" id="L155">	}</span>
+
+	@Test
+	public void copy_FileAlreadyExistsTest() throws IOException {
+
+<span class="fc" id="L160">		File from = new File(this.sourceDir.toString()</span>
+<span class="fc" id="L161">				+ &quot;/fileAlreadyExistsSource.txt&quot;);</span>
+<span class="fc" id="L162">		File to = new File(this.destDir.toString()</span>
+<span class="fc" id="L163">				+ &quot;/fileAlreadyExistsCopied.txt&quot;);</span>
+
+<span class="fc" id="L165">		from.createNewFile();</span>
+<span class="fc" id="L166">		to.createNewFile();</span>
+
+<span class="fc" id="L168">		boolean fileCopied = this.copyTool.copy(from, to);</span>
+
+<span class="fc" id="L170">		assertFalse(fileCopied == true);</span>
+<span class="fc" id="L171">		assertEquals(this.copyTool.getStatusCode(), 2);</span>
+
+<span class="fc" id="L173">	}</span>
+
+	@Test
+	public void execute_NoArgumentsTest() throws IOException {
+
+<span class="fc" id="L178">		String[] args = {};</span>
+
+<span class="fc" id="L180">		this.copyTool = new CopyTool(args);</span>
+<span class="fc" id="L181">		String returnMessage = this.copyTool.execute(this.workingDir, null);</span>
+
+<span class="fc" id="L183">		assertEquals(this.copyTool.getStatusCode(), -1);</span>
+<span class="fc" id="L184">		assertEquals(returnMessage, &quot;copy: missing file operand&quot;);</span>
+
+<span class="fc" id="L186">	}</span>
+
+	@Test
+	public void execute_SingleArgumentTest() throws IOException {
+
+<span class="fc" id="L191">		File source = File.createTempFile(&quot;newFile&quot;, &quot;.txt&quot;, this.sourceDir);</span>
+
+<span class="fc" id="L193">		String[] args = { source.toString() };</span>
+
+<span class="fc" id="L195">		this.copyTool = new CopyTool(args);</span>
+<span class="fc" id="L196">		String returnMessage = this.copyTool.execute(this.workingDir, null);</span>
+
+<span class="fc" id="L198">		assertEquals(this.copyTool.getStatusCode(), -2);</span>
+<span class="fc" id="L199">		assertEquals(returnMessage,</span>
+<span class="fc" id="L200">				&quot;copy: missing destination file operand after '&quot; + args[0]</span>
+<span class="fc" id="L201">						+ &quot;'&quot;);</span>
+
+<span class="fc" id="L203">	}</span>
+
+	@Test
+	public void execute_SameArgumentsTest() throws IOException {
+
+<span class="fc" id="L208">		File source = File.createTempFile(&quot;newFile&quot;, &quot;.txt&quot;, this.sourceDir);</span>
+
+<span class="fc" id="L210">		String[] args = { source.toString(), source.toString() };</span>
+
+<span class="fc" id="L212">		this.copyTool = new CopyTool(args);</span>
+<span class="fc" id="L213">		String returnMessage = this.copyTool.execute(this.workingDir, null);</span>
+
+<span class="fc" id="L215">		assertEquals(this.copyTool.getStatusCode(), -3);</span>
+<span class="fc" id="L216">		assertEquals(returnMessage, &quot;copy: '&quot; + args[0] + &quot;' and '&quot; + args[1]</span>
+<span class="fc" id="L217">				+ &quot;' are the same file&quot;);</span>
+
+<span class="fc" id="L219">	}</span>
+
+	// Black Box Negative Testing
+
+	@Test
+	public void execute_FileNotFoundTest() throws IOException {
+
+<span class="fc" id="L226">		String[] args = { this.sourceDir.toString() + &quot;\\fileNotFound.txt&quot;,</span>
+<span class="fc" id="L227">				this.destDir.toString() };</span>
+
+<span class="fc" id="L229">		this.copyTool = new CopyTool(args);</span>
+<span class="fc" id="L230">		String returnMessage = this.copyTool.execute(this.workingDir, null);</span>
+
+<span class="fc" id="L232">		assertEquals(this.copyTool.getStatusCode(), 1);</span>
+<span class="fc" id="L233">		assertEquals(returnMessage,</span>
+<span class="fc" id="L234">				&quot;copy: 'fileNotFound.txt': No such file or directory&quot;);</span>
+
+<span class="fc" id="L236">	}</span>
+
+	@Test
+	public void execute_FileAlreadyExistsTest() throws IOException {
+
+<span class="fc" id="L241">		File source = File.createTempFile(&quot;newFileToCopy&quot;, &quot;.txt&quot;,</span>
+<span class="fc" id="L242">				this.sourceDir);</span>
+<span class="fc" id="L243">		File dest = new File(this.destDir.toString()</span>
+<span class="fc" id="L244">				+ &quot;\\fileAlreadyExists.txt&quot;);</span>
+<span class="fc" id="L245">		dest.createNewFile();</span>
+
+<span class="fc" id="L247">		String destinationPath = dest.getPath().toString().replace(&quot;\\&quot;, &quot;/&quot;);</span>
+
+<span class="fc" id="L249">		String[] args = { source.toString(), destinationPath };</span>
+
+<span class="fc" id="L251">		this.copyTool = new CopyTool(args);</span>
+<span class="fc" id="L252">		String returnMessage = this.copyTool.execute(this.workingDir, null);</span>
+
+<span class="fc" id="L254">		assertEquals(this.copyTool.getStatusCode(), 2);</span>
+<span class="fc" id="L255">		assertEquals(returnMessage,</span>
+<span class="fc" id="L256">				&quot;copy: 'fileAlreadyExists.txt': File already exists&quot;);</span>
+
+<span class="fc" id="L258">	}</span>
+
+	@Test
+	public void execute_MultipleFilesToDirectory_FileNotFoundTest()
+			throws IOException {
+
+<span class="fc" id="L264">		String[] args = new String[5];</span>
+
+<span class="fc" id="L266">		args[0] = File.createTempFile(&quot;newFileToCopy-&quot; + 0 + &quot;-&quot;, &quot;.txt&quot;,</span>
+<span class="fc" id="L267">				this.sourceDir).toString();</span>
+<span class="fc" id="L268">		args[1] = this.sourceDir.toString() + &quot;\\fileNotFound1.txt&quot;;</span>
+<span class="fc" id="L269">		args[2] = File.createTempFile(&quot;newFileToCopy-&quot; + 2 + &quot;-&quot;, &quot;.txt&quot;,</span>
+<span class="fc" id="L270">				this.sourceDir).toString();</span>
+<span class="fc" id="L271">		args[3] = this.sourceDir.toString() + &quot;\\fileNotFound2.txt&quot;;</span>
+<span class="fc" id="L272">		args[4] = this.destDir.toString();</span>
+
+<span class="fc" id="L274">		this.copyTool = new CopyTool(args);</span>
+<span class="fc" id="L275">		String returnMessage = this.copyTool.execute(this.workingDir, null);</span>
+
+<span class="fc" id="L277">		assertEquals(</span>
+<span class="fc" id="L278">				&quot;copy: 'fileNotFound1.txt': No such file or directory&quot; + System.lineSeparator() + System.lineSeparator() + &quot;copy: 'fileNotFound2.txt': No such file or directory&quot;,</span>
+<span class="fc" id="L279">				returnMessage);</span>
+
+<span class="fc" id="L281">	}</span>
+
+	@Test
+	public void execute_MultipleFilesToNonDirectoryTest() throws IOException {
+
+<span class="fc" id="L286">		File aFile = null;</span>
+
+<span class="fc" id="L288">		String[] args = new String[5];</span>
+
+<span class="fc bfc" id="L290" title="All 2 branches covered.">		for (int i = 0; i &lt; args.length - 1; i++) {</span>
+<span class="fc" id="L291">			aFile = File.createTempFile(&quot;newFileToCopy_&quot; + i + &quot;_&quot;, &quot;.txt&quot;,</span>
+<span class="fc" id="L292">					this.sourceDir);</span>
+<span class="fc" id="L293">			args[i] = aFile.toString();</span>
+		}
+
+<span class="fc" id="L296">		args[args.length - 1] = this.sourceDir.toString() + &quot;/NotADirectory&quot;;</span>
+
+<span class="fc" id="L298">		this.copyTool = new CopyTool(args);</span>
+<span class="fc" id="L299">		String returnMessage = this.copyTool.execute(this.workingDir, null);</span>
+
+<span class="fc" id="L301">		assertEquals(this.copyTool.getStatusCode(), -4);</span>
+<span class="fc" id="L302">		assertEquals(returnMessage, &quot;copy: target '&quot; + args[args.length - 1]</span>
+<span class="fc" id="L303">				+ &quot;' is not a directory&quot;);</span>
+
+<span class="fc" id="L305">	}</span>
+
+	// Helper Functions
+	private void removeFiles(File directory) throws IOException {
+
+<span class="fc bfc" id="L310" title="All 2 branches covered.">		for (File f : directory.listFiles()) {</span>
+<span class="pc bpc" id="L311" title="1 of 2 branches missed.">			if (f.isDirectory()) {</span>
+<span class="nc" id="L312">				removeFiles(f);</span>
+			}
+
+<span class="fc" id="L315">			Files.delete(f.toPath());</span>
+		}
+<span class="fc" id="L317">	}</span>
+	
+	private File createDir(String path) {
+<span class="fc" id="L320">		File dir = new File(path);</span>
+		try {
+<span class="fc" id="L322">			Files.createDirectories(dir.toPath());</span>
+<span class="pc" id="L323">		} catch (IOException e) {</span>
+<span class="nc" id="L324">			e.printStackTrace();</span>
+		}
+<span class="fc" id="L326">		return dir;</span>
+	}
+	
+	public static void deleteFolder(File folder) {
+<span class="fc" id="L330">		File[] files = folder.listFiles();</span>
+<span class="pc bpc" id="L331" title="1 of 2 branches missed.">		if (files != null) { // some JVMs return null for empty dirs</span>
+<span class="fc bfc" id="L332" title="All 2 branches covered.">			for (File f : files) {</span>
+<span class="pc bpc" id="L333" title="1 of 2 branches missed.">				if (f.isDirectory()) {</span>
+<span class="nc" id="L334">					deleteFolder(f);</span>
+<span class="nc" id="L335">				} else {</span>
+<span class="fc" id="L336">					f.delete();</span>
+				}
+			}
+		}
+<span class="fc" id="L340">		folder.delete();</span>
+<span class="fc" id="L341">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

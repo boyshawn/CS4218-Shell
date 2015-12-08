@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>HackathonCommToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.bugfixestestcase</a> &gt; <span class="el_source">HackathonCommToolTest.java</span></div><h1>HackathonCommToolTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.bugfixestestcase;
+
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.nio.file.Files;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.extended2.ICommTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.CommTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.CommToolExtraTest;
+
+<span class="fc" id="L18">public class HackathonCommToolTest {</span>
+	private ICommTool commTool;
+
+	private static final String USER_DIRECTORY = &quot;user.dir&quot;;
+	private static File defaultWorkingDirectory;
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+<span class="fc" id="L26">		defaultWorkingDirectory = new File(System.getProperty(USER_DIRECTORY));</span>
+
+		// creating testFile 1 &amp; 2 in sorted order
+<span class="fc" id="L29">		File myFile1 = new File(&quot;testFile1.txt&quot;);</span>
+<span class="fc" id="L30">		myFile1.createNewFile();</span>
+<span class="fc" id="L31">		CommToolExtraTest.writeFile(&quot;testFile1.txt&quot;, </span>
+<span class="fc" id="L32">				&quot;aaa&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L33">				&quot;bbb&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L34">				&quot;ccc&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L35">				&quot;ddd&quot;);</span>
+		
+<span class="fc" id="L37">		File myFile2 = new File(&quot;testFile2.txt&quot;);</span>
+<span class="fc" id="L38">		myFile2.createNewFile();</span>
+<span class="fc" id="L39">		CommToolExtraTest.writeFile(&quot;testFile2.txt&quot;, </span>
+<span class="fc" id="L40">				&quot;aaf&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L41">				&quot;abb&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L42">				&quot;ccc&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L43">				&quot;fff&quot;);</span>
+		
+		//Empty folder
+<span class="fc" id="L46">		File emptyFolder1 = new File (&quot;EmptyFolder&quot;);</span>
+<span class="fc" id="L47">		emptyFolder1.mkdir();</span>
+		
+		//File with space
+<span class="fc" id="L50">		File fileWithSpace = new File (&quot;A file with space.txt&quot;);</span>
+<span class="fc" id="L51">		fileWithSpace.createNewFile();</span>
+<span class="fc" id="L52">		CommToolExtraTest.writeFile(&quot;A file with space.txt&quot;,</span>
+<span class="fc" id="L53">				&quot;aaa&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L54">				&quot;abc&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L55">				&quot;acc&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L56">				&quot;abc&quot;);</span>
+<span class="fc" id="L57">	}</span>
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+<span class="fc" id="L61">		File myFile1 = new File(&quot;testFile1.txt&quot;);</span>
+<span class="fc" id="L62">		Files.delete(myFile1.toPath());</span>
+		
+<span class="fc" id="L64">		File myFile2 = new File(&quot;testFile2.txt&quot;);</span>
+<span class="fc" id="L65">		Files.delete(myFile2.toPath());</span>
+		
+<span class="fc" id="L67">		File emptyFolder1 = new File (&quot;EmptyFolder&quot;);</span>
+<span class="fc" id="L68">		emptyFolder1.delete();</span>
+		
+<span class="fc" id="L70">		File fileWithSpace = new File (&quot;A file with space.txt&quot;);</span>
+<span class="fc" id="L71">		fileWithSpace.delete();</span>
+<span class="fc" id="L72">	}</span>
+
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L76">		commTool = new CommTool(null);</span>
+<span class="fc" id="L77">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L81">		commTool = null;</span>
+<span class="fc" id="L82">	}</span>
+
+	//Mean for Bug #6.5
+	@Test
+	public void compareFiles_1stFileIsDirectory_DirectoryError(){
+<span class="fc" id="L87">		String result = commTool.compareFiles(&quot;EmptyFolder&quot;, &quot;testFile1.txt&quot;);</span>
+<span class="fc" id="L88">		assertNotEquals(0, commTool.getStatusCode());</span>
+<span class="fc" id="L89">		assertEquals(&quot;comm: EmptyFolder: Is a directory&quot;, result);</span>
+<span class="fc" id="L90">	}</span>
+	
+	@Test
+	public void compareFiles_2ndFileIsDirectory_DirectoryError(){
+<span class="fc" id="L94">		String result = commTool.compareFiles(&quot;testFile1.txt&quot;, &quot;EmptyFolder&quot;);</span>
+<span class="fc" id="L95">		assertNotEquals(0, commTool.getStatusCode());</span>
+<span class="fc" id="L96">		assertEquals(&quot;comm: EmptyFolder: Is a directory&quot;, result);</span>
+<span class="fc" id="L97">	}</span>
+	
+	@Test
+	public void compareFilesCheckSortStatus_1stFileIsDirectory_DirectoryError(){
+<span class="fc" id="L101">		String result = commTool.compareFilesCheckSortStatus(&quot;EmptyFolder&quot;, &quot;testFile1.txt&quot;);</span>
+<span class="fc" id="L102">		assertNotEquals(0, commTool.getStatusCode());</span>
+<span class="fc" id="L103">		assertEquals(&quot;comm: EmptyFolder: Is a directory&quot;, result);</span>
+<span class="fc" id="L104">	}</span>
+	
+	@Test
+	public void compareFilesDoNotCheckSortStatus_1stFileIsDirectory_DirectoryError(){
+<span class="fc" id="L108">		String result = commTool.compareFilesDoNotCheckSortStatus(&quot;EmptyFolder&quot;, &quot;testFile1.txt&quot;);</span>
+<span class="fc" id="L109">		assertNotEquals(0, commTool.getStatusCode());</span>
+<span class="fc" id="L110">		assertEquals(&quot;comm: EmptyFolder: Is a directory&quot;, result);</span>
+<span class="fc" id="L111">	}</span>
+	
+	@Test
+	public void execute_1stFileIsDirectory_DirectoryError(){
+<span class="fc" id="L115">		String[] arguments = {&quot;EmptyFolder&quot;, &quot;testFile1.txt&quot;};</span>
+<span class="fc" id="L116">		commTool = new CommTool(arguments);</span>
+		
+<span class="fc" id="L118">		String result = commTool.execute(defaultWorkingDirectory, null);</span>
+		
+<span class="fc" id="L120">		assertNotEquals(0, commTool.getStatusCode());</span>
+<span class="fc" id="L121">		assertEquals(&quot;comm: EmptyFolder: Is a directory&quot;, result);</span>
+<span class="fc" id="L122">	}</span>
+	
+	//Meant for bug 6.2
+	//Valid Absolute File Path
+	@Test
+	public void compareFiles_ValidAbsoluteFilePath_Output(){
+<span class="fc" id="L128">		File testFile1 = new File(&quot;testFile1.txt&quot;);</span>
+<span class="fc" id="L129">		File testFile2 = new File(&quot;testFile2.txt&quot;);</span>
+		
+<span class="fc" id="L131">		assertEquals(</span>
+<span class="fc" id="L132">				&quot;aaa&quot; 				+ System.lineSeparator() + </span>
+<span class="fc" id="L133">				&quot;\t&quot; + 	&quot;aaf&quot; 		+ System.lineSeparator() + </span>
+<span class="fc" id="L134">				&quot;\t&quot; + 	&quot;abb&quot; 		+ System.lineSeparator() + </span>
+<span class="fc" id="L135">				&quot;bbb&quot; 				+ System.lineSeparator() + </span>
+<span class="fc" id="L136">				&quot;\t&quot; +	&quot;\t&quot; + &quot;ccc&quot;+ System.lineSeparator() + </span>
+<span class="fc" id="L137">				&quot;ddd&quot; 				+ System.lineSeparator() + </span>
+<span class="fc" id="L138">				&quot;\t&quot; +	&quot;fff&quot; 		+ System.lineSeparator() + &quot;&quot;, </span>
+<span class="fc" id="L139">				commTool.compareFiles(testFile1.getAbsolutePath(),</span>
+<span class="fc" id="L140">						testFile2.getAbsolutePath()));</span>
+		
+<span class="fc" id="L142">		assertEquals(0, commTool.getStatusCode());</span>
+<span class="fc" id="L143">	}</span>
+	
+	public void compareFilesCheckSortStatus_ValidAbsoluteFile_Output(){
+<span class="nc" id="L146">		File testFile1 = new File(&quot;testFile1.txt&quot;);</span>
+<span class="nc" id="L147">		File testFile2 = new File(&quot;testFile2.txt&quot;);</span>
+		
+<span class="nc" id="L149">		assertEquals(</span>
+<span class="nc" id="L150">				&quot;aaa&quot; 				+ System.lineSeparator() + </span>
+<span class="nc" id="L151">				&quot;\t&quot; + 	&quot;aaf&quot; 		+ System.lineSeparator() + </span>
+<span class="nc" id="L152">				&quot;\t&quot; + 	&quot;abb&quot; 		+ System.lineSeparator() + </span>
+<span class="nc" id="L153">				&quot;bbb&quot; 				+ System.lineSeparator() + </span>
+<span class="nc" id="L154">				&quot;\t&quot; +	&quot;\t&quot; + &quot;ccc&quot;+ System.lineSeparator() + </span>
+<span class="nc" id="L155">				&quot;ddd&quot; 				+ System.lineSeparator() + </span>
+<span class="nc" id="L156">				&quot;\t&quot; +	&quot;fff&quot; 		+ System.lineSeparator() + &quot;&quot;, </span>
+<span class="nc" id="L157">				commTool.compareFilesCheckSortStatus(</span>
+<span class="nc" id="L158">						testFile1.getAbsolutePath(),</span>
+<span class="nc" id="L159">						testFile2.getAbsolutePath()));</span>
+
+<span class="nc" id="L161">		assertEquals(0, commTool.getStatusCode());		</span>
+<span class="nc" id="L162">	}</span>
+	
+	@Test
+	public void compareFilesDoNotCheckSortStatus_ValidAbsoluteFilePath_Output(){
+<span class="fc" id="L166">		File testFile1 = new File(&quot;testFile1.txt&quot;);</span>
+<span class="fc" id="L167">		File testFile2 = new File(&quot;testFile2.txt&quot;);</span>
+		
+<span class="fc" id="L169">		assertEquals(</span>
+<span class="fc" id="L170">				&quot;aaa&quot; 				+ System.lineSeparator() + </span>
+<span class="fc" id="L171">				&quot;\t&quot; + 	&quot;aaf&quot; 		+ System.lineSeparator() + </span>
+<span class="fc" id="L172">				&quot;\t&quot; + 	&quot;abb&quot; 		+ System.lineSeparator() + </span>
+<span class="fc" id="L173">				&quot;bbb&quot; 				+ System.lineSeparator() + </span>
+<span class="fc" id="L174">				&quot;\t&quot; +	&quot;\t&quot; + &quot;ccc&quot;+ System.lineSeparator() + </span>
+<span class="fc" id="L175">				&quot;ddd&quot; 				+ System.lineSeparator() + </span>
+<span class="fc" id="L176">				&quot;\t&quot; +	&quot;fff&quot; 		+ System.lineSeparator() + &quot;&quot;, </span>
+<span class="fc" id="L177">				commTool.compareFilesDoNotCheckSortStatus(</span>
+<span class="fc" id="L178">						testFile1.getAbsolutePath(),</span>
+<span class="fc" id="L179">						testFile2.getAbsolutePath()));</span>
+
+<span class="fc" id="L181">		assertEquals(0, commTool.getStatusCode());			</span>
+<span class="fc" id="L182">	}</span>
+	
+	@Test
+	public void execute_ValidAbsoluteFilePath_Output(){
+<span class="fc" id="L186">		File testFile1 = new File(&quot;testFile1.txt&quot;);</span>
+<span class="fc" id="L187">		File testFile2 = new File(&quot;testFile2.txt&quot;);</span>
+		
+<span class="fc" id="L189">		String[] arguments = { testFile1.getAbsolutePath(),</span>
+<span class="fc" id="L190">				testFile2.getAbsolutePath() };</span>
+<span class="fc" id="L191">		commTool = new CommTool(arguments);</span>
+		
+<span class="fc" id="L193">		assertEquals(</span>
+<span class="fc" id="L194">				&quot;aaa&quot; 				+ System.lineSeparator() + </span>
+<span class="fc" id="L195">				&quot;\t&quot; + 	&quot;aaf&quot; 		+ System.lineSeparator() + </span>
+<span class="fc" id="L196">				&quot;\t&quot; + 	&quot;abb&quot; 		+ System.lineSeparator() + </span>
+<span class="fc" id="L197">				&quot;bbb&quot; 				+ System.lineSeparator() + </span>
+<span class="fc" id="L198">				&quot;\t&quot; +	&quot;\t&quot; + &quot;ccc&quot;+ System.lineSeparator() + </span>
+<span class="fc" id="L199">				&quot;ddd&quot; 				+ System.lineSeparator() + </span>
+<span class="fc" id="L200">				&quot;\t&quot; +	&quot;fff&quot; 		+ System.lineSeparator() + &quot;&quot;, </span>
+<span class="fc" id="L201">				commTool.execute(defaultWorkingDirectory, null));</span>
+				
+<span class="fc" id="L203">		assertEquals(0, commTool.getStatusCode());</span>
+<span class="fc" id="L204">	}</span>
+	
+	//Invalid Absolute File path
+	@Test
+	public void compareFiles_InvalidAbsoluteFilePath_Output(){
+<span class="fc" id="L209">		File testFile1 = new File(&quot;testFile1.txt&quot;);</span>
+<span class="fc" id="L210">		File testFile2 = new File(&quot;NotExist.txt&quot;);</span>
+		
+<span class="fc" id="L212">		assertEquals(</span>
+<span class="fc" id="L213">				&quot;comm: &quot; + defaultWorkingDirectory + File.separator</span>
+<span class="fc" id="L214">						+ &quot;NotExist.txt: No such file or directory&quot;,</span>
+<span class="fc" id="L215">				commTool.compareFiles(testFile1.getAbsolutePath(),</span>
+<span class="fc" id="L216">						testFile2.getAbsolutePath()));</span>
+		
+<span class="fc" id="L218">		assertNotEquals(0, commTool.getStatusCode());</span>
+<span class="fc" id="L219">	}</span>
+	
+	@Test
+	public void compareFilesCheckSortStatus_InvalidAbsoluteFilePath_Output(){
+<span class="fc" id="L223">		File testFile1 = new File(&quot;testFile1.txt&quot;);</span>
+<span class="fc" id="L224">		File testFile2 = new File(&quot;NotExist.txt&quot;);</span>
+		
+<span class="fc" id="L226">		assertEquals(</span>
+<span class="fc" id="L227">				&quot;comm: &quot; + defaultWorkingDirectory + File.separator</span>
+<span class="fc" id="L228">						+ &quot;NotExist.txt: No such file or directory&quot;,</span>
+<span class="fc" id="L229">				commTool.compareFilesCheckSortStatus(</span>
+<span class="fc" id="L230">						testFile1.getAbsolutePath(),</span>
+<span class="fc" id="L231">						testFile2.getAbsolutePath()));</span>
+		
+<span class="fc" id="L233">		assertNotEquals(0, commTool.getStatusCode());</span>
+<span class="fc" id="L234">	}</span>
+	
+	@Test
+	public void compareFilesDonotCheckSortStatus_InvalidAbsoluteFilePath_Output(){
+<span class="fc" id="L238">		File testFile1 = new File(&quot;testFile1.txt&quot;);</span>
+<span class="fc" id="L239">		final File testFile2 = new File(&quot;NotExist.txt&quot;);</span>
+		
+<span class="fc" id="L241">		assertEquals(</span>
+<span class="fc" id="L242">				&quot;comm: &quot; + defaultWorkingDirectory + File.separator</span>
+<span class="fc" id="L243">						+ &quot;NotExist.txt: No such file or directory&quot;,</span>
+<span class="fc" id="L244">				commTool.compareFilesDoNotCheckSortStatus(</span>
+<span class="fc" id="L245">						testFile1.getAbsolutePath(),</span>
+<span class="fc" id="L246">						testFile2.getAbsolutePath()));</span>
+		
+<span class="fc" id="L248">		assertNotEquals(0, commTool.getStatusCode());</span>
+<span class="fc" id="L249">	}</span>
+	
+	@Test
+	public void execute_InvalidAbsoluteFilePath_Output(){
+<span class="fc" id="L253">		File testFile1 = new File(&quot;testFile1.txt&quot;);</span>
+<span class="fc" id="L254">		File testFile2 = new File(&quot;NotExist.txt&quot;);</span>
+		
+<span class="fc" id="L256">		String[] arguments = { testFile1.getAbsolutePath(),</span>
+<span class="fc" id="L257">				testFile2.getAbsolutePath() };</span>
+<span class="fc" id="L258">		commTool = new CommTool(arguments);</span>
+		
+<span class="fc" id="L260">		assertEquals(</span>
+<span class="fc" id="L261">				&quot;comm: &quot; + defaultWorkingDirectory + File.separator</span>
+<span class="fc" id="L262">						+ &quot;NotExist.txt: No such file or directory&quot;,</span>
+<span class="fc" id="L263">				commTool.execute(defaultWorkingDirectory, null));</span>
+				
+<span class="fc" id="L265">		assertNotEquals(0, commTool.getStatusCode());</span>
+<span class="fc" id="L266">	}</span>
+	
+	//Meant for bug #6.3
+	@Test
+	public void execute_NoOption2ndFileWithSpaces_Output(){
+<span class="fc" id="L271">		String[] arguments = {&quot;testFile1.txt&quot;, &quot;A file with space.txt&quot;};</span>
+<span class="fc" id="L272">		commTool = new CommTool(arguments);</span>
+		
+<span class="fc" id="L274">		assertEquals(</span>
+<span class="fc" id="L275">				&quot;\t&quot; + &quot;\t&quot; + &quot;aaa&quot; + System.lineSeparator() +</span>
+<span class="fc" id="L276">				&quot;\t&quot; + &quot;abc&quot; 		+ System.lineSeparator() + </span>
+<span class="fc" id="L277">				&quot;\t&quot; + &quot;acc&quot; 		+ System.lineSeparator() +</span>
+<span class="fc" id="L278">				&quot;comm: file 2 is not in sorted order&quot; + System.lineSeparator() +</span>
+<span class="fc" id="L279">				&quot;\t&quot; + &quot;abc&quot; 		+ System.lineSeparator() +</span>
+<span class="fc" id="L280">				&quot;bbb&quot; 				+ System.lineSeparator() +</span>
+<span class="fc" id="L281">				&quot;ccc&quot; 				+ System.lineSeparator() +</span>
+<span class="fc" id="L282">				&quot;ddd&quot; 				+ System.lineSeparator(), </span>
+<span class="fc" id="L283">				commTool.compareFiles(&quot;testFile1.txt&quot;, &quot;A file with space.txt&quot;));//(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L284">		assertEquals(0, commTool.getStatusCode());</span>
+<span class="fc" id="L285">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

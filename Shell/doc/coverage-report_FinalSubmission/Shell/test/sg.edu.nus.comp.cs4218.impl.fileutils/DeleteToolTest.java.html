@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>DeleteToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.fileutils</a> &gt; <span class="el_source">DeleteToolTest.java</span></div><h1>DeleteToolTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.fileutils;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.fileutils.IDeleteTool;
+
+<span class="fc" id="L16">public class DeleteToolTest {</span>
+	
+	IDeleteTool tool;
+	
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L22">		String[] args = new String[] {&quot;testdir&quot;};</span>
+<span class="fc" id="L23">		tool = new DeleteTool(args);</span>
+<span class="fc" id="L24">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L28">		tool = null;</span>
+<span class="fc" id="L29">	}</span>
+
+	@Test
+	public void delete_File_ReturnStatusCode0() {
+		
+<span class="fc" id="L34">		File testFile = new File(&quot;testfile.txt&quot;);</span>
+		try {
+<span class="fc" id="L36">			testFile.createNewFile();</span>
+<span class="pc" id="L37">		} catch (IOException e) {</span>
+<span class="nc" id="L38">			e.printStackTrace();</span>
+		}
+		
+<span class="fc" id="L41">		boolean result = tool.delete(testFile);</span>
+<span class="fc" id="L42">		assertTrue(result);</span>
+<span class="fc" id="L43">		assertEquals(0, tool.getStatusCode());</span>
+<span class="fc" id="L44">	}</span>
+	
+	@Test
+	public void delete_Directory_ReturnStatusCode0() {
+		
+<span class="fc" id="L49">		File testDir = new File(&quot;testdir&quot;);</span>
+<span class="fc" id="L50">		testDir.mkdir();</span>
+		
+<span class="fc" id="L52">		boolean result = tool.delete(testDir);</span>
+<span class="fc" id="L53">		assertTrue(result);</span>
+<span class="fc" id="L54">		assertEquals(0, tool.getStatusCode());</span>
+<span class="fc" id="L55">	}</span>
+	
+	@Test
+	public void delete_DirectoryNotExist_ReturnStatusCode2() {
+<span class="fc" id="L59">		File file = new File(&quot;testdir&quot;);</span>
+<span class="fc" id="L60">		boolean result = tool.delete(file);</span>
+<span class="fc" id="L61">		assertFalse(result);</span>
+<span class="fc" id="L62">		assertEquals(DeleteTool.STATUS_CODE_INVALID_FILE_OR_DIRECTORY, tool.getStatusCode());</span>
+<span class="fc" id="L63">	}</span>
+	
+	@Test
+	public void delete_NotEmptyDirectory_ReturnStatusCode3() {
+<span class="fc" id="L67">		File testDir = new File(&quot;testdir&quot;);</span>
+<span class="fc" id="L68">		testDir.mkdir();</span>
+		
+<span class="fc" id="L70">		File testFile = new File(&quot;testdir&quot; + File.separator+ &quot;testfile.txt&quot;);</span>
+		try {
+<span class="fc" id="L72">			testFile.createNewFile();</span>
+<span class="pc" id="L73">		} catch (IOException e) {</span>
+<span class="nc" id="L74">			e.printStackTrace();</span>
+		}
+		
+<span class="fc" id="L77">		boolean result = tool.delete(testDir);</span>
+<span class="fc" id="L78">		assertFalse(result);</span>
+<span class="fc" id="L79">		assertEquals(DeleteTool.STATUS_CODE_FAILED_TO_DELETE, tool.getStatusCode());</span>
+		
+<span class="fc" id="L81">		testFile.delete();</span>
+<span class="fc" id="L82">		testDir.delete();</span>
+<span class="fc" id="L83">	}</span>
+	
+	@Test
+	public void execute_DeleteDirectory_GetStatusCode0() {
+<span class="fc" id="L87">		File testDir = new File(&quot;testdir&quot;);</span>
+<span class="fc" id="L88">		testDir.mkdir();</span>
+		
+<span class="fc" id="L90">		File workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+<span class="fc" id="L91">		String result = tool.execute(workingDir, null);</span>
+<span class="fc" id="L92">		assertEquals(&quot;&quot;, result);</span>
+<span class="fc" id="L93">		assertEquals(0, tool.getStatusCode());</span>
+<span class="fc" id="L94">		assertFalse(testDir.exists());</span>
+<span class="fc" id="L95">	}</span>
+	
+	@Test
+	public void execute_DeleteMultipleDirectories_GetStatusCode0() {
+<span class="fc" id="L99">		String[] args = new String[] {&quot;testdir1&quot;, &quot;testdir2&quot;, &quot;testdir3&quot;};</span>
+<span class="fc" id="L100">		tool = new DeleteTool(args);</span>
+		
+<span class="fc" id="L102">		File testDir1 = new File(&quot;testdir1&quot;);</span>
+<span class="fc" id="L103">		testDir1.mkdir();</span>
+<span class="fc" id="L104">		File testDir2 = new File(&quot;testdir2&quot;);</span>
+<span class="fc" id="L105">		testDir2.mkdir();</span>
+<span class="fc" id="L106">		File testDir3 = new File(&quot;testdir3&quot;);</span>
+<span class="fc" id="L107">		testDir3.mkdir();</span>
+		
+<span class="fc" id="L109">		File workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+<span class="fc" id="L110">		String result = tool.execute(workingDir, null);</span>
+<span class="fc" id="L111">		assertEquals(&quot;&quot;, result);</span>
+<span class="fc" id="L112">		assertEquals(0, tool.getStatusCode());</span>
+<span class="fc" id="L113">		assertFalse(testDir1.exists());</span>
+<span class="fc" id="L114">		assertFalse(testDir2.exists());</span>
+<span class="fc" id="L115">		assertFalse(testDir3.exists());</span>
+<span class="fc" id="L116">	}</span>
+	
+	@Test
+	public void execute_DeleteFile_GetStatusCode0() {
+<span class="fc" id="L120">		String[] args = new String[] {&quot;_testfile.txt&quot;};</span>
+<span class="fc" id="L121">		tool = new DeleteTool(args);</span>
+		
+<span class="fc" id="L123">		File testFile = new File(&quot;_testfile.txt&quot;);</span>
+		try {
+<span class="fc" id="L125">			testFile.createNewFile();</span>
+<span class="pc" id="L126">		} catch (IOException e) {</span>
+<span class="nc" id="L127">			e.printStackTrace();</span>
+		}
+		
+<span class="fc" id="L130">		File workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+<span class="fc" id="L131">		String result = tool.execute(workingDir, null);</span>
+<span class="fc" id="L132">		assertEquals(&quot;&quot;, result);</span>
+<span class="fc" id="L133">		assertEquals(0, tool.getStatusCode());</span>
+<span class="fc" id="L134">		assertFalse(testFile.exists());</span>
+<span class="fc" id="L135">	}</span>
+	
+	@Test
+	public void execute_DeleteMultipleFiles_GetStatusCode0() {
+<span class="fc" id="L139">		String[] args = new String[] {&quot;_testfile1.txt&quot;, &quot;_testfile2.txt&quot;, &quot;_testfile3.txt&quot;};</span>
+<span class="fc" id="L140">		tool = new DeleteTool(args);</span>
+		
+<span class="fc" id="L142">		File testFile1 = new File(&quot;_testfile1.txt&quot;);</span>
+<span class="fc" id="L143">		File testFile2 = new File(&quot;_testfile2.txt&quot;);</span>
+<span class="fc" id="L144">		File testFile3 = new File(&quot;_testfile3.txt&quot;);</span>
+		try {
+<span class="fc" id="L146">			testFile1.createNewFile();</span>
+<span class="fc" id="L147">			testFile2.createNewFile();</span>
+<span class="fc" id="L148">			testFile3.createNewFile();</span>
+<span class="pc" id="L149">		} catch (IOException e) {</span>
+<span class="nc" id="L150">			e.printStackTrace();</span>
+		}
+		
+<span class="fc" id="L153">		File workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+<span class="fc" id="L154">		String result = tool.execute(workingDir, null);</span>
+<span class="fc" id="L155">		assertEquals(&quot;&quot;, result);</span>
+<span class="fc" id="L156">		assertEquals(0, tool.getStatusCode());</span>
+<span class="fc" id="L157">		assertFalse(testFile1.exists());</span>
+<span class="fc" id="L158">		assertFalse(testFile2.exists());</span>
+<span class="fc" id="L159">		assertFalse(testFile3.exists());</span>
+<span class="fc" id="L160">	}</span>
+	
+	@Test
+	public void execute_DeleteMultipleFilesDirectories_GetStatusCode0() {
+<span class="fc" id="L164">		String[] args = new String[] {&quot;_testfile1.txt&quot;, &quot;testdir1&quot;, &quot;_testfile2.txt&quot;, &quot;testdir2&quot;};</span>
+<span class="fc" id="L165">		tool = new DeleteTool(args);</span>
+		
+<span class="fc" id="L167">		File testDir1 = new File(&quot;testdir1&quot;);</span>
+<span class="fc" id="L168">		testDir1.mkdir();</span>
+<span class="fc" id="L169">		File testDir2 = new File(&quot;testdir2&quot;);</span>
+<span class="fc" id="L170">		testDir2.mkdir();</span>
+		
+<span class="fc" id="L172">		File testFile1 = new File(&quot;_testfile1.txt&quot;);</span>
+<span class="fc" id="L173">		File testFile2 = new File(&quot;_testfile2.txt&quot;);</span>
+		try {
+<span class="fc" id="L175">			testFile1.createNewFile();</span>
+<span class="fc" id="L176">			testFile2.createNewFile();</span>
+<span class="pc" id="L177">		} catch (IOException e) {</span>
+<span class="nc" id="L178">			e.printStackTrace();</span>
+		}
+		
+<span class="fc" id="L181">		File workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+<span class="fc" id="L182">		String result = tool.execute(workingDir, null);</span>
+<span class="fc" id="L183">		assertEquals(&quot;&quot;, result);</span>
+<span class="fc" id="L184">		assertEquals(0, tool.getStatusCode());</span>
+<span class="fc" id="L185">		assertFalse(testFile1.exists());</span>
+<span class="fc" id="L186">		assertFalse(testFile2.exists());</span>
+<span class="fc" id="L187">		assertFalse(testDir1.exists());</span>
+<span class="fc" id="L188">		assertFalse(testDir2.exists());</span>
+<span class="fc" id="L189">	}</span>
+	
+	@Test
+	public void execute_DeleteDirectoryNotExist_GetStatusCode2() {
+<span class="fc" id="L193">		File workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+<span class="fc" id="L194">		String result = tool.execute(workingDir, null);</span>
+<span class="pc bpc" id="L195" title="1 of 2 branches missed.">		assertTrue(!result.isEmpty());</span>
+<span class="fc" id="L196">		assertEquals(DeleteTool.STATUS_CODE_INVALID_FILE_OR_DIRECTORY, tool.getStatusCode());</span>
+<span class="fc" id="L197">	}</span>
+	
+	@Test
+	public void execute_DeleteFirstDirNotExist_GetStatusCode2() {
+<span class="fc" id="L201">		String[] args = new String[] {&quot;testdir1&quot;,&quot;testdir2&quot;};</span>
+<span class="fc" id="L202">		tool = new DeleteTool(args);</span>
+		
+<span class="fc" id="L204">		File testDir2 = new File(&quot;testdir2&quot;);</span>
+<span class="fc" id="L205">		testDir2.mkdir();</span>
+		
+<span class="fc" id="L207">		File workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+<span class="fc" id="L208">		String result = tool.execute(workingDir, null);</span>
+<span class="pc bpc" id="L209" title="1 of 2 branches missed.">		assertTrue(!result.isEmpty());</span>
+<span class="fc" id="L210">		assertEquals(DeleteTool.STATUS_CODE_INVALID_FILE_OR_DIRECTORY, tool.getStatusCode());</span>
+<span class="fc" id="L211">		assertTrue(testDir2.exists());</span>
+<span class="fc" id="L212">	}</span>
+	
+	@Test
+	public void execute_DeleteSecondDirNotExist_GetStatusCode2() {
+<span class="fc" id="L216">		String[] args = new String[] {&quot;testdir1&quot;,&quot;testdir2&quot;};</span>
+<span class="fc" id="L217">		tool = new DeleteTool(args);</span>
+		
+<span class="fc" id="L219">		File testDir1 = new File(&quot;testdir1&quot;);</span>
+<span class="fc" id="L220">		testDir1.mkdir();</span>
+		
+<span class="fc" id="L222">		File workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+<span class="fc" id="L223">		tool.execute(workingDir, null);</span>
+<span class="fc" id="L224">		assertEquals(DeleteTool.STATUS_CODE_INVALID_FILE_OR_DIRECTORY, tool.getStatusCode());</span>
+<span class="pc bpc" id="L225" title="1 of 2 branches missed.">		assertTrue(!testDir1.exists());</span>
+<span class="fc" id="L226">	}</span>
+	
+	@Test
+	public void execute_DeleteFileNotExist_GetStatusCode2() {
+<span class="fc" id="L230">		String[] args = new String[] {&quot;testfile.txt&quot;};</span>
+<span class="fc" id="L231">		tool = new DeleteTool(args);</span>
+		
+<span class="fc" id="L233">		File workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+<span class="fc" id="L234">		String result = tool.execute(workingDir, null);</span>
+<span class="pc bpc" id="L235" title="1 of 2 branches missed.">		assertTrue(!result.isEmpty());</span>
+<span class="fc" id="L236">		assertEquals(DeleteTool.STATUS_CODE_INVALID_FILE_OR_DIRECTORY, tool.getStatusCode());</span>
+<span class="fc" id="L237">	}</span>
+	
+	@Test
+	public void execute_DeleteFirstFileNotExist_GetStatusCode2() {
+<span class="fc" id="L241">		String[] args = new String[] {&quot;_testfile1.txt&quot;,&quot;_testfile2.txt&quot;};</span>
+<span class="fc" id="L242">		tool = new DeleteTool(args);</span>
+		
+<span class="fc" id="L244">		File testFile2 = new File(&quot;_testfile2.txt&quot;);</span>
+		try {
+<span class="fc" id="L246">			testFile2.createNewFile();</span>
+<span class="pc" id="L247">		} catch (IOException e) {</span>
+<span class="nc" id="L248">			e.printStackTrace();</span>
+		}
+		
+<span class="fc" id="L251">		File workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+<span class="fc" id="L252">		String result = tool.execute(workingDir, null);</span>
+<span class="pc bpc" id="L253" title="1 of 2 branches missed.">		assertTrue(!result.isEmpty());</span>
+<span class="fc" id="L254">		assertEquals(DeleteTool.STATUS_CODE_INVALID_FILE_OR_DIRECTORY, tool.getStatusCode());</span>
+<span class="fc" id="L255">		assertTrue(testFile2.exists());</span>
+<span class="fc" id="L256">	}</span>
+	
+	@Test
+	public void execute_DeleteSecondFileNotExist_GetStatusCode2() {
+<span class="fc" id="L260">		String[] args = new String[] {&quot;_testfile1.txt&quot;,&quot;_testfile2.txt&quot;};</span>
+<span class="fc" id="L261">		tool = new DeleteTool(args);</span>
+		
+<span class="fc" id="L263">		File testFile1 = new File(&quot;_testfile1.txt&quot;);</span>
+		try {
+<span class="fc" id="L265">			testFile1.createNewFile();</span>
+<span class="pc" id="L266">		} catch (IOException e) {</span>
+<span class="nc" id="L267">			e.printStackTrace();</span>
+		}
+		
+<span class="fc" id="L270">		File workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+<span class="fc" id="L271">		String result = tool.execute(workingDir, null);</span>
+<span class="pc bpc" id="L272" title="1 of 2 branches missed.">		assertTrue(!result.isEmpty());</span>
+<span class="fc" id="L273">		assertEquals(DeleteTool.STATUS_CODE_INVALID_FILE_OR_DIRECTORY, tool.getStatusCode());</span>
+<span class="pc bpc" id="L274" title="1 of 2 branches missed.">		assertTrue(!testFile1.exists());</span>
+<span class="fc" id="L275">	}</span>
+	
+	@Test
+	public void execute_NotEmptyDirectory_GetStatusCode3() {
+<span class="fc" id="L279">		File testDir = new File(&quot;testdir&quot;);</span>
+<span class="fc" id="L280">		testDir.mkdir();</span>
+		
+<span class="fc" id="L282">		File testFile = new File(&quot;testdir&quot; + File.separator+ &quot;testfile.txt&quot;);</span>
+		try {
+<span class="fc" id="L284">			testFile.createNewFile();</span>
+<span class="pc" id="L285">		} catch (IOException e) {</span>
+<span class="nc" id="L286">			e.printStackTrace();</span>
+		}
+		
+<span class="fc" id="L289">		File workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+<span class="fc" id="L290">		String result = tool.execute(workingDir, null);</span>
+<span class="pc bpc" id="L291" title="1 of 2 branches missed.">		assertTrue(!result.isEmpty());</span>
+<span class="fc" id="L292">		assertEquals(DeleteTool.STATUS_CODE_FAILED_TO_DELETE, tool.getStatusCode());</span>
+		
+<span class="fc" id="L294">		testFile.delete();</span>
+<span class="fc" id="L295">		testDir.delete();</span>
+<span class="fc" id="L296">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

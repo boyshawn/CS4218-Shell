@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>IncrementBranchCoveragePipingToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.incrementalcoveragetestcase</a> &gt; <span class="el_source">IncrementBranchCoveragePipingToolTest.java</span></div><h1>IncrementBranchCoveragePipingToolTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.incrementalcoveragetestcase;
+
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.util.Vector;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.ITool;
+import sg.edu.nus.comp.cs4218.impl.extended1.PipingTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.CatTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.CopyTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.EchoTool;
+
+<span class="fc" id="L18">public class IncrementBranchCoveragePipingToolTest {</span>
+
+PipingTool pipingTool;
+	
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L24">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L28">		pipingTool = null;</span>
+<span class="fc" id="L29">	}</span>
+	
+	@Test
+	public void execute_NullTools_GetStatusCode0() {
+<span class="fc" id="L33">		ITool to = new CatTool(new String[]{&quot;-&quot;});</span>
+<span class="fc" id="L34">		Vector&lt;ITool&gt; tools = new Vector&lt;ITool&gt;();</span>
+<span class="fc" id="L35">		tools.add(to);</span>
+<span class="fc" id="L36">		tools.add(null);</span>
+		
+<span class="fc" id="L38">		pipingTool = new PipingTool(tools);</span>
+<span class="fc" id="L39">		pipingTool.execute(new File(System.getProperty(&quot;user.dir&quot;)), null);</span>
+<span class="fc" id="L40">		assertEquals(PipingTool.STATUS_CODE_NULL_TOOL, pipingTool.getStatusCode());</span>
+<span class="fc" id="L41">	}</span>
+	
+	@Test
+	public void execute_2ndCommandFail_GetStatusCode1() {
+		// cd | pwd
+<span class="fc" id="L46">		ITool tool1 = new CopyTool(new String[]{&quot;fileThatDoesNotExist&quot;});</span>
+<span class="fc" id="L47">		ITool tool2 = new EchoTool(new String[]{System.getProperty(&quot;user.dir&quot;)});</span>
+<span class="fc" id="L48">		Vector&lt;ITool&gt; tools = new Vector&lt;ITool&gt;();</span>
+<span class="fc" id="L49">		tools.add(tool1);</span>
+<span class="fc" id="L50">		tools.add(tool2);</span>
+		
+<span class="fc" id="L52">		pipingTool = new PipingTool(tools);</span>
+<span class="fc" id="L53">		pipingTool.execute(new File(System.getProperty(&quot;user.dir&quot;)), &quot;hello&quot;);</span>
+<span class="fc" id="L54">		assertEquals(1, pipingTool.getStatusCode());</span>
+<span class="fc" id="L55">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

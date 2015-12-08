@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>PasteTool.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">src</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.extended2</a> &gt; <span class="el_source">PasteTool.java</span></div><h1>PasteTool.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.extended2;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+
+import sg.edu.nus.comp.cs4218.extended2.IPasteTool;
+import sg.edu.nus.comp.cs4218.impl.ATool;
+
+public class PasteTool extends ATool implements IPasteTool {
+	public static final int ERR_CODE_INVALID_OPTION = 1;
+<span class="fc" id="L24">	public static final String ERR_MSG_INVALID_OPTION = &quot;paste: invalid option '%s'.&quot;</span>
+<span class="fc" id="L25">			+ System.lineSeparator()</span>
+<span class="fc" id="L26">			+ &quot;Try `paste -help' for more information.&quot;;</span>
+
+	public static final int ERR_CODE_INVALID_OPTION_ARG = 2;
+<span class="fc" id="L29">	public static final String ERR_MSG_INVALID_OPTION_ARG = &quot;paste: option requires an argument -- '%s'.&quot;</span>
+<span class="fc" id="L30">			+ System.lineSeparator()</span>
+<span class="fc" id="L31">			+ &quot;Try `paste -help' for more information.&quot;;</span>
+
+	public static final int ERR_CODE_FILE_NOT_EXIST = 3;
+	public static final String ERR_MSG_FILE_NOT_EXIST = &quot;paste: %s: No such file or directory&quot;;
+
+	public static final int ERR_CODE_IO_EXCEPTION = 4;
+	
+	public static final int ERR_MISSING_PARAMETER = 5;
+	public static final String ERR_MSG_MISSING_PARAMETER = &quot;paste: Missing parameter.&quot;;
+	
+<span class="fc" id="L41">	public static final String FILE_PATH_HELP = &quot;help_files/paste_help&quot;;</span>
+
+	public PasteTool(String[] arguments) {
+<span class="fc" id="L44">		super(arguments);</span>
+<span class="fc" id="L45">	}</span>
+
+	@Override
+	public String pasteSerial(String[] input) {
+<span class="fc" id="L49">		return pasteUseDelimiter(&quot;\t&quot;, input);</span>
+	}
+
+	@Override
+	public String pasteUseDelimiter(String delim, String[] input) {
+<span class="fc" id="L54">		String delimTemp = delim;</span>
+<span class="fc" id="L55">		String[] inputTemp = input;</span>
+		
+<span class="fc bfc" id="L57" title="All 2 branches covered.">		if (inputTemp == null) {</span>
+<span class="fc" id="L58">			return &quot;&quot;;</span>
+		}
+
+<span class="fc bfc" id="L61" title="All 2 branches covered.">		if (delimTemp == null) {</span>
+			// Default delimiter
+<span class="fc" id="L63">			delimTemp = &quot;\t&quot;;</span>
+		}
+
+<span class="fc" id="L66">		StringBuilder output = new StringBuilder();</span>
+
+		// Add the first element
+<span class="fc bfc" id="L69" title="All 4 branches covered.">		if (inputTemp.length &gt; 0 &amp;&amp; inputTemp[0] != null) {</span>
+<span class="fc" id="L70">			output.append(inputTemp[0]);</span>
+		}
+
+		// backslash char is ignored by paste
+<span class="fc" id="L74">		delimTemp = delimTemp.replace(&quot;\\&quot;, &quot;&quot;);</span>
+<span class="fc" id="L75">		int delimIndex = 0;</span>
+<span class="fc" id="L76">		int delimLength = delimTemp.length();</span>
+
+<span class="fc bfc" id="L78" title="All 2 branches covered.">		for (int i = 1; i &lt; inputTemp.length; i++) {</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">			if (inputTemp[i] == null) {</span>
+<span class="fc" id="L80">				continue;</span>
+			}
+
+			// Add delimiter + input at n-th index
+<span class="fc bfc" id="L84" title="All 2 branches covered.">			if (delimLength &gt; 0) {</span>
+<span class="fc" id="L85">				output.append(delimTemp.charAt(delimIndex));</span>
+<span class="fc" id="L86">				delimIndex = (delimIndex + 1) % delimLength;</span>
+			}
+
+<span class="fc" id="L89">			output.append(inputTemp[i]);</span>
+		}
+
+<span class="fc" id="L92">		return output.toString();</span>
+	}
+
+	@Override
+	public String getHelp() {
+<span class="fc" id="L97">		return readFile(FILE_PATH_HELP, Charset.forName(&quot;UTF-8&quot;));</span>
+	}
+
+	/**
+	 * Options can appear anywhere. If multiple options appear, -help prevails,
+	 * followed by the last -d option (if duplicate -d appears).
+	 */
+	@Override
+	public String execute(File workingDir, String stdin) {
+<span class="fc" id="L106">		ArrayList&lt;String&gt; filePathList = new ArrayList&lt;String&gt;();</span>
+
+		// filesContent contains a ArrayList of lines from each file
+<span class="fc" id="L109">		ArrayList&lt;String[]&gt; filesContent = new ArrayList&lt;String[]&gt;();</span>
+
+<span class="fc" id="L111">		boolean isGettingHelp = false;</span>
+<span class="fc" id="L112">		boolean isUsingSerial = false;</span>
+<span class="fc" id="L113">		boolean isUsingDelimiter = false;</span>
+
+<span class="fc" id="L115">		String delimiter = &quot;\t&quot;;</span>
+
+<span class="fc bfc" id="L117" title="All 4 branches covered.">		for (int i = 0; args != null &amp;&amp; i &lt; args.length; i++) {</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">			if (args[i].startsWith(&quot;-&quot;)) {</span>
+<span class="pc bpc" id="L119" title="4 of 13 branches missed.">				switch (args[i]) {</span>
+				case &quot;-s&quot;:
+<span class="fc" id="L121">					isUsingSerial = true;</span>
+<span class="fc" id="L122">					break;</span>
+
+				case &quot;-d&quot;:
+<span class="fc" id="L125">					isUsingDelimiter = true;</span>
+<span class="fc bfc" id="L126" title="All 2 branches covered.">					if (i + 1 &gt;= args.length) {</span>
+<span class="fc" id="L127">						setStatusCode(ERR_CODE_INVALID_OPTION_ARG);</span>
+<span class="fc" id="L128">						return String.format(ERR_MSG_INVALID_OPTION_ARG,</span>
+<span class="fc" id="L129">								args[i]);</span>
+					}
+
+<span class="fc" id="L132">					delimiter = args[i + 1];</span>
+
+<span class="fc" id="L134">					i += 1;</span>
+<span class="fc" id="L135">					break;</span>
+
+				case &quot;-help&quot;:
+<span class="fc" id="L138">					isGettingHelp = true;</span>
+<span class="fc" id="L139">					break;</span>
+
+				case &quot;-&quot;:
+<span class="fc" id="L142">					filePathList.add(args[i]);</span>
+<span class="fc" id="L143">					break;</span>
+
+				default:
+<span class="fc" id="L146">					setStatusCode(ERR_CODE_INVALID_OPTION);</span>
+<span class="fc" id="L147">					return String.format(ERR_MSG_INVALID_OPTION, args[i]);</span>
+				}
+
+<span class="nc" id="L150">			} else {</span>
+<span class="fc" id="L151">				String filePath = args[i];</span>
+<span class="fc" id="L152">				File file = new File(filePath);</span>
+				
+				// Check if the filePath arg is relative to workingDir.
+<span class="fc bfc" id="L155" title="All 4 branches covered.">				if (workingDir.exists() &amp;&amp; !file.isAbsolute()) {</span>
+<span class="fc" id="L156">					filePath = workingDir.getAbsolutePath() + File.separator + filePath;</span>
+				}
+				
+<span class="fc" id="L159">				filePathList.add(filePath);</span>
+			}
+		}
+
+<span class="fc bfc" id="L163" title="All 2 branches covered.">		if (isGettingHelp) {</span>
+<span class="fc" id="L164">			return getHelp();</span>
+		}
+
+<span class="fc bfc" id="L167" title="All 2 branches covered.">		if (filePathList.size() &lt;= 0) {</span>
+			
+			// No arguments, get from stdin
+<span class="fc bfc" id="L170" title="All 2 branches covered.">			if (stdin == null) {</span>
+<span class="fc" id="L171">				setStatusCode(ERR_MISSING_PARAMETER);</span>
+<span class="fc" id="L172">				return String.format(ERR_MSG_MISSING_PARAMETER);</span>
+			}
+			
+<span class="fc" id="L175">			filesContent.add(stdin.split(&quot;\\r?\\n&quot;));</span>
+		}
+
+<span class="fc" id="L178">		String[] filePaths = new String[filePathList.size()];</span>
+<span class="fc" id="L179">		filePaths = filePathList.toArray(filePaths);</span>
+
+		// Check that all file paths exist
+<span class="fc bfc" id="L182" title="All 2 branches covered.">		for (String filePath : filePaths) {</span>
+<span class="fc bfc" id="L183" title="All 2 branches covered.">			if (filePath.equals(&quot;-&quot;)) {</span>
+				// Get from stdin
+<span class="fc" id="L185">				continue;</span>
+			}
+
+<span class="fc" id="L188">			File file = new File(filePath);</span>
+<span class="fc bfc" id="L189" title="All 2 branches covered.">			if (!file.exists()) {</span>
+<span class="fc" id="L190">				setStatusCode(ERR_CODE_FILE_NOT_EXIST);</span>
+<span class="fc" id="L191">				return String.format(ERR_MSG_FILE_NOT_EXIST, filePath);</span>
+			}
+		}
+
+		try {
+<span class="fc" id="L196">			filesContent.addAll(readFiles(filePaths, stdin));</span>
+
+<span class="pc" id="L198">		} catch (IOException e) {</span>
+<span class="nc" id="L199">			return e.getMessage();</span>
+		}
+
+<span class="fc" id="L202">		StringBuilder output = new StringBuilder();</span>
+<span class="fc bfc" id="L203" title="All 2 branches covered.">		if (isUsingSerial) {</span>
+<span class="fc bfc" id="L204" title="All 2 branches covered.">			for (String[] fileContent : filesContent) {</span>
+<span class="fc bfc" id="L205" title="All 2 branches covered.">				if (isUsingDelimiter) {</span>
+<span class="fc" id="L206">					output.append(pasteUseDelimiter(delimiter, fileContent));</span>
+<span class="fc" id="L207">				} else {</span>
+<span class="fc" id="L208">					output.append(pasteSerial(fileContent));</span>
+				}
+<span class="fc" id="L210">				output.append(System.lineSeparator());</span>
+			}
+
+<span class="fc" id="L213">		} else {</span>
+<span class="fc" id="L214">			int maxLineCount = getMaxLineCount(filesContent);</span>
+<span class="fc bfc" id="L215" title="All 2 branches covered.">			for (int lineIndex = 0; lineIndex &lt; maxLineCount; lineIndex++) {</span>
+<span class="fc" id="L216">				String[] contentFromSameLineNumber = getContentFromSameLineNumber(</span>
+<span class="fc" id="L217">						filesContent, lineIndex);</span>
+<span class="fc" id="L218">				output.append(pasteUseDelimiter(delimiter,</span>
+<span class="fc" id="L219">						contentFromSameLineNumber));</span>
+<span class="fc" id="L220">				output.append(System.lineSeparator());</span>
+			}
+		}
+
+<span class="fc" id="L224">		return output.toString().trim();</span>
+	}
+
+	public static int getMaxLineCount(ArrayList&lt;String[]&gt; filesContent) {
+<span class="fc" id="L228">		int maxLineCount = 0;</span>
+
+<span class="fc bfc" id="L230" title="All 2 branches covered.">		if (filesContent == null) {</span>
+<span class="fc" id="L231">			return maxLineCount;</span>
+		}
+
+<span class="fc bfc" id="L234" title="All 2 branches covered.">		for (String[] fileContent : filesContent) {</span>
+<span class="fc bfc" id="L235" title="All 2 branches covered.">			if (fileContent.length &gt; maxLineCount) {</span>
+<span class="fc" id="L236">				maxLineCount = fileContent.length;</span>
+			}
+		}
+<span class="fc" id="L239">		return maxLineCount;</span>
+	}
+
+	/**
+	 * Read the contents of all files in the argument.
+	 * 
+	 * @param filePaths
+	 *            The file paths to all the files.
+	 * @return List of String array, which represent the content of each file.
+	 * @throws IOException
+	 */
+	public ArrayList&lt;String[]&gt; readFiles(String[] filePaths, String stdin)
+			throws IOException {
+<span class="fc" id="L252">		ArrayList&lt;String[]&gt; filesContent = new ArrayList&lt;String[]&gt;();</span>
+<span class="fc bfc" id="L253" title="All 2 branches covered.">		for (String filePath : filePaths) {</span>
+<span class="fc bfc" id="L254" title="All 2 branches covered.">			if (filePath.equals(&quot;-&quot;)) {</span>
+				// Content from stdin
+<span class="fc" id="L256">				filesContent.add(stdin.split(&quot;\\r?\\n&quot;));</span>
+<span class="fc" id="L257">			} else {</span>
+<span class="fc" id="L258">				filesContent.add(readFile(filePath));</span>
+			}
+		}
+<span class="fc" id="L261">		return filesContent;</span>
+	}
+
+	/**
+	 * Get all lines from a file.
+	 * 
+	 * @param filePath
+	 *            The location of the file.
+	 * @return Array of String where each element represent a line from the
+	 *         file.
+	 * @throws IOException
+	 */
+	public String[] readFile(String filePath) throws IOException {
+<span class="fc" id="L274">		BufferedReader br = new BufferedReader(new FileReader(filePath));</span>
+<span class="fc" id="L275">		ArrayList&lt;String&gt; lines = new ArrayList&lt;String&gt;();</span>
+
+<span class="fc" id="L277">		String line = br.readLine();</span>
+<span class="fc bfc" id="L278" title="All 2 branches covered.">		while (line != null) {</span>
+<span class="fc" id="L279">			lines.add(line);</span>
+<span class="fc" id="L280">			line = br.readLine();</span>
+		}
+<span class="fc" id="L282">		br.close();</span>
+
+<span class="fc" id="L284">		return lines.toArray(new String[lines.size()]);</span>
+	}
+
+	/**
+	 * Get the content of the n-th line from each file into a String array.
+	 * &lt;p&gt;
+	 * If n &gt; the max line no of a file, then the content n-th line content for
+	 * that file will be &quot;&quot;.
+	 * 
+	 * @param filesContent
+	 *            ArrayList of String array, which represent the content of each
+	 *            file
+	 * @param lineIndex
+	 *            0 based line number, must be &gt;= 0
+	 * @return
+	 */
+	public String[] getContentFromSameLineNumber(
+			ArrayList&lt;String[]&gt; filesContent, int lineIndex) {
+<span class="fc bfc" id="L302" title="All 4 branches covered.">		if (filesContent == null || lineIndex &lt; 0) {</span>
+<span class="fc" id="L303">			return null;</span>
+		}
+		
+<span class="fc" id="L306">		int fileCount = filesContent.size();</span>
+<span class="fc" id="L307">		String[] contentFromSameLineNumber = new String[fileCount];</span>
+
+<span class="fc bfc" id="L309" title="All 2 branches covered.">		for (int i = 0; i &lt; filesContent.size(); i++) {</span>
+<span class="fc" id="L310">			String[] fileContent = filesContent.get(i);</span>
+
+<span class="fc bfc" id="L312" title="All 2 branches covered.">			if (lineIndex &gt;= fileContent.length) {</span>
+				// Content for that file at lineIndex is empty.
+<span class="fc" id="L314">				contentFromSameLineNumber[i] = &quot;&quot;;</span>
+<span class="fc" id="L315">			} else {</span>
+<span class="fc" id="L316">				contentFromSameLineNumber[i] = fileContent[lineIndex];</span>
+			}
+
+		}
+
+<span class="fc" id="L321">		return contentFromSameLineNumber;</span>
+	}
+
+	public void writeToFile(String path, String content) {
+		try {
+<span class="fc" id="L326">			Writer out = new BufferedWriter(new OutputStreamWriter(</span>
+<span class="fc" id="L327">					new FileOutputStream(path), &quot;UTF-8&quot;));</span>
+<span class="fc" id="L328">			out.write(content);</span>
+<span class="fc" id="L329">			out.close();</span>
+<span class="pc" id="L330">		} catch (UnsupportedEncodingException e) {</span>
+<span class="nc" id="L331">			setStatusCode(ERR_CODE_IO_EXCEPTION);</span>
+<span class="nc" id="L332">			e.printStackTrace();</span>
+<span class="nc" id="L333">		} catch (FileNotFoundException e) {</span>
+<span class="nc" id="L334">			setStatusCode(ERR_CODE_IO_EXCEPTION);</span>
+<span class="nc" id="L335">			e.printStackTrace();</span>
+<span class="nc" id="L336">		} catch (IOException e) {</span>
+<span class="nc" id="L337">			setStatusCode(ERR_CODE_IO_EXCEPTION);</span>
+<span class="nc" id="L338">			e.printStackTrace();</span>
+		}
+<span class="fc" id="L340">	}</span>
+	
+	public String readFile(String path, Charset encoding) {
+		byte[] encoded;
+		try {
+<span class="fc" id="L345">			encoded = Files.readAllBytes(Paths.get(path));</span>
+<span class="pc" id="L346">		} catch (IOException e) {</span>
+<span class="nc" id="L347">			setStatusCode(ERR_CODE_IO_EXCEPTION);</span>
+<span class="nc" id="L348">			return e.getMessage();</span>
+		}
+<span class="fc" id="L350">		return encoding.decode(ByteBuffer.wrap(encoded)).toString();</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

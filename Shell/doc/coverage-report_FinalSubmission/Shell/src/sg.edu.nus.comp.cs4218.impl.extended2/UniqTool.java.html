@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>UniqTool.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">src</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.extended2</a> &gt; <span class="el_source">UniqTool.java</span></div><h1>UniqTool.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.extended2;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import sg.edu.nus.comp.cs4218.extended2.IUniqTool;
+import sg.edu.nus.comp.cs4218.impl.ATool;
+
+public class UniqTool extends ATool implements IUniqTool {
+	public static final String FILE_PATH_HELP = &quot;help_files/uniq_help&quot;;
+
+	public static final int ERR_CODE_FILE_NOT_FOUND = 1;
+	public static final String ERR_MSG_FILE_NOT_FOUND = &quot;uniq: %s: No such file or directory&quot;;
+
+	public static final int ERR_CODE_INVALID_NUM_OF_FIELDS = 2;
+	public static final String ERR_MSG_INVALID_NUM_OF_FIELDS = &quot;uniq: %s: invalid number of fields to skip&quot;;
+
+	public static final int ERR_CODE_EXTRA_OPERAND = 3;
+	public static final String ERR_MSG_EXTRA_OPERAND = &quot;uniq: extra operand %s&quot;;
+
+	public static final int ERR_CODE_INVALID_OPTION = 4;
+	public static final String ERR_MSG_INVALID_OPTION = &quot;uniq: invalid option -- %s&quot;;
+
+	public static final int ERR_CODE_MISSING_OPTION_ARG = 5;
+	public static final String ERR_MSG_MISSING_OPTION_ARG = &quot;uniq: option requires an argument -- %s&quot;;
+	
+	public static final int ERR_CODE_IO_EXCEPTION = 6;
+
+<span class="fc" id="L43">	static Pattern p = Pattern.compile(&quot;[\t ]+&quot;);</span>
+
+	public UniqTool() {
+<span class="fc" id="L46">		super(null);</span>
+<span class="fc" id="L47">	}</span>
+	
+	public UniqTool(String[] arguments) {
+<span class="fc" id="L50">		super(arguments);</span>
+<span class="fc" id="L51">	}</span>
+
+	@Override
+	public String getUnique(boolean checkCase, String input) {
+<span class="fc bfc" id="L55" title="All 2 branches covered.">		if (input == null) {</span>
+<span class="fc" id="L56">			return &quot;&quot;;</span>
+		}
+
+<span class="fc" id="L59">		String[] lines = getLines(input);</span>
+<span class="fc" id="L60">		StringBuilder output = new StringBuilder();</span>
+
+<span class="fc" id="L62">		String prevLine = null;</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">		for (String line : lines) {</span>
+
+<span class="fc bfc" id="L65" title="All 2 branches covered.">			if (prevLine != null) {</span>
+<span class="fc bfc" id="L66" title="All 4 branches covered.">				if ((checkCase &amp;&amp; line.equals(prevLine))</span>
+<span class="fc bfc" id="L67" title="All 4 branches covered.">						|| (!checkCase &amp;&amp; line.equalsIgnoreCase(prevLine))) {</span>
+<span class="fc" id="L68">					continue;</span>
+				}
+			}
+
+<span class="fc" id="L72">			output.append(line + System.lineSeparator());</span>
+<span class="fc" id="L73">			prevLine = line;</span>
+		}
+
+<span class="fc" id="L76">		return output.toString().trim();</span>
+	}
+
+	@Override
+	public String getUniqueSkipNum(int num, boolean checkCase, String input) {
+<span class="fc bfc" id="L81" title="All 2 branches covered.">		if (num &lt; 0) {</span>
+<span class="fc" id="L82">			setStatusCode(ERR_CODE_INVALID_NUM_OF_FIELDS);</span>
+<span class="fc" id="L83">			return String.format(ERR_MSG_INVALID_NUM_OF_FIELDS, num);</span>
+		}
+
+<span class="fc bfc" id="L86" title="All 2 branches covered.">		if (input == null) {</span>
+<span class="fc" id="L87">			return &quot;&quot;;</span>
+		}
+
+<span class="fc" id="L90">		String[] lines = getLines(input);</span>
+<span class="fc" id="L91">		StringBuilder output = new StringBuilder();</span>
+
+<span class="fc" id="L93">		String prevLine = null;</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">		for (String line : lines) {</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">			if (prevLine != null) {</span>
+<span class="fc" id="L96">				String prevLineSkippedFields = getStringAfterSkippingFields(</span>
+<span class="fc" id="L97">						prevLine, num);</span>
+<span class="fc" id="L98">				String curLineSkippedFields = getStringAfterSkippingFields(</span>
+<span class="fc" id="L99">						line, num);</span>
+
+				// Check if the fields at prevLine and curLine
+				// are fewer than the number of skipped fields
+<span class="fc bfc" id="L103" title="All 2 branches covered.">				if (prevLineSkippedFields == null</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">						&amp;&amp; curLineSkippedFields == null) {</span>
+<span class="fc" id="L105">					continue;</span>
+				}
+
+				// If prevLineSkippedFields == null but curLineSkippedFields !=
+				// null
+				// We are appending curLine to output
+
+				// Check if prevLine and curLine are equal (after skipping
+				// fields)
+<span class="fc bfc" id="L114" title="All 2 branches covered.">				if (prevLineSkippedFields != null</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">						&amp;&amp; curLineSkippedFields != null) {</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">					if ((!checkCase &amp;&amp; prevLineSkippedFields</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">							.equalsIgnoreCase(curLineSkippedFields))</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">							|| (checkCase &amp;&amp; prevLineSkippedFields</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">									.equals(curLineSkippedFields)))</span>
+<span class="fc" id="L120">						continue;</span>
+				}
+			}
+
+<span class="fc" id="L124">			output.append(line + System.lineSeparator());</span>
+<span class="fc" id="L125">			prevLine = line;</span>
+		}
+
+<span class="fc" id="L128">		return output.toString().trim();</span>
+	}
+
+	@Override
+	public String getHelp() {
+<span class="fc" id="L133">		StringBuilder output = new StringBuilder();</span>
+
+		try {
+<span class="fc" id="L136">			File helpFile = new File(FILE_PATH_HELP);</span>
+<span class="fc" id="L137">			Scanner sc = new Scanner(helpFile);</span>
+<span class="fc bfc" id="L138" title="All 2 branches covered.">			while (sc.hasNextLine()) {</span>
+<span class="fc" id="L139">				output.append(sc.nextLine());</span>
+<span class="fc" id="L140">				output.append(System.lineSeparator());</span>
+			}
+<span class="fc" id="L142">			sc.close();</span>
+<span class="pc" id="L143">		} catch (IOException e) {</span>
+<span class="nc" id="L144">			return e.getMessage();</span>
+		}
+
+<span class="fc" id="L147">		return output.toString();</span>
+	}
+
+	/**
+	 * -help prevails other options if multiple options
+	 * are provided.
+	 */
+	@Override
+	public String execute(File workingDir, String stdin) {
+<span class="fc" id="L156">		boolean checkCase = true;</span>
+<span class="fc" id="L157">		int skippedFieldCount = 0;</span>
+<span class="fc" id="L158">		ArrayList&lt;String&gt; operands = new ArrayList&lt;String&gt;();</span>
+
+<span class="fc bfc" id="L160" title="All 2 branches covered.">		if (args == null) {</span>
+<span class="fc" id="L161">			return getUnique(checkCase, stdin);</span>
+		}
+
+<span class="fc bfc" id="L164" title="All 2 branches covered.">		for (int i = 0; i &lt; args.length; i++) {</span>
+<span class="fc" id="L165">			String arg = args[i];</span>
+
+			// Check for extra operands
+<span class="fc bfc" id="L168" title="All 2 branches covered.">			if (operands.size() &gt;= 2) {</span>
+<span class="fc" id="L169">				setStatusCode(ERR_CODE_EXTRA_OPERAND);</span>
+<span class="fc" id="L170">				return String.format(ERR_MSG_EXTRA_OPERAND, arg);</span>
+			}
+
+			// Check for valid file
+<span class="fc bfc" id="L174" title="All 2 branches covered.">			if (!arg.startsWith(&quot;-&quot;)) {</span>
+<span class="fc" id="L175">				File file = new File(arg);</span>
+
+				// Check if filePath is relative to working dir (i.e. not absolute path)
+				// If it is we make the file relative to working dir.
+<span class="fc bfc" id="L179" title="All 4 branches covered.">				if (!file.isAbsolute() &amp;&amp; workingDir.exists()) {</span>
+<span class="fc" id="L180">					file = new File(workingDir, arg);</span>
+				}
+				
+<span class="fc bfc" id="L183" title="All 4 branches covered.">				if (operands.size() == 0 &amp;&amp; !file.exists()) {</span>
+<span class="fc" id="L184">					setStatusCode(ERR_CODE_FILE_NOT_FOUND);</span>
+<span class="fc" id="L185">					return String.format(ERR_MSG_FILE_NOT_FOUND, arg);</span>
+				}
+<span class="fc" id="L187">				operands.add(file.toString());</span>
+<span class="fc" id="L188">				continue;</span>
+			}
+
+			// Check for stdin argument
+<span class="fc bfc" id="L192" title="All 2 branches covered.">			if (arg.equals(&quot;-&quot;)) {</span>
+<span class="fc" id="L193">				operands.add(arg);</span>
+<span class="fc" id="L194">				continue;</span>
+			}
+
+			// Option argument
+<span class="pc bpc" id="L198" title="3 of 10 branches missed.">			switch (arg) {</span>
+			case &quot;-i&quot;:
+<span class="fc" id="L200">				checkCase = true;</span>
+<span class="fc" id="L201">				break;</span>
+			case &quot;-f&quot;:
+<span class="fc bfc" id="L203" title="All 2 branches covered.">				if (i + 1 &gt;= args.length) {</span>
+<span class="fc" id="L204">					setStatusCode(ERR_CODE_MISSING_OPTION_ARG);</span>
+<span class="fc" id="L205">					return String.format(ERR_MSG_MISSING_OPTION_ARG, arg);</span>
+				}
+
+<span class="fc" id="L208">				i += 1;</span>
+<span class="fc" id="L209">				arg = args[i];</span>
+
+				try {
+<span class="fc" id="L212">					skippedFieldCount = Integer.parseInt(arg);</span>
+<span class="fc" id="L213">				} catch (NumberFormatException e) {</span>
+<span class="fc" id="L214">					setStatusCode(ERR_CODE_INVALID_NUM_OF_FIELDS);</span>
+<span class="fc" id="L215">					return String.format(ERR_MSG_INVALID_NUM_OF_FIELDS, arg);</span>
+				}
+				break;
+			case &quot;-help&quot;:
+<span class="fc" id="L219">				return getHelp();</span>
+			default:
+<span class="fc" id="L221">				setStatusCode(ERR_CODE_INVALID_OPTION);</span>
+<span class="fc" id="L222">				return String.format(ERR_MSG_INVALID_OPTION, arg);</span>
+			}
+		}
+
+		String input;
+<span class="fc bfc" id="L227" title="All 4 branches covered.">		if (operands.size() == 0 || operands.get(0).equals(&quot;-&quot;)) {</span>
+<span class="fc" id="L228">			input = stdin;</span>
+<span class="fc" id="L229">		} else {</span>
+<span class="fc" id="L230">			input = readFile(operands.get(0), Charset.forName(&quot;UTF8&quot;));</span>
+		}
+
+		String output;
+<span class="fc bfc" id="L234" title="All 2 branches covered.">		if (skippedFieldCount == 0) {</span>
+<span class="fc" id="L235">			output = getUnique(checkCase, input);</span>
+<span class="fc" id="L236">		} else {</span>
+<span class="fc" id="L237">			output = getUniqueSkipNum(skippedFieldCount, checkCase, input);</span>
+		}
+
+		// Check if the user specify an output file
+<span class="fc bfc" id="L241" title="All 2 branches covered.">		if (operands.size() &gt; 1) {</span>
+<span class="fc" id="L242">			String outputFilePath = operands.get(1);</span>
+
+<span class="fc bfc" id="L244" title="All 2 branches covered.">			if (!outputFilePath.equals(&quot;-&quot;)) {</span>
+				// Output is redirected to file
+<span class="fc" id="L246">				writeToFile(outputFilePath, output);</span>
+<span class="fc" id="L247">				return &quot;&quot;;</span>
+			}
+		}
+
+<span class="fc" id="L251">		return output;</span>
+	}
+
+	public void writeToFile(String path, String content) {
+		try {
+<span class="fc" id="L256">			Writer out = new BufferedWriter(new OutputStreamWriter(</span>
+<span class="fc" id="L257">					new FileOutputStream(path), &quot;UTF-8&quot;));</span>
+<span class="fc" id="L258">			out.write(content);</span>
+<span class="fc" id="L259">			out.close();</span>
+<span class="pc" id="L260">		} catch (UnsupportedEncodingException e) {</span>
+<span class="nc" id="L261">			setStatusCode(ERR_CODE_IO_EXCEPTION);</span>
+<span class="nc" id="L262">			e.printStackTrace();</span>
+<span class="nc" id="L263">		} catch (FileNotFoundException e) {</span>
+<span class="nc" id="L264">			setStatusCode(ERR_CODE_IO_EXCEPTION);</span>
+<span class="nc" id="L265">			e.printStackTrace();</span>
+<span class="nc" id="L266">		} catch (IOException e) {</span>
+<span class="nc" id="L267">			setStatusCode(ERR_CODE_IO_EXCEPTION);</span>
+<span class="nc" id="L268">			e.printStackTrace();</span>
+		}
+<span class="fc" id="L270">	}</span>
+
+	public String readFile(String path, Charset encoding) {
+		byte[] encoded;
+		try {
+<span class="fc" id="L275">			encoded = Files.readAllBytes(Paths.get(path));</span>
+<span class="pc" id="L276">		} catch (IOException e) {</span>
+<span class="nc" id="L277">			setStatusCode(ERR_CODE_IO_EXCEPTION);</span>
+<span class="nc" id="L278">			return e.getMessage();</span>
+		}
+<span class="fc" id="L280">		return encoding.decode(ByteBuffer.wrap(encoded)).toString();</span>
+	}
+
+	public String getStringAfterSkippingFields(String line,
+			int fieldCount) {
+		
+<span class="fc" id="L286">		int num = fieldCount;</span>
+		
+<span class="fc bfc" id="L288" title="All 2 branches covered.">		if (line == null) {</span>
+<span class="fc" id="L289">			return null;</span>
+		}
+		
+<span class="fc bfc" id="L292" title="All 2 branches covered.">		if (num &lt;= 0) {</span>
+<span class="fc" id="L293">			return line;</span>
+		}
+
+<span class="fc" id="L296">		Matcher m = p.matcher(line);</span>
+<span class="fc" id="L297">		Boolean hasMoreMatches = true;</span>
+
+<span class="fc bfc" id="L299" title="All 2 branches covered.">		while (num &gt; 0) {</span>
+<span class="fc bfc" id="L300" title="All 2 branches covered.">			if (!m.find()) {</span>
+<span class="fc" id="L301">				hasMoreMatches = false;</span>
+<span class="fc" id="L302">				break;</span>
+			}
+<span class="fc" id="L304">			num -= 1;</span>
+		}
+
+		// Check if line has fewer than fieldCount
+<span class="fc bfc" id="L308" title="All 2 branches covered.">		if (!hasMoreMatches) {</span>
+<span class="fc" id="L309">			return null;</span>
+		}
+
+<span class="fc" id="L312">		return line.substring(m.end());</span>
+	}
+
+	/**
+	 * Convert the input into array of lines.
+	 * &lt;p&gt;
+	 * Information about the original new line is discarded. Thus, when
+	 * generating the original string from the array, the new line will follow
+	 * the new line format of the system running the program e.g. /r/n for
+	 * Windows and /n for Unix
+	 * 
+	 * @param input
+	 * @return Array of lines
+	 */
+	public String[] getLines(String input) {
+<span class="fc" id="L327">		Scanner sc = new Scanner(input);</span>
+<span class="fc" id="L328">		ArrayList&lt;String&gt; lines = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L329" title="All 2 branches covered.">		while (sc.hasNextLine()) {</span>
+<span class="fc" id="L330">			lines.add(sc.nextLine());</span>
+		}
+<span class="fc" id="L332">		sc.close();</span>
+
+<span class="fc" id="L334">		return lines.toArray(new String[lines.size()]);</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>SortToolIntegrationTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.integrationtest.extended2</a> &gt; <span class="el_source">SortToolIntegrationTest.java</span></div><h1>SortToolIntegrationTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.integrationtest.extended2;
+
+import static org.junit.Assert.assertEquals;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.ITool;
+import sg.edu.nus.comp.cs4218.impl.extended1.GrepTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.SortTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.CatTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.EchoTool;
+
+<span class="fc" id="L22">public class SortToolIntegrationTest {</span>
+	private static final String USER_DIRECTORY = &quot;user.dir&quot;;
+	private static File defaultWorkingDirectory;
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws IOException {
+<span class="fc" id="L28">		defaultWorkingDirectory = new File(System.getProperty(USER_DIRECTORY));</span>
+<span class="fc" id="L29">	}</span>
+
+	private void createNewTestFile(String fileName, String content)
+			throws IOException {
+<span class="fc" id="L33">		File file = new File(fileName);</span>
+<span class="fc" id="L34">		file.createNewFile();</span>
+<span class="fc" id="L35">		BufferedWriter writer = new BufferedWriter(new FileWriter(file));</span>
+<span class="fc" id="L36">		writer.write(content);</span>
+<span class="fc" id="L37">		writer.close();</span>
+<span class="fc" id="L38">		writer = null;</span>
+<span class="fc" id="L39">		System.gc();</span>
+<span class="fc" id="L40">	}</span>
+
+	@AfterClass
+	public static void tearDownAfterClass() {
+<span class="fc" id="L44">	}</span>
+
+	private void deleteTestFile(String fileName) {
+<span class="fc" id="L47">		File file = new File(fileName);</span>
+<span class="fc" id="L48">		file.delete();</span>
+<span class="fc" id="L49">	}</span>
+
+	@Before
+	public void setUp() throws IOException {
+		/*
+		 * sortfile1 content aaabbb aab aab bbbascaca bba cca ccc
+		 */
+<span class="fc" id="L56">		createNewTestFile(&quot;sortfile1&quot;,</span>
+<span class="fc" id="L57">				&quot;aaabbb&quot; + System.lineSeparator() + &quot;aab&quot;</span>
+<span class="fc" id="L58">						+ System.lineSeparator() + &quot;aab&quot;</span>
+<span class="fc" id="L59">						+ System.lineSeparator() + &quot;bbbascaca&quot;</span>
+<span class="fc" id="L60">						+ System.lineSeparator() + &quot;bba&quot;</span>
+<span class="fc" id="L61">						+ System.lineSeparator() + &quot;cca&quot;</span>
+<span class="fc" id="L62">						+ System.lineSeparator() + &quot;ccc&quot;);</span>
+
+		/*
+		 * sortfile2 content aaa bbb
+		 */
+<span class="fc" id="L67">		createNewTestFile(&quot;sortfile2&quot;, &quot;aaa&quot; + System.lineSeparator() + &quot;bbb&quot;);</span>
+
+		/*
+		 * testfile content aaa aaabbb
+		 */
+<span class="fc" id="L72">		createNewTestFile(&quot;testfile&quot;, &quot;aaa&quot; + System.lineSeparator() + &quot;aaabbb&quot;);</span>
+<span class="fc" id="L73">	}</span>
+
+	@After
+	public void tearDown() {
+<span class="fc" id="L77">		deleteTestFile(&quot;sortfile1&quot;);</span>
+<span class="fc" id="L78">		deleteTestFile(&quot;sortfile2&quot;);</span>
+<span class="fc" id="L79">		deleteTestFile(&quot;testfile&quot;);</span>
+<span class="fc" id="L80">	}</span>
+
+	@Test
+	public void positive_SortThenGrep_Output() {
+<span class="fc" id="L84">		String[] sortArguments = { &quot;sortfile1&quot;, &quot;sortfile2&quot; };</span>
+<span class="fc" id="L85">		ITool sortTool = new SortTool(sortArguments);</span>
+<span class="fc" id="L86">		String intermediateResult = sortTool.execute(defaultWorkingDirectory,</span>
+<span class="fc" id="L87">				null);</span>
+
+<span class="fc" id="L89">		String[] grepArguments = { &quot;aaa&quot;, &quot;-&quot; };</span>
+<span class="fc" id="L90">		ITool grepTool = new GrepTool(grepArguments);</span>
+<span class="fc" id="L91">		assertEquals(</span>
+<span class="fc" id="L92">				&quot;aaa&quot; + System.lineSeparator() + &quot;aaabbb&quot;</span>
+<span class="fc" id="L93">						+ System.lineSeparator(),</span>
+<span class="fc" id="L94">				grepTool.execute(defaultWorkingDirectory, intermediateResult));</span>
+<span class="fc" id="L95">	}</span>
+	
+	@Test
+	public void negative_SortErrorMessageGrep_Empty() {
+<span class="fc" id="L99">		String[] sortArguments = { &quot;sortfile1&quot;, &quot;notExist&quot; };</span>
+<span class="fc" id="L100">		ITool sortTool = new SortTool(sortArguments);</span>
+<span class="fc" id="L101">		String intermediateResult = sortTool.execute(defaultWorkingDirectory,</span>
+<span class="fc" id="L102">				null);</span>
+
+<span class="fc" id="L104">		String[] grepArguments = { &quot;aaa&quot;, &quot;-&quot; };</span>
+<span class="fc" id="L105">		ITool grepTool = new GrepTool(grepArguments);</span>
+<span class="fc" id="L106">		assertEquals(&quot;&quot;,</span>
+<span class="fc" id="L107">				grepTool.execute(defaultWorkingDirectory, intermediateResult));</span>
+<span class="fc" id="L108">	}</span>
+
+	@Test
+	public void SortThenCat_Output() {
+<span class="fc" id="L112">		String[] sortArguments = { &quot;sortfile1&quot;, &quot;sortfile2&quot; };</span>
+<span class="fc" id="L113">		ITool sortTool = new SortTool(sortArguments);</span>
+<span class="fc" id="L114">		String intermediateResult = sortTool.execute(defaultWorkingDirectory,</span>
+<span class="fc" id="L115">				null);</span>
+
+<span class="fc" id="L117">		String[] catArguments = {&quot;-&quot;};</span>
+<span class="fc" id="L118">		ITool catTool = new CatTool(catArguments);</span>
+<span class="fc" id="L119">		assertEquals(intermediateResult,</span>
+<span class="fc" id="L120">				catTool.execute(defaultWorkingDirectory, intermediateResult));</span>
+<span class="fc" id="L121">	}</span>
+	
+	@Test
+	public void SortThenEcho_Output(){
+<span class="fc" id="L125">		String[] sortArguments = { &quot;sortfile1&quot;};</span>
+<span class="fc" id="L126">		ITool sortTool = new SortTool(sortArguments);</span>
+<span class="fc" id="L127">		String intermediateResult = sortTool.execute(defaultWorkingDirectory, null);</span>
+
+<span class="fc" id="L129">		String[] echoArguments = {intermediateResult};</span>
+<span class="fc" id="L130">		ITool echoTool = new EchoTool(echoArguments);</span>
+<span class="fc" id="L131">		assertEquals(&quot;aaabbb&quot; + System.lineSeparator(),</span>
+<span class="fc" id="L132">				echoTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L133">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

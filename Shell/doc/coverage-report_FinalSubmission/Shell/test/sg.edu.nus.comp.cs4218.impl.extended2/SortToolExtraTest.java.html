@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>SortToolExtraTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.extended2</a> &gt; <span class="el_source">SortToolExtraTest.java</span></div><h1>SortToolExtraTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.extended2;
+
+import static org.junit.Assert.*;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.extended2.ISortTool;
+
+<span class="fc" id="L18">public class SortToolExtraTest {</span>
+	private ISortTool sortTool;
+	private static final String USER_DIRECTORY = &quot;user.dir&quot;;
+	private static File defaultWorkingDirectory;
+	
+<span class="fc" id="L23">	final String SORT_HELP = &quot;sort : sort lines of text files&quot;</span>
+<span class="fc" id="L24">			+ System.lineSeparator() + &quot;Command Format - sort [OPTIONS] [FILE]&quot;</span>
+<span class="fc" id="L25">			+ System.lineSeparator() + &quot;FILE - Name of the file&quot;</span>
+<span class="fc" id="L26">			+ System.lineSeparator() + &quot;-c : Check whether the given file is&quot;</span>
+<span class="fc" id="L27">			+ &quot; already sorted, if it is not all sorted, print a diagnostic&quot;</span>
+<span class="fc" id="L28">			+ &quot; containing the first line that is out of order&quot;</span>
+<span class="fc" id="L29">			+ System.lineSeparator()</span>
+<span class="fc" id="L30">			+ &quot;-help : Brief information about supported options&quot;;</span>
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+<span class="fc" id="L34">		defaultWorkingDirectory = new File(System.getProperty(USER_DIRECTORY));</span>
+		
+		// creating testFile of sorted and unsorted order
+<span class="fc" id="L37">		File myFile1 = new File(&quot;unSortFile.txt&quot;);</span>
+<span class="fc" id="L38">		myFile1.createNewFile();</span>
+<span class="fc" id="L39">		writeFile(&quot;unSortFile.txt&quot;, </span>
+<span class="fc" id="L40">				&quot;zzz&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L41">				&quot;bbb&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L42">				&quot;aaa&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L43">				&quot;ggg&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L44">				&quot;fff&quot;);</span>
+
+		// creating testFile 1/2 with sorted order
+<span class="fc" id="L47">		File myFile2 = new File(&quot;sortFile.txt&quot;);</span>
+<span class="fc" id="L48">		myFile2.createNewFile();</span>
+<span class="fc" id="L49">		writeFile(&quot;sortFile.txt&quot;, &quot;aaa&quot; + System.lineSeparator() + &quot;bbb&quot;</span>
+<span class="fc" id="L50">				+ System.lineSeparator() + &quot;ccc&quot; + System.lineSeparator()</span>
+<span class="fc" id="L51">				+ &quot;ddd&quot; + System.lineSeparator() + &quot;eee&quot;);</span>
+		
+<span class="fc" id="L53">		File emptyFile = new File(&quot;emptyFile.txt&quot;);</span>
+<span class="fc" id="L54">		emptyFile.createNewFile();</span>
+<span class="fc" id="L55">	}</span>
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+<span class="fc" id="L59">		File file1 = new File(&quot;sortFile.txt&quot;);</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">		if (file1.exists()) {</span>
+<span class="fc" id="L61">			file1.delete();</span>
+		}
+
+<span class="fc" id="L64">		File file2 = new File(&quot;unSortFile.txt&quot;);</span>
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">		if (file2.exists()) {</span>
+<span class="fc" id="L66">			file2.delete();</span>
+		}
+		
+<span class="fc" id="L69">		File emptyFile = new File(&quot;emptyFile.txt&quot;);</span>
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">		if(emptyFile.exists()){</span>
+<span class="fc" id="L71">			emptyFile.delete();</span>
+		}
+<span class="fc" id="L73">	}</span>
+
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L77">		sortTool = new SortTool(null);</span>
+<span class="fc" id="L78">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L82">		sortTool = null;</span>
+<span class="fc" id="L83">	}</span>
+	
+	public static void writeFile(String fileName, String s) throws IOException {
+<span class="fc" id="L86">		BufferedWriter out = new BufferedWriter(new FileWriter(fileName));</span>
+<span class="fc" id="L87">		out.write(s);</span>
+<span class="fc" id="L88">		out.close();</span>
+<span class="fc" id="L89">	}</span>
+
+	@Test
+	public void checkIfSorted_NullObject_MissingOperand(){
+<span class="fc" id="L93">		assertEquals(&quot;sort: missing operand&quot; + System.lineSeparator()</span>
+<span class="fc" id="L94">				+ &quot;Try 'sort -help' for more information&quot;,</span>
+<span class="fc" id="L95">				sortTool.checkIfSorted(null));</span>
+<span class="fc" id="L96">	}</span>
+	
+	@Test
+	public void sortFile_NullObject_MissingOperand(){
+<span class="fc" id="L100">		assertEquals(&quot;sort: missing operand&quot; + System.lineSeparator()</span>
+<span class="fc" id="L101">				+ &quot;Try 'sort -help' for more information&quot;,</span>
+<span class="fc" id="L102">				sortTool.sortFile(null));</span>
+<span class="fc" id="L103">	}</span>
+	
+	@Test
+	public void execute_1SortedFile_Output(){
+<span class="fc" id="L107">		String[] arguments = {&quot;sortFile.txt&quot;};</span>
+<span class="fc" id="L108">		sortTool = new SortTool(arguments);</span>
+<span class="fc" id="L109">		assertEquals(&quot;aaa&quot;+System.lineSeparator()+&quot;bbb&quot;+System.lineSeparator()+&quot;ccc&quot;+System.lineSeparator()+&quot;ddd&quot;+System.lineSeparator()+&quot;eee&quot;,</span>
+<span class="fc" id="L110">				sortTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L111">	}</span>
+	
+	@Test
+	public void execute_1UnsortedFile_Output(){
+<span class="fc" id="L115">		String[] arguments = {&quot;unSortFile.txt&quot;};</span>
+<span class="fc" id="L116">		sortTool = new SortTool(arguments);</span>
+<span class="fc" id="L117">		assertEquals(&quot;aaa&quot;+System.lineSeparator()+&quot;bbb&quot;+System.lineSeparator()+&quot;fff&quot;+System.lineSeparator()+&quot;ggg&quot;+System.lineSeparator()+&quot;zzz&quot;,</span>
+<span class="fc" id="L118">				sortTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L119">	}</span>
+	
+	@Test
+	public void execute_1Unsorted1SortedFile_Output(){
+<span class="fc" id="L123">		String[] arguments = {&quot;sortFile.txt&quot;, &quot;unSortFile.txt&quot;};</span>
+<span class="fc" id="L124">		sortTool = new SortTool(arguments);</span>
+		
+<span class="fc" id="L126">		assertEquals(</span>
+<span class="fc" id="L127">				&quot;aaa&quot; + System.lineSeparator() + &quot;aaa&quot; + System.lineSeparator()</span>
+<span class="fc" id="L128">						+ &quot;bbb&quot; + System.lineSeparator() + &quot;bbb&quot;</span>
+<span class="fc" id="L129">						+ System.lineSeparator() + &quot;ccc&quot;</span>
+<span class="fc" id="L130">						+ System.lineSeparator() + &quot;ddd&quot;</span>
+<span class="fc" id="L131">						+ System.lineSeparator() + &quot;eee&quot;</span>
+<span class="fc" id="L132">						+ System.lineSeparator() + &quot;fff&quot;</span>
+<span class="fc" id="L133">						+ System.lineSeparator() + &quot;ggg&quot;</span>
+<span class="fc" id="L134">						+ System.lineSeparator() + &quot;zzz&quot;,</span>
+<span class="fc" id="L135">				sortTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L136">	}</span>
+	
+	@Test
+	public void execute_File2NotExist_NoSuchFileError(){
+<span class="fc" id="L140">		String[] arguments = {&quot;sortFile.txt&quot;, &quot;NotExist.txt&quot;};</span>
+<span class="fc" id="L141">		sortTool = new SortTool(arguments);</span>
+<span class="fc" id="L142">		assertEquals(&quot;sort: stat failed: NotExist.txt: No such file or directory&quot;,</span>
+<span class="fc" id="L143">				sortTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L144">	}</span>
+	
+	@Test
+	public void execute_1ValidOption1SortedFile_Output(){
+<span class="fc" id="L148">		String[] arguments = {&quot;-c&quot;, &quot;sortFile.txt&quot;};</span>
+<span class="fc" id="L149">		sortTool = new SortTool(arguments);</span>
+<span class="fc" id="L150">		assertEquals(&quot;&quot;,</span>
+<span class="fc" id="L151">				sortTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L152">	}</span>
+	
+	@Test
+	public void execute_1ValidOption1UnsortedFile_Output(){
+<span class="fc" id="L156">		String[] arguments = {&quot;-c&quot;, &quot;unSortFile.txt&quot;};</span>
+<span class="fc" id="L157">		sortTool = new SortTool(arguments);</span>
+<span class="fc" id="L158">		assertEquals(&quot;sort: unSortFile.txt:2: disorder: bbb&quot;,</span>
+<span class="fc" id="L159">				sortTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L160">	}</span>
+	
+	@Test
+	public void execute_1ValidOption2File_ExtraOperand(){
+<span class="fc" id="L164">		String[] arguments = {&quot;-c&quot;, &quot;unSortFile.txt&quot;, &quot;sortFile.txt&quot;};</span>
+<span class="fc" id="L165">		sortTool = new SortTool(arguments);</span>
+<span class="fc" id="L166">		assertEquals(&quot;sort: extra operand 'sortFile.txt' not allowed with -c&quot;,</span>
+<span class="fc" id="L167">				sortTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L168">	}</span>
+	
+	@Test
+	public void execute_2ValidOption1File_Output(){
+<span class="fc" id="L172">		String[] arguments = {&quot;-c&quot;, &quot;-c&quot;, &quot;sortFile.txt&quot;};</span>
+<span class="fc" id="L173">		sortTool = new SortTool(arguments);</span>
+<span class="fc" id="L174">		assertEquals(&quot;&quot;,</span>
+<span class="fc" id="L175">				sortTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L176">	}</span>
+	
+	@Test
+	public void execute_1ValidOption1File2NotExist_ExtraOperand(){
+<span class="fc" id="L180">		String[] arguments = {&quot;-c&quot;, &quot;sortFile.txt&quot;, &quot;NotExist.txt&quot;};</span>
+<span class="fc" id="L181">		sortTool = new SortTool(arguments);</span>
+<span class="fc" id="L182">		assertEquals(&quot;sort: extra operand 'NotExist.txt' not allowed with -c&quot;,</span>
+<span class="fc" id="L183">				sortTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L184">	}</span>
+	
+	@Test
+	public void execute_2ValidOption1File1NotExist_ExtraOperand(){
+<span class="fc" id="L188">		String[] arguments = {&quot;-c&quot;, &quot;-c&quot;, &quot;NotExist.txt&quot;, &quot;sortFile.txt&quot;};</span>
+<span class="fc" id="L189">		sortTool = new SortTool(arguments);</span>
+<span class="fc" id="L190">		assertEquals(&quot;sort: extra operand 'sortFile.txt' not allowed with -c&quot;,</span>
+<span class="fc" id="L191">				sortTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L192">	}</span>
+	
+	@Test
+	public void execute_HelpOption_Output(){
+<span class="fc" id="L196">		String[] arguments = {&quot;-help&quot;, &quot;sortFile.txt&quot;};</span>
+<span class="fc" id="L197">		sortTool = new SortTool(arguments);</span>
+<span class="fc" id="L198">		assertEquals(SORT_HELP,</span>
+<span class="fc" id="L199">				sortTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L200">	}</span>
+	
+	@Test
+	public void execute_HelpWithValidOption_Output(){
+<span class="fc" id="L204">		String[] arguments = {&quot;-help&quot;, &quot;-c&quot;};</span>
+<span class="fc" id="L205">		sortTool = new SortTool(arguments);</span>
+<span class="fc" id="L206">		assertEquals(SORT_HELP,</span>
+<span class="fc" id="L207">				sortTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L208">	}</span>
+	
+	@Test
+	public void execute_HelpWithInvalidOption_Output(){
+<span class="fc" id="L212">		String[] arguments = {&quot;-help&quot;, &quot;-unknown&quot;};</span>
+<span class="fc" id="L213">		sortTool = new SortTool(arguments);</span>
+<span class="fc" id="L214">		assertEquals(SORT_HELP,</span>
+<span class="fc" id="L215">				sortTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L216">	}</span>
+	
+	@Test
+	public void execute_NoOptionEmptyFile_Output(){
+<span class="fc" id="L220">		String[] arguments = {&quot;emptyFile.txt&quot;};</span>
+<span class="fc" id="L221">		sortTool = new SortTool(arguments);</span>
+<span class="fc" id="L222">		assertEquals(&quot;&quot;,</span>
+<span class="fc" id="L223">				sortTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L224">	}</span>
+	
+	@Test
+	public void execute_1ValidOptionEmptyFile_Output(){
+<span class="fc" id="L228">		String[] arguments = {&quot;-c&quot;, &quot;emptyFile.txt&quot;};</span>
+<span class="fc" id="L229">		sortTool = new SortTool(arguments);</span>
+<span class="fc" id="L230">		assertEquals(&quot;&quot;,</span>
+<span class="fc" id="L231">				sortTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L232">	}</span>
+	
+	
+	//This is an unsupported features
+	public void execute_UnsortedInputFromStdinNoOption_SortedOutput(){
+<span class="nc" id="L237">		String[] argument = {&quot;-&quot;}; </span>
+		
+<span class="nc" id="L239">		sortTool = new SortTool(argument);</span>
+		
+<span class="nc" id="L241">		String result = sortTool.execute(new File(&quot;user.dir&quot;),</span>
+<span class="nc" id="L242">				&quot;aaa&quot; + System.lineSeparator() + &quot;ccc&quot; + System.lineSeparator()</span>
+<span class="nc" id="L243">						+ &quot;bbb&quot; + System.lineSeparator());</span>
+<span class="nc" id="L244">		assertEquals(</span>
+<span class="nc" id="L245">				&quot;aaa&quot; + System.lineSeparator() + &quot;bbb&quot; + System.lineSeparator()</span>
+<span class="nc" id="L246">						+ &quot;ccc&quot; + System.lineSeparator(), result);</span>
+<span class="nc" id="L247">	}</span>
+	
+	@Test
+	public void execute_DirectoryInArgument_Error(){
+<span class="fc" id="L251">		sortTool = new SortTool(null);</span>
+<span class="fc" id="L252">		sortTool.execute(defaultWorkingDirectory, null);</span>
+<span class="fc" id="L253">		assertNotEquals(0, sortTool.getStatusCode());</span>
+<span class="fc" id="L254">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

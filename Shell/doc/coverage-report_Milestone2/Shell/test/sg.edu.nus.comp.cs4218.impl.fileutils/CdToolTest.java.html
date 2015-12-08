@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>CdToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.fileutils</a> &gt; <span class="el_source">CdToolTest.java</span></div><h1>CdToolTest.java</h1><pre class="source lang-java linenums">/**
+ * 
+ */
+package sg.edu.nus.comp.cs4218.impl.fileutils;
+
+import static org.junit.Assert.*;
+
+import java.io.File;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.fileutils.ICdTool;
+
+<span class="fc" id="L16">public class CdToolTest {</span>
+
+<span class="fc" id="L18">	private final String HOME_DIRECTORY = &quot;user.home&quot;;</span>
+<span class="fc" id="L19">	private final String USER_DIRECTORY = &quot;user.dir&quot;;</span>
+	private ICdTool cdTool;
+	private String defaultWorkingDirectory;
+	private File workingDirectory;
+	
+	/**
+	 * @throws java.lang.Exception
+	 */
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L29">		defaultWorkingDirectory = System.getProperty(USER_DIRECTORY);</span>
+		
+<span class="fc" id="L31">		cdTool= new CdTool(null);</span>
+<span class="fc" id="L32">		workingDirectory = new File(defaultWorkingDirectory);</span>
+<span class="fc" id="L33">	}</span>
+
+	/**
+	 * @throws java.lang.Exception
+	 */
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L40">		cdTool = null;</span>
+<span class="fc" id="L41">		workingDirectory = null;</span>
+<span class="fc" id="L42">		System.setProperty(USER_DIRECTORY, defaultWorkingDirectory);</span>
+<span class="fc" id="L43">	}</span>
+
+	@Test
+	public void changeDirectory_validAbsoluteDirectory_CorrectFileDirectoryReturned() {
+<span class="fc" id="L47">		File directory = new File(defaultWorkingDirectory);</span>
+<span class="fc" id="L48">		File[] currentDirectoryFiles = directory.listFiles();</span>
+<span class="fc" id="L49">		File resturnStatement = cdTool.changeDirectory(currentDirectoryFiles[0]</span>
+<span class="fc" id="L50">				.getAbsolutePath());</span>
+
+<span class="fc" id="L52">		assertEquals(currentDirectoryFiles[0].getAbsolutePath(),</span>
+<span class="fc" id="L53">				resturnStatement.getAbsolutePath());</span>
+<span class="fc" id="L54">	}</span>
+
+	@Test
+	public void changeDirectory_invalidAbsoluteDirectory_NullObjectReturned(){
+<span class="fc" id="L58">		File directory = new File(HOME_DIRECTORY);</span>
+<span class="fc" id="L59">		final File resturnStatement = cdTool.changeDirectory(directory</span>
+<span class="fc" id="L60">				.getAbsolutePath() + File.separator + &quot;i7v3l1d&quot;);</span>
+
+<span class="fc" id="L62">		assertNull(resturnStatement);</span>
+<span class="fc" id="L63">	}</span>
+
+	@Test
+	public void changeDirectory_nullObject_NullObjectReturned(){
+<span class="fc" id="L67">		final File resturnStatement = cdTool.changeDirectory(null);</span>
+
+<span class="fc" id="L69">		assertNull(resturnStatement);</span>
+<span class="fc" id="L70">	}</span>
+
+	@Test
+	public void changeDirectory_sameDirectory_CorrectDirectoryReturned(){
+<span class="fc" id="L74">		final File resturnStatement = cdTool.changeDirectory(defaultWorkingDirectory);</span>
+
+<span class="fc" id="L76">		assertEquals(System.getProperty(USER_DIRECTORY),</span>
+<span class="fc" id="L77">				resturnStatement.getAbsolutePath());</span>
+<span class="fc" id="L78">	}</span>
+
+	@Test
+	public void changeDirectory_emptyString_HomeDirectoryReturn(){
+<span class="fc" id="L82">		final File correctDirectory = new File (&quot;&quot;);</span>
+<span class="fc" id="L83">		final File resturnStatement = cdTool.changeDirectory(&quot;&quot;);</span>
+
+<span class="fc" id="L85">		assertEquals(correctDirectory.getAbsolutePath(),</span>
+<span class="fc" id="L86">				resturnStatement.getAbsolutePath());</span>
+<span class="fc" id="L87">	}</span>
+
+	@Test
+	public void changeDirectory_validNavigateFromHomeDirectory_CorrectRelativeDirectoryReturned(){
+		//Valid for all major O.S distribution
+<span class="fc" id="L92">		final String newDirectory = &quot;~&quot; + File.separator + &quot;Downloads&quot;;</span>
+<span class="fc" id="L93">		cdTool.changeDirectory(newDirectory);</span>
+
+<span class="fc" id="L95">		assertEquals(System.getProperty(HOME_DIRECTORY) + File.separator</span>
+<span class="fc" id="L96">				+ &quot;Downloads&quot;, System.getProperty(USER_DIRECTORY));</span>
+<span class="fc" id="L97">	}</span>
+
+	@Test
+	public void changeDirectory_invalidNavigateFromHomeDirectory_NullObjectReturned(){
+<span class="fc" id="L101">		final String newDirectory = &quot;~&quot; + File.separator + &quot;Down&quot;;</span>
+<span class="fc" id="L102">		final File resturnStatement = cdTool.changeDirectory(newDirectory);</span>
+
+<span class="fc" id="L104">		assertNull(resturnStatement);</span>
+<span class="fc" id="L105">	}</span>
+
+	@Test
+	public void changeDirectory_validRelativeDirectory_CorrectDirectoryReturned(){
+<span class="fc" id="L109">		final String newDirectory = &quot;src&quot;;</span>
+<span class="fc" id="L110">		final File correctFileDirectory = new File (newDirectory);</span>
+<span class="fc" id="L111">		final File returnStatement = cdTool.changeDirectory(newDirectory);</span>
+<span class="fc" id="L112">		assertEquals(correctFileDirectory.getAbsolutePath(),</span>
+<span class="fc" id="L113">				returnStatement.getAbsolutePath());</span>
+<span class="fc" id="L114">	}</span>
+
+	@Test
+	public void changeDirectory_invalidRelativeDirectory_NullObjectReturned(){
+<span class="fc" id="L118">		final String newDirectory = &quot;testing&quot;;</span>
+<span class="fc" id="L119">		final File resturnStatement = cdTool.changeDirectory(newDirectory);</span>
+
+<span class="fc" id="L121">		assertNull(resturnStatement);</span>
+<span class="fc" id="L122">	}</span>
+
+	@Test
+	public void changeDirectory_doubleDot_ParentDirectoryReturned(){
+<span class="fc" id="L126">		final String newDirectory = &quot;..&quot;;</span>
+<span class="fc" id="L127">		final File resturnStatement = cdTool.changeDirectory(newDirectory);</span>
+
+<span class="fc" id="L129">		assertEquals(workingDirectory.getParent(),</span>
+<span class="fc" id="L130">				resturnStatement.getAbsolutePath());</span>
+<span class="fc" id="L131">	}</span>
+
+	@Test
+	public void execute_validAbsoluteDirectory_StatusCodeZero() {
+<span class="fc" id="L135">		File directory = new File(defaultWorkingDirectory);</span>
+<span class="fc" id="L136">		File[] currentDirectoryFiles = directory.listFiles();</span>
+
+<span class="fc" id="L138">		final String[] argument = { currentDirectoryFiles[0].getAbsolutePath() }; </span>
+
+<span class="fc" id="L140">		cdTool = new CdTool(argument);</span>
+<span class="fc" id="L141">		cdTool.execute(workingDirectory, null);</span>
+
+<span class="fc" id="L143">		assertEquals(0, cdTool.getStatusCode());</span>
+<span class="fc" id="L144">		assertEquals(currentDirectoryFiles[0].getAbsolutePath(),</span>
+<span class="fc" id="L145">				System.getProperty(USER_DIRECTORY));</span>
+<span class="fc" id="L146">	}</span>
+
+	@Test
+	public void execute_invalidAbsoluteDirectory_StatusCodeNonZero() {
+<span class="fc" id="L150">		File directory = new File(HOME_DIRECTORY);</span>
+<span class="fc" id="L151">		final String[] argument = { directory.getAbsolutePath()</span>
+<span class="fc" id="L152">				+ File.separator + &quot;i7v3l1d&quot; };</span>
+<span class="fc" id="L153">		cdTool = new CdTool(argument);</span>
+
+<span class="fc" id="L155">		cdTool = new CdTool(argument);</span>
+<span class="fc" id="L156">		cdTool.execute(workingDirectory, null);</span>
+
+<span class="fc" id="L158">		assertNotEquals(0, cdTool.getStatusCode());</span>
+<span class="fc" id="L159">	}</span>
+
+	@Test
+	public void execute_sameDirectory_StatusCodeZero(){
+<span class="fc" id="L163">		final String newDirectory = defaultWorkingDirectory;</span>
+<span class="fc" id="L164">		final String[] argument = {newDirectory}; </span>
+<span class="fc" id="L165">		cdTool = new CdTool(argument);</span>
+
+<span class="fc" id="L167">		cdTool = new CdTool(argument);</span>
+<span class="fc" id="L168">		cdTool.execute(workingDirectory, null);</span>
+
+<span class="fc" id="L170">		assertEquals(0, cdTool.getStatusCode());</span>
+<span class="fc" id="L171">		assertEquals(defaultWorkingDirectory, System.getProperty(USER_DIRECTORY)); </span>
+<span class="fc" id="L172">	}</span>
+
+	@Test
+	public void execute_emptyString_StatusCodeZero(){
+<span class="fc" id="L176">		final String[] argument = {&quot;&quot;};</span>
+<span class="fc" id="L177">		cdTool = new CdTool(argument);</span>
+<span class="fc" id="L178">		cdTool.execute(workingDirectory, null);</span>
+
+<span class="fc" id="L180">		assertEquals(0, cdTool.getStatusCode());</span>
+<span class="fc" id="L181">		assertEquals(System.getProperty(HOME_DIRECTORY), System.getProperty(USER_DIRECTORY));</span>
+<span class="fc" id="L182">	}</span>
+
+	@Test
+	public void execute_validNavigateFromHomeDirectory_StatusCodeZero(){
+		//Works for major O.S distribution
+<span class="fc" id="L187">		final String newDirectory = &quot;~&quot; + File.separator + &quot;Downloads&quot;;</span>
+<span class="fc" id="L188">		final String[] argument = {newDirectory}; </span>
+
+<span class="fc" id="L190">		cdTool = new CdTool(argument);</span>
+<span class="fc" id="L191">		cdTool.execute(workingDirectory, null);</span>
+
+<span class="fc" id="L193">		assertEquals(0, cdTool.getStatusCode());</span>
+<span class="fc" id="L194">		assertEquals(System.getProperty(HOME_DIRECTORY) + File.separator</span>
+<span class="fc" id="L195">				+ &quot;Downloads&quot;, System.getProperty(USER_DIRECTORY));</span>
+<span class="fc" id="L196">	}</span>
+	
+	@Test
+	public void execute_invalidNavigateFromHomeDirectory_StatusCodeNonZero(){
+<span class="fc" id="L200">		final String newDirectory = &quot;~/Down&quot;;</span>
+<span class="fc" id="L201">		final String[] argument = {newDirectory}; </span>
+<span class="fc" id="L202">		cdTool = new CdTool(argument);</span>
+
+<span class="fc" id="L204">		cdTool.execute(workingDirectory, null);</span>
+
+<span class="fc" id="L206">		assertNotEquals(0, cdTool.getStatusCode());</span>
+<span class="fc" id="L207">	}</span>
+
+	@Test 
+	public void execute_ValidNavigateBack_StatusCodeZero(){
+<span class="fc" id="L211">		String[] argument = {&quot;src&quot;};</span>
+<span class="fc" id="L212">		cdTool = new CdTool(argument);</span>
+<span class="fc" id="L213">		cdTool.execute(workingDirectory, null);</span>
+		
+<span class="fc" id="L215">		argument[0] = &quot;-&quot;;</span>
+<span class="fc" id="L216">		cdTool = new CdTool(argument);</span>
+<span class="fc" id="L217">		String result = cdTool.execute(workingDirectory, null);</span>
+		
+<span class="fc" id="L219">		assertEquals(0, cdTool.getStatusCode());</span>
+<span class="fc" id="L220">		assertEquals(&quot;&quot;, result);</span>
+<span class="fc" id="L221">	}</span>
+	
+	@Test
+	public void execute_InvalidNavigateBack_StatusCodeNonZero(){
+<span class="fc" id="L225">		String[] argument = {&quot;-&quot;};</span>
+		
+<span class="fc" id="L227">		cdTool = new CdTool(argument, true);</span>
+<span class="fc" id="L228">		cdTool.execute(workingDirectory, null);</span>
+<span class="fc" id="L229">		assertNotEquals(0, cdTool.getStatusCode());</span>
+<span class="fc" id="L230">	}</span>
+	
+	@Test
+	public void execute_NullArgument_StatusCodeNonZero(){
+<span class="fc" id="L234">		cdTool = new CdTool(null);</span>
+<span class="fc" id="L235">		cdTool.execute(workingDirectory, null);</span>
+<span class="fc" id="L236">		assertNotEquals(0, cdTool.getStatusCode());</span>
+<span class="fc" id="L237">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

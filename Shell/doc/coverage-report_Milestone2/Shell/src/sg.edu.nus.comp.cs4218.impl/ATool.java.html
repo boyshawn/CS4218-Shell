@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>ATool.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">src</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl</a> &gt; <span class="el_source">ATool.java</span></div><h1>ATool.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl;
+
+import java.io.File;
+
+public abstract class ATool {
+	protected String[] args;
+<span class="fc" id="L7">	private int statusCode = 0;</span>
+	
+	/**
+	 * Constructor
+	 * @param arguments Arguments the tool is going to be executed with.
+	 */
+<span class="fc" id="L13">	public ATool(String[] arguments){</span>
+<span class="fc" id="L14">		this.args = arguments;</span>
+<span class="fc" id="L15">	}</span>
+	
+	/**
+	 * Executes the tool with args provided in the constructor
+	 * TODO Use interface methods when implementing execute!
+	 * @param stdin Input on stdin. NOT THE ARGUMENTS! Can be null.
+	 * @return Output on stdout
+	 */
+	public abstract String execute(File workingDir, String stdin);
+		
+	/**
+	 * After execution returns the status of the tool
+	 * @return Returns 0 if executed properly
+	 */
+	public int getStatusCode(){
+<span class="fc" id="L30">		return statusCode;</span>
+	}
+	
+	/**
+	 * Set the status code during or after execution of the tool
+	 * @param statusCode 0 if executed normally. Otherwise, see http://tldp.org/LDP/abs/html/exitcodes.html#EXITCODESREF
+	 */
+	protected void setStatusCode(int statusCode){
+<span class="fc" id="L38">		this.statusCode = statusCode;</span>
+<span class="fc" id="L39">	}</span>
+	
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

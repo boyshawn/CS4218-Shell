@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>IncrementBranchCoverageGrepToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.incrementalcoveragetestcase</a> &gt; <span class="el_source">IncrementBranchCoverageGrepToolTest.java</span></div><h1>IncrementBranchCoverageGrepToolTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.incrementalcoveragetestcase;
+
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.impl.extended1.GrepTool;
+
+<span class="fc" id="L17">public class IncrementBranchCoverageGrepToolTest {</span>
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+<span class="fc" id="L21">	}</span>
+
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L25">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L29">	}</span>
+
+	@Test
+	public void executeOptionANegativeLineCountTest() {
+<span class="fc" id="L33">		String[] args = {&quot;-A&quot;, &quot;-3&quot;, &quot;pattern&quot;, &quot;filePath&quot;};</span>
+<span class="fc" id="L34">		GrepTool grepTool = new GrepTool(args);</span>
+		
+<span class="fc" id="L36">		String actual = grepTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+<span class="fc" id="L37">		String expected = String.format(GrepTool.ERR_MSG_INVALID_CONTEXT_ARG, -3);</span>
+		
+<span class="fc" id="L39">		assertEquals(expected, actual);</span>
+<span class="fc" id="L40">	}</span>
+	
+	@Test
+	public void executeOptionANoFilesArgTest() {
+<span class="fc" id="L44">		String[] args = {&quot;-A&quot;, &quot;3&quot;, &quot;pattern&quot;};</span>
+<span class="fc" id="L45">		GrepTool grepTool = new GrepTool(args);</span>
+		
+<span class="fc" id="L47">		String actual = grepTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+<span class="fc" id="L48">		String expected = String.format(GrepTool.ERR_MSG_INVALID_ARG);</span>
+		
+<span class="fc" id="L50">		assertEquals(expected, actual);</span>
+<span class="fc" id="L51">	}</span>
+	
+	@Test
+	public void executeOptionBNegativeLineCountTest() {
+<span class="fc" id="L55">		String[] args = {&quot;-B&quot;, &quot;-3&quot;, &quot;pattern&quot;, &quot;filePath&quot;};</span>
+<span class="fc" id="L56">		GrepTool grepTool = new GrepTool(args);</span>
+		
+<span class="fc" id="L58">		String actual = grepTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+<span class="fc" id="L59">		String expected = String.format(GrepTool.ERR_MSG_INVALID_CONTEXT_ARG, -3);</span>
+		
+<span class="fc" id="L61">		assertEquals(expected, actual);</span>
+<span class="fc" id="L62">	}</span>
+	
+	@Test
+	public void executeOptionBNoFilesArgTest() {
+<span class="fc" id="L66">		String[] args = {&quot;-B&quot;, &quot;3&quot;, &quot;pattern&quot;};</span>
+<span class="fc" id="L67">		GrepTool grepTool = new GrepTool(args);</span>
+		
+<span class="fc" id="L69">		String actual = grepTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+<span class="fc" id="L70">		String expected = String.format(GrepTool.ERR_MSG_INVALID_ARG);</span>
+		
+<span class="fc" id="L72">		assertEquals(expected, actual);</span>
+<span class="fc" id="L73">	}</span>
+	
+	@Test
+	public void executeOptionBMultipleFilesArgTest() 
+			throws FileNotFoundException, UnsupportedEncodingException {
+<span class="fc" id="L78">		PrintWriter writer1 = new PrintWriter(&quot;filePath1&quot;, &quot;UTF-8&quot;);</span>
+<span class="fc" id="L79">		PrintWriter writer2 = new PrintWriter(&quot;filePath2&quot;, &quot;UTF-8&quot;);</span>
+		
+<span class="fc" id="L81">		String[] args = {&quot;-B&quot;, &quot;3&quot;, &quot;pattern&quot;, &quot;filePath1&quot;, &quot;filePath2&quot;};</span>
+<span class="fc" id="L82">		GrepTool grepTool = new GrepTool(args);</span>
+		
+<span class="fc" id="L84">		String actual = grepTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+<span class="fc" id="L85">		String expected = &quot;&quot;;</span>
+		
+<span class="fc" id="L87">		assertEquals(expected, actual);</span>
+		
+		// Clean up
+<span class="fc" id="L90">		writer1.close();</span>
+<span class="fc" id="L91">		writer2.close();</span>
+		
+<span class="fc" id="L93">		File file1 = new File(&quot;filePath1&quot;);</span>
+<span class="fc" id="L94">		file1.delete();</span>
+<span class="fc" id="L95">		File file2 = new File(&quot;filePath2&quot;);</span>
+<span class="fc" id="L96">		file2.delete();</span>
+<span class="fc" id="L97">	}</span>
+	
+	@Test
+	public void executeOptionCNegativeLineCountTest() {
+<span class="fc" id="L101">		String[] args = {&quot;-C&quot;, &quot;-3&quot;, &quot;pattern&quot;, &quot;filePath&quot;};</span>
+<span class="fc" id="L102">		GrepTool grepTool = new GrepTool(args);</span>
+		
+<span class="fc" id="L104">		String actual = grepTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+<span class="fc" id="L105">		String expected = String.format(GrepTool.ERR_MSG_INVALID_CONTEXT_ARG, -3);</span>
+		
+<span class="fc" id="L107">		assertEquals(expected, actual);</span>
+<span class="fc" id="L108">	}</span>
+	
+	@Test
+	public void executeOptionCNoFilesArgTest() {
+<span class="fc" id="L112">		String[] args = {&quot;-C&quot;, &quot;3&quot;, &quot;pattern&quot;};</span>
+<span class="fc" id="L113">		GrepTool grepTool = new GrepTool(args);</span>
+		
+<span class="fc" id="L115">		String actual = grepTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+<span class="fc" id="L116">		String expected = String.format(GrepTool.ERR_MSG_INVALID_ARG);</span>
+		
+<span class="fc" id="L118">		assertEquals(expected, actual);</span>
+<span class="fc" id="L119">	}</span>
+	
+	@Test
+	public void executeOptionCMultipleFilesArgTest() 
+			throws FileNotFoundException, UnsupportedEncodingException {
+<span class="fc" id="L124">		PrintWriter writer1 = new PrintWriter(&quot;filePath1&quot;, &quot;UTF-8&quot;);</span>
+<span class="fc" id="L125">		PrintWriter writer2 = new PrintWriter(&quot;filePath2&quot;, &quot;UTF-8&quot;);</span>
+		
+<span class="fc" id="L127">		String[] args = {&quot;-C&quot;, &quot;3&quot;, &quot;pattern&quot;, &quot;filePath1&quot;, &quot;filePath2&quot;};</span>
+<span class="fc" id="L128">		GrepTool grepTool = new GrepTool(args);</span>
+		
+<span class="fc" id="L130">		String actual = grepTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+<span class="fc" id="L131">		String expected = &quot;&quot;;</span>
+		
+<span class="fc" id="L133">		assertEquals(expected, actual);</span>
+		
+		// Clean up
+<span class="fc" id="L136">		writer1.close();</span>
+<span class="fc" id="L137">		writer2.close();</span>
+		
+<span class="fc" id="L139">		File file1 = new File(&quot;filePath1&quot;);</span>
+<span class="fc" id="L140">		file1.delete();</span>
+<span class="fc" id="L141">		File file2 = new File(&quot;filePath2&quot;);</span>
+<span class="fc" id="L142">		file2.delete();</span>
+<span class="fc" id="L143">	}</span>
+	
+	@Test
+	public void executeOptionCInvalidNumberTest() {
+<span class="fc" id="L147">		String[] args = {&quot;-C&quot;, &quot;number&quot;, &quot;pattern&quot;};</span>
+<span class="fc" id="L148">		GrepTool grepTool = new GrepTool(args);</span>
+		
+<span class="fc" id="L150">		String actual = grepTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+<span class="fc" id="L151">		String expected = String.format(GrepTool.ERR_MSG_INVALID_CONTEXT_ARG, &quot;number&quot;);</span>
+		
+<span class="fc" id="L153">		assertEquals(expected, actual);</span>
+<span class="fc" id="L154">	}</span>
+	
+	@Test
+	public void executeOptioncNoFilesArgTest() {
+<span class="fc" id="L158">		String[] args = {&quot;-c&quot;, &quot;pattern&quot;};</span>
+<span class="fc" id="L159">		GrepTool grepTool = new GrepTool(args);</span>
+		
+<span class="fc" id="L161">		String actual = grepTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+<span class="fc" id="L162">		String expected = String.format(GrepTool.ERR_MSG_INVALID_ARG);</span>
+		
+<span class="fc" id="L164">		assertEquals(expected, actual);</span>
+<span class="fc" id="L165">	}</span>
+	
+	@Test
+	public void executeOptioncMultipleFilesArgTest() 
+			throws FileNotFoundException, UnsupportedEncodingException {
+<span class="fc" id="L170">		PrintWriter writer1 = new PrintWriter(&quot;filePath1&quot;, &quot;UTF-8&quot;);</span>
+<span class="fc" id="L171">		PrintWriter writer2 = new PrintWriter(&quot;filePath2&quot;, &quot;UTF-8&quot;);</span>
+		
+<span class="fc" id="L173">		String[] args = {&quot;-c&quot;, &quot;pattern&quot;, &quot;filePath1&quot;, &quot;filePath2&quot;};</span>
+<span class="fc" id="L174">		GrepTool grepTool = new GrepTool(args);</span>
+		
+<span class="fc" id="L176">		String actual = grepTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+<span class="fc" id="L177">		String expected = &quot;0&quot; + System.lineSeparator() + &quot;0&quot; + System.lineSeparator();</span>
+		
+<span class="fc" id="L179">		assertEquals(expected, actual);</span>
+		
+		// Clean up
+<span class="fc" id="L182">		writer1.close();</span>
+<span class="fc" id="L183">		writer2.close();</span>
+		
+<span class="fc" id="L185">		File file1 = new File(&quot;filePath1&quot;);</span>
+<span class="fc" id="L186">		file1.delete();</span>
+<span class="fc" id="L187">		File file2 = new File(&quot;filePath2&quot;);</span>
+<span class="fc" id="L188">		file2.delete();</span>
+<span class="fc" id="L189">	}</span>
+	
+	@Test
+	public void executeOptionoNoFilesArgTest() {
+<span class="fc" id="L193">		String[] args = {&quot;-o&quot;, &quot;3&quot;};</span>
+<span class="fc" id="L194">		GrepTool grepTool = new GrepTool(args);</span>
+		
+<span class="fc" id="L196">		String actual = grepTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+<span class="fc" id="L197">		String expected = String.format(GrepTool.ERR_MSG_INVALID_ARG);</span>
+		
+<span class="fc" id="L199">		assertEquals(expected, actual);</span>
+<span class="fc" id="L200">	}</span>
+	
+	@Test
+	public void executeOptionoMultipleFilesArgTest() 
+			throws FileNotFoundException, UnsupportedEncodingException {
+<span class="fc" id="L205">		PrintWriter writer1 = new PrintWriter(&quot;filePath1&quot;, &quot;UTF-8&quot;);</span>
+<span class="fc" id="L206">		PrintWriter writer2 = new PrintWriter(&quot;filePath2&quot;, &quot;UTF-8&quot;);</span>
+		
+<span class="fc" id="L208">		String[] args = {&quot;-o&quot;, &quot;pattern&quot;, &quot;filePath1&quot;, &quot;filePath2&quot;};</span>
+<span class="fc" id="L209">		GrepTool grepTool = new GrepTool(args);</span>
+		
+<span class="fc" id="L211">		String actual = grepTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+<span class="fc" id="L212">		String expected = &quot;&quot;;</span>
+		
+<span class="fc" id="L214">		assertEquals(expected, actual);</span>
+		
+		// Clean up
+<span class="fc" id="L217">		writer1.close();</span>
+<span class="fc" id="L218">		writer2.close();</span>
+		
+<span class="fc" id="L220">		File file1 = new File(&quot;filePath1&quot;);</span>
+<span class="fc" id="L221">		file1.delete();</span>
+<span class="fc" id="L222">		File file2 = new File(&quot;filePath2&quot;);</span>
+<span class="fc" id="L223">		file2.delete();</span>
+<span class="fc" id="L224">	}</span>
+	
+	@Test
+	public void executeOptionvNoFilesArgTest() {
+<span class="fc" id="L228">		String[] args = {&quot;-v&quot;, &quot;3&quot;};</span>
+<span class="fc" id="L229">		GrepTool grepTool = new GrepTool(args);</span>
+		
+<span class="fc" id="L231">		String actual = grepTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+<span class="fc" id="L232">		String expected = String.format(GrepTool.ERR_MSG_INVALID_ARG);</span>
+		
+<span class="fc" id="L234">		assertEquals(expected, actual);</span>
+<span class="fc" id="L235">	}</span>
+	
+	@Test
+	public void executeOptionvMultipleFilesArgTest() 
+			throws FileNotFoundException, UnsupportedEncodingException {
+<span class="fc" id="L240">		PrintWriter writer1 = new PrintWriter(&quot;filePath1&quot;, &quot;UTF-8&quot;);</span>
+<span class="fc" id="L241">		PrintWriter writer2 = new PrintWriter(&quot;filePath2&quot;, &quot;UTF-8&quot;);</span>
+		
+<span class="fc" id="L243">		String[] args = {&quot;-v&quot;, &quot;pattern&quot;, &quot;filePath1&quot;, &quot;filePath2&quot;};</span>
+<span class="fc" id="L244">		GrepTool grepTool = new GrepTool(args);</span>
+		
+<span class="fc" id="L246">		String actual = grepTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+<span class="fc" id="L247">		String expected = &quot;&quot;;</span>
+		
+<span class="fc" id="L249">		assertEquals(expected, actual);</span>
+		
+		// Clean up
+<span class="fc" id="L252">		writer1.close();</span>
+<span class="fc" id="L253">		writer2.close();</span>
+		
+<span class="fc" id="L255">		File file1 = new File(&quot;filePath1&quot;);</span>
+<span class="fc" id="L256">		file1.delete();</span>
+<span class="fc" id="L257">		File file2 = new File(&quot;filePath2&quot;);</span>
+<span class="fc" id="L258">		file2.delete();</span>
+<span class="fc" id="L259">	}</span>
+	
+	@Test
+	public void getLinesNullInputTest() {
+<span class="fc" id="L263">		String[] actual = GrepTool.getLines(null);</span>
+<span class="fc" id="L264">		assertEquals(actual.length, 0);</span>
+<span class="fc" id="L265">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

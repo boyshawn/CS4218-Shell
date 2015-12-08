@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>MoveTool.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">src</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.fileutils</a> &gt; <span class="el_source">MoveTool.java</span></div><h1>MoveTool.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.fileutils;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+
+import sg.edu.nus.comp.cs4218.fileutils.IMoveTool;
+import sg.edu.nus.comp.cs4218.impl.ATool;
+
+public class MoveTool extends ATool implements IMoveTool {
+	// Constants
+<span class="fc" id="L11">	private final int FILE_NOT_FOUND = 1;</span>
+<span class="fc" id="L12">	private final int FILE_MOVED = 0;</span>
+<span class="fc" id="L13">	private final int MISSING_ARGS = -1;</span>
+<span class="fc" id="L14">	private final int MISSING_DEST = -2;</span>
+<span class="fc" id="L15">	private final int NOT_A_DIRECTORY = -3;</span>
+
+	// Variables
+	private String fileNotFound;;
+
+	// Constructor
+	/**
+	 * Creates a new MoveTool instance.
+	 * 
+	 * @param arguments
+	 *            This represents the arguments passed to the command for
+	 *            execution.
+	 */
+	public MoveTool(String[] arguments) {
+<span class="fc" id="L29">		super(arguments);</span>
+		// TODO Auto-generated constructor stub
+<span class="fc" id="L31">		this.fileNotFound = &quot;&quot;;</span>
+<span class="fc" id="L32">	}</span>
+
+	/**
+	 * Moves/Renames the Source File/Directory (from) to its new Destination
+	 * File/Directory (to) and sets the command's execution statusCode to 0 if
+	 * the move/rename was successful.
+	 * 
+	 * Else, a FileNotFoundException would be thrown if the Source
+	 * File/Directory is not found and the statusCode would be set to 1.
+	 * 
+	 * @param from
+	 *            Source File/Directory.
+	 * 
+	 * @param to
+	 *            Destination File/Directory.
+	 * 
+	 * @return true if the file/directory was moved/renamed successfully, else
+	 *         false.
+	 * 
+	 */
+	@Override
+	public boolean move(File from, File to) {
+		// TODO Auto-generated method stub
+
+		try {
+<span class="fc bfc" id="L57" title="All 2 branches covered.">			if (from.exists()) {				</span>
+<span class="fc" id="L58">				from.renameTo(new File(to.toString()));	</span>
+				
+<span class="fc" id="L60">				setStatusCode(FILE_MOVED);</span>
+<span class="fc" id="L61">				return true;</span>
+				
+				
+			} else {
+<span class="fc" id="L65">				throw new FileNotFoundException();</span>
+			}
+<span class="fc" id="L67">		} catch (FileNotFoundException fNotFound) {</span>
+<span class="fc" id="L68">			this.fileNotFound = from.getName();</span>
+<span class="fc" id="L69">			setStatusCode(FILE_NOT_FOUND);</span>
+		}
+
+<span class="fc" id="L72">		return false;</span>
+	}
+
+	/**
+	 * Executes the tool with the arguments specified in the constructor.
+	 * 
+	 * @param workingDir
+	 *            The current working directory path.
+	 * 
+	 * @param stdin
+	 *            The default input that the user enters if &quot;-&quot; was specified as
+	 *            the sole argument in the command's argument.
+	 * 
+	 * @return The appropriate message to be displayed on the shell. An empty
+	 *         message would be returned if the executed command returns no
+	 *         errors.
+	 * 
+	 */
+	@Override
+	public String execute(File workingDir, String stdin) {
+		// TODO Auto-generated method stub
+<span class="pc bpc" id="L93" title="1 of 4 branches missed.">		if (args == null || args.length == 0) {</span>
+<span class="fc" id="L94">			setStatusCode(MISSING_ARGS);</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">		} else if (args.length == 1) {</span>
+<span class="fc" id="L96">			setStatusCode(MISSING_DEST);</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">		} else if (args.length &gt; 2) {</span>
+<span class="fc" id="L98">			String returnMessage = &quot;&quot;;</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">			if (isDirectory(args[args.length - 1])) {</span>
+<span class="fc" id="L100">				returnMessage = moveMultipleFiles(workingDir);</span>
+<span class="fc" id="L101">				return returnMessage.trim();</span>
+			} else {
+<span class="fc" id="L103">				setStatusCode(NOT_A_DIRECTORY);</span>
+			}
+<span class="fc" id="L105">		} else {</span>
+<span class="fc" id="L106">			move(createFileObject(args[0], workingDir),</span>
+<span class="fc" id="L107">					createFileObject(args[1], workingDir));</span>
+		}
+
+<span class="fc" id="L110">		return getReturnMessage(getStatusCode()).trim();</span>
+	}
+
+	/**
+	 * Checks the current statusCode of the executed command and returns the
+	 * appropriate message.
+	 * 
+	 * @return The appropriate message to be displayed on the shell. Null would
+	 *         be returned if the statusCode is not found within any of the
+	 *         cases.
+	 * 
+	 */
+	public String getReturnMessage(int statusCode) {
+
+<span class="pc bpc" id="L124" title="1 of 6 branches missed.">		switch (statusCode) {</span>
+		case FILE_MOVED:
+<span class="fc" id="L126">			return System.lineSeparator();</span>
+		case MISSING_ARGS:
+<span class="fc" id="L128">			return &quot;move: missing file operand&quot;;</span>
+		case MISSING_DEST:
+<span class="fc" id="L130">			return &quot;move: missing destination file operand after '&quot; + args[0]</span>
+<span class="fc" id="L131">					+ &quot;'&quot;;</span>
+		case FILE_NOT_FOUND:
+<span class="fc" id="L133">			return &quot;move: '&quot; + this.fileNotFound</span>
+<span class="fc" id="L134">					+ &quot;': No such file or directory&quot; + System.lineSeparator();</span>
+		case NOT_A_DIRECTORY:
+<span class="fc" id="L136">			return &quot;move: target '&quot; + args[args.length - 1]</span>
+<span class="fc" id="L137">					+ &quot;' is not a directory&quot;;</span>
+		default:
+			break;
+		}
+
+<span class="nc" id="L142">		return null;</span>
+
+	}
+
+	/**
+	 * Creates a file object to passed to the move method. If the file specified
+	 * in the parameter (argument) exists within the current working directory,
+	 * the argument would be concatenated with the current working directory's
+	 * path, else just the argument would be used to create the file object.
+	 * 
+	 * @param argument
+	 *            The file/directory path
+	 * 
+	 * @param workingDir
+	 *            The current working directory path
+	 * 
+	 * @return a file object pointing to the specified path.
+	 * 
+	 */
+	public File createFileObject(String argument, File workingDir) {
+
+<span class="fc" id="L163">		File fileObj = null;</span>
+<span class="fc" id="L164">		final boolean fileInWorkingDir = new File(workingDir, argument)</span>
+<span class="fc" id="L165">				.exists();</span>
+
+<span class="fc bfc" id="L167" title="All 2 branches covered.">		if (!fileInWorkingDir) {</span>
+<span class="fc" id="L168">			fileObj = new File(argument);</span>
+<span class="fc" id="L169">		} else {</span>
+<span class="fc" id="L170">			fileObj = new File(workingDir.toString() + File.separator + argument);</span>
+		}
+
+<span class="fc" id="L173">		return fileObj;</span>
+	}
+
+	/**
+	 * Checks if the argument specified is a directory.
+	 * 
+	 * @param The
+	 *            file/directory path.
+	 * 
+	 * @return true if the argument is a directory, else false.
+	 * 
+	 */
+	public boolean isDirectory(String argument) {
+
+<span class="fc" id="L187">		final File dir = new File(argument);</span>
+
+<span class="fc bfc" id="L189" title="All 2 branches covered.">		if (dir.isDirectory()) {</span>
+<span class="fc" id="L190">			return true;</span>
+		}
+
+<span class="fc" id="L193">		return false;</span>
+	}
+
+	/**
+	 * Method to move multiple files to a directory. For every invocation of the
+	 * move method, the appropriate return message would be concatenated.
+	 * 
+	 * @param workingDir
+	 *            The current working directory path.
+	 * 
+	 * @return the concatenated return message.
+	 * 
+	 */
+	public String moveMultipleFiles(File workingDir) {
+
+<span class="fc" id="L208">		StringBuilder sb = new StringBuilder();</span>
+
+<span class="fc" id="L210">		int start = 0;</span>
+<span class="fc" id="L211">		final int end = args.length - 2;</span>
+
+<span class="fc bfc" id="L213" title="All 2 branches covered.">		while (start &lt;= end) {</span>
+<span class="fc" id="L214">			move(createFileObject(args[start], workingDir),</span>
+<span class="fc" id="L215">					createFileObject(args[args.length - 1], workingDir));</span>
+<span class="fc" id="L216">			sb.append(getReturnMessage(getStatusCode()));</span>
+<span class="fc" id="L217">			start++;</span>
+		}
+
+<span class="fc" id="L220">		return sb.toString();</span>
+
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

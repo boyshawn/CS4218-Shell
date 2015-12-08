@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>IncrementBranchCoverageMoveToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.incrementalcoveragetestcase</a> &gt; <span class="el_source">IncrementBranchCoverageMoveToolTest.java</span></div><h1>IncrementBranchCoverageMoveToolTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.incrementalcoveragetestcase;
+
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.fileutils.IMoveTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.MoveTool;
+
+<span class="fc" id="L16">public class IncrementBranchCoverageMoveToolTest {</span>
+	// Variables
+	private IMoveTool moveTool;
+	private File workingDir;
+	private File sourceDir;
+	private File destDir;
+
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L25">		this.moveTool = new MoveTool(null);</span>
+<span class="fc" id="L26">		this.workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+<span class="fc" id="L27">		this.sourceDir = createDir(&quot;_source_dir&quot;);</span>
+<span class="fc" id="L28">		this.destDir = createDir(&quot;destdir&quot;);</span>
+<span class="fc" id="L29">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L33">		this.moveTool = null;</span>
+
+<span class="fc" id="L35">		this.removeFiles(this.sourceDir);</span>
+<span class="fc" id="L36">		this.removeFiles(this.destDir);</span>
+<span class="fc" id="L37">		this.sourceDir.delete();</span>
+<span class="fc" id="L38">		this.destDir.delete();</span>
+
+<span class="fc" id="L40">		this.workingDir = null;</span>
+<span class="fc" id="L41">		this.sourceDir = null;</span>
+<span class="fc" id="L42">		this.destDir = null;</span>
+<span class="fc" id="L43">	}</span>
+
+	@Test
+	public void execute_NullArgumentsTest() throws IOException {
+
+<span class="fc" id="L48">		this.moveTool = new MoveTool(null);</span>
+<span class="fc" id="L49">		String returnMessage = this.moveTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L51">		assertEquals(this.moveTool.getStatusCode(), -1);</span>
+<span class="fc" id="L52">		assertEquals(&quot;move: missing file operand&quot;, returnMessage);</span>
+
+<span class="fc" id="L54">	}</span>
+
+	@Test
+	public void execute_FileAlreadyExists_FileToFileTest() throws IOException {
+
+<span class="fc" id="L59">		File from = File.createTempFile(&quot;fileAreadyExists1&quot;, &quot;.txt&quot;,</span>
+<span class="fc" id="L60">				this.sourceDir);</span>
+<span class="fc" id="L61">		String[] args = { from.toString(), from.toString() };</span>
+
+<span class="fc" id="L63">		this.moveTool = new MoveTool(args);</span>
+<span class="fc" id="L64">		String returnMessage = this.moveTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L66">		assertEquals(2, this.moveTool.getStatusCode());</span>
+<span class="fc" id="L67">		assertEquals(&quot;move: '&quot; + from.getName() + &quot;': File already exists&quot;,</span>
+<span class="fc" id="L68">				returnMessage);</span>
+<span class="fc" id="L69">	}</span>
+
+	// Helper Functions
+	private void removeFiles(File directory) throws IOException {
+
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">		if (directory.listFiles() != null) {</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">			for (File f : directory.listFiles()) {</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">				if (f.isDirectory()) {</span>
+<span class="nc" id="L77">					removeFiles(f);</span>
+				}
+
+<span class="fc" id="L80">				f.delete();</span>
+			}
+		}
+<span class="fc" id="L83">	}</span>
+
+	private File createDir(String path) {
+<span class="fc" id="L86">		File dir = new File(path);</span>
+		try {
+<span class="fc" id="L88">			Files.createDirectories(dir.toPath());</span>
+<span class="pc" id="L89">		} catch (IOException e) {</span>
+<span class="nc" id="L90">			e.printStackTrace();</span>
+		}
+<span class="fc" id="L92">		return dir;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

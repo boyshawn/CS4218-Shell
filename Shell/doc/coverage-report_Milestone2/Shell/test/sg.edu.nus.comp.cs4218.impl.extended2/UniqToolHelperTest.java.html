@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>UniqToolHelperTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.extended2</a> &gt; <span class="el_source">UniqToolHelperTest.java</span></div><h1>UniqToolHelperTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.extended2;
+
+import static org.junit.Assert.assertEquals;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+<span class="fc" id="L9">public class UniqToolHelperTest {</span>
+	
+<span class="fc" id="L11">	UniqTool uniqTool = new UniqTool();</span>
+	
+	@Before
+	public void before() {
+<span class="fc" id="L15">		uniqTool = new UniqTool(null);</span>
+<span class="fc" id="L16">	}</span>
+
+	@After
+	public void after() {
+<span class="fc" id="L20">		uniqTool = null;</span>
+<span class="fc" id="L21">	}</span>
+
+	/**
+	 * Positive test 
+	 * getStringAfterSkippingFields() with valid args
+	 */
+	@Test
+	public void getStringAfterSkippingFieldsTest() {
+<span class="fc" id="L29">		String line = &quot;Who let the dogs out!&quot;;</span>
+<span class="fc" id="L30">		int fieldCount = 2;</span>
+
+<span class="fc" id="L32">		String expected = &quot;the dogs out!&quot;;</span>
+<span class="fc" id="L33">		assertEquals(expected,</span>
+<span class="fc" id="L34">				uniqTool.getStringAfterSkippingFields(line, fieldCount));</span>
+<span class="fc" id="L35">	}</span>
+	
+	/**
+	 * Negative test 
+	 * getStringAfterSkippingFields() with line = null
+	 */
+	@Test
+	public void getStringAfterSkippingFieldsNullLineTest() {
+<span class="fc" id="L43">		String expected = null;</span>
+<span class="fc" id="L44">		assertEquals(expected,</span>
+<span class="fc" id="L45">				uniqTool.getStringAfterSkippingFields(null, 1));</span>
+<span class="fc" id="L46">	}</span>
+	
+	/**
+	 * Negative test 
+	 * getStringAfterSkippingFields() with fieldCount &gt; total fields in line
+	 */
+	@Test
+	public void getStringAfterSkippingFieldsTooHighFieldCountTest() {
+<span class="fc" id="L54">		String line = &quot;Who let the dogs out!&quot;;</span>
+<span class="fc" id="L55">		int fieldCount = 10;</span>
+
+<span class="fc" id="L57">		String expected = null;</span>
+<span class="fc" id="L58">		assertEquals(expected,</span>
+<span class="fc" id="L59">				uniqTool.getStringAfterSkippingFields(line, fieldCount));</span>
+<span class="fc" id="L60">	}</span>
+	
+	/**
+	 * Negative test 
+	 * getStringAfterSkippingFields() with -ve fieldCount
+	 */
+	@Test
+	public void getStringAfterSkippingFieldsNegativeFieldCountTest() {
+<span class="fc" id="L68">		String line = &quot;Who let the dogs out!&quot;;</span>
+<span class="fc" id="L69">		int fieldCount = -1;</span>
+
+<span class="fc" id="L71">		String expected = line;</span>
+<span class="fc" id="L72">		assertEquals(expected,</span>
+<span class="fc" id="L73">				uniqTool.getStringAfterSkippingFields(line, fieldCount));</span>
+<span class="fc" id="L74">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>InteractionTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.integrationtest</a> &gt; <span class="el_source">InteractionTest.java</span></div><h1>InteractionTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.integrationtest;
+
+import static org.junit.Assert.assertEquals;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.util.Vector;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.impl.Shell;
+
+<span class="fc" id="L16">public class InteractionTest {</span>
+
+	private File file1, file2, emptyFile, dir;
+	private String userDir;
+	
+	@Before
+	public void setUp() throws Exception {
+		
+		// create files with content
+<span class="fc" id="L25">		createFile1();</span>
+<span class="fc" id="L26">		createFile2();</span>
+<span class="fc" id="L27">		createEmptyFile();</span>
+		
+		// create directory
+<span class="fc" id="L30">		dir = new File(&quot;dir&quot;);</span>
+<span class="fc" id="L31">		dir.mkdir();</span>
+		
+<span class="fc" id="L33">		userDir = System.getProperty(&quot;user.dir&quot;);</span>
+<span class="fc" id="L34">	}</span>
+	
+	private void createFile1() throws Exception {
+		BufferedWriter bw;
+		String content;
+		
+<span class="fc" id="L40">		file1 = new File(&quot;file1&quot;);</span>
+<span class="fc" id="L41">		file1.createNewFile();</span>
+	
+<span class="fc" id="L43">		content = &quot;this is file1 used for testing&quot;+System.lineSeparator();</span>
+<span class="fc" id="L44">		content += &quot;there are 5 lines in this file&quot; + System.lineSeparator();</span>
+<span class="fc" id="L45">		content += &quot;this is the 3rd line&quot; + System.lineSeparator();</span>
+<span class="fc" id="L46">		content += &quot;this is the 4th line&quot; + System.lineSeparator();</span>
+<span class="fc" id="L47">		content += &quot;this is the 5th line&quot;;</span>
+		
+<span class="fc" id="L49">		bw = new BufferedWriter(new FileWriter(file1));</span>
+<span class="fc" id="L50">		bw.write(content);</span>
+<span class="fc" id="L51">		bw.close();</span>
+<span class="fc" id="L52">	}</span>
+	
+	private void createFile2() throws Exception {
+		BufferedWriter bw;
+		String content;
+		
+<span class="fc" id="L58">		file2 = new File(&quot;file2&quot;);</span>
+<span class="fc" id="L59">		file2.createNewFile();</span>
+<span class="fc" id="L60">		content = &quot;this is file2 used for testing&quot;+System.lineSeparator();</span>
+<span class="fc" id="L61">		content += &quot;testing testing 1 2 3&quot;+System.lineSeparator();</span>
+<span class="fc" id="L62">		content += &quot;	???	&quot;+System.lineSeparator()+System.lineSeparator();</span>
+		
+<span class="fc" id="L64">		bw = new BufferedWriter(new FileWriter(file2));</span>
+<span class="fc" id="L65">		bw.write(content);</span>
+<span class="fc" id="L66">		bw.close();</span>
+<span class="fc" id="L67">	}</span>
+	
+	private void createEmptyFile() throws Exception {
+<span class="fc" id="L70">		emptyFile = new File(&quot;emptyFile&quot;);</span>
+<span class="fc" id="L71">		emptyFile.createNewFile();</span>
+<span class="fc" id="L72">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L76">		file1.delete();</span>
+<span class="fc" id="L77">		file2.delete();</span>
+<span class="fc" id="L78">		emptyFile.delete();</span>
+<span class="fc" id="L79">		dir.delete();</span>
+<span class="fc" id="L80">	}</span>
+	
+	@After
+	public void after() {
+<span class="fc" id="L84">		System.setProperty(&quot;user.dir&quot;,userDir);</span>
+<span class="fc" id="L85">	}</span>
+	
+	/**
+	 * Chains of interactions where piping of commands that gives an output and/or takes in standard input
+	 * 
+	 * grep, cut, paste, uniq, wc, cat are tested with its output pipe to a command that requires a
+	 * standard input as well as taking in a standard input of another command's output.
+	 * 
+	 * pwd, echo, ls, sort, comm are tested with its output pipe to a command that requires a 
+	 * standard input.
+	 */
+	
+	@Test
+	public void integrateWithPipe_GrepFilesUniqWcStdin_GetStatusCode0() {
+		// grep files
+		// uniq, wc with standard input
+		
+<span class="fc" id="L102">		String commandline = &quot;grep -A 5 test file1 file2 | &quot;</span>
+						   + &quot;uniq - | &quot;
+						   + &quot;wc -l &quot;;
+		
+<span class="fc" id="L106">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L107">		assertEquals(0, Integer.parseInt(results.elementAt(1)));</span>
+<span class="fc" id="L108">	}</span>
+	
+	@Test
+	public void integrateWithPipe_CutFilesGrepPasteWcStdin_GetStatusCode0() {
+		// cut files
+		// grep, paste, wc with standard input
+		
+<span class="fc" id="L115">		String commandline = &quot;cut -c 1-10,15-20 file1 file2 | &quot;</span>
+						   + &quot;grep -A 5 test - | &quot;
+						   + &quot;paste -d \t | &quot;
+						   + &quot;wc -m -&quot;;
+	
+<span class="fc" id="L120">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L121">		assertEquals(0, Integer.parseInt(results.elementAt(1)));</span>
+<span class="fc" id="L122">	}</span>
+	
+	@Test
+	public void integrateWithPipe_PasteFilesCutGrepStdin_GetStatusCode0() {
+		// paste files
+		// cut, grep with standard input
+		
+<span class="fc" id="L129">		String commandline = &quot;paste -s file1 file2 |&quot;</span>
+						   + &quot;cut -c 1-10,15-20 -|&quot;
+						   + &quot;grep -C 3 test &quot;;
+	
+<span class="fc" id="L133">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L134">		assertEquals(0, Integer.parseInt(results.elementAt(1)));</span>
+<span class="fc" id="L135">	}</span>
+	
+	@Test
+	public void integrateWithPipe_UniqFilesCatWcStdin_GetStatusCode0() {
+		// uniq files
+		// wc, cat with standard input
+		
+<span class="fc" id="L142">		String commandline = &quot;uniq -f 1 file1 file2 | wc -m - | cat -&quot;;</span>
+	
+<span class="fc" id="L144">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L145">		assertEquals(0, Integer.parseInt(results.elementAt(1)));</span>
+<span class="fc" id="L146">	}</span>
+	
+	@Test
+	public void integrateWithPipe_WcFilesGrepCatStdin_GetStatusCode0() {
+		// wc files
+		// grep, cat with standard input
+		
+<span class="fc" id="L153">		String commandline = &quot;wc emptyFile file2 | &quot;</span>
+						   + &quot;grep file1 - |&quot;
+						   + &quot;cat&quot;;
+	
+<span class="fc" id="L157">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L158">		assertEquals(0, Integer.parseInt(results.elementAt(1)));</span>
+<span class="fc" id="L159">	}</span>
+	
+	@Test
+	public void integrateWithPipe_CatFileUniqGrepWcStdin_GetStatusCode0() {
+		// cat file
+		// uniq, grep, wc standard input
+		
+<span class="fc" id="L166">		String commandline = &quot;cat file1 | uniq -i | grep \&quot;a\&quot; - | wc -l -&quot;;</span>
+	
+<span class="fc" id="L168">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L169">		assertEquals(0, Integer.parseInt(results.elementAt(1)));</span>
+<span class="fc" id="L170">	}</span>
+	
+	@Test
+	public void integrateWithPipe_PwdOutputCatCutPasteStdin_GetStatusCode0() {
+		// pwd output
+		// cat, cut, paste standard input
+		
+<span class="fc" id="L177">		String commandline = &quot;pwd| cat | cut -c 1,2,3,4,10-13 - | paste -d =+!&quot;;</span>
+	
+<span class="fc" id="L179">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L180">		assertEquals(0, Integer.parseInt(results.elementAt(1)));</span>
+<span class="fc" id="L181">	}</span>
+	
+	@Test
+	public void integrateWithPipe_EchoOutputCutWcUniqStdin_GetStatusCode0() {
+		// echo output
+		// cut, wc, uniq standard input
+		
+<span class="fc" id="L188">		String commandline = &quot;echo \&quot;testing 1 2 3\&quot; | cut -c 1-6,10 | wc -m | uniq -f 3 &quot;;</span>
+	
+<span class="fc" id="L190">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L191">		assertEquals(0, Integer.parseInt(results.elementAt(1)));</span>
+<span class="fc" id="L192">	}</span>
+	
+	@Test
+	public void integrateWithPipe_LsOutputCatCutStdin_GetStatusCode0() {
+		// ls output
+		// cat, cut standard input
+		
+<span class="fc" id="L199">		String commandline = &quot;ls file1 | cat - | cut -c 3-5&quot;;</span>
+	
+<span class="fc" id="L201">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L202">		assertEquals(0, Integer.parseInt(results.elementAt(1)));</span>
+<span class="fc" id="L203">	}</span>
+	
+	@Test
+	public void integrateWithPipe_SortFileUniqCutStdin_GetStatusCode0() {
+		// sort file
+		// uniq, cut standard input
+		
+<span class="fc" id="L210">		String commandline = &quot;sort file1 file2 | uniq -f 1 | cut -d \&quot;*\&quot; -f 9,2-5,4&quot;;</span>
+	
+<span class="fc" id="L212">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L213">		assertEquals(0, Integer.parseInt(results.elementAt(1)));</span>
+<span class="fc" id="L214">	}</span>
+	
+	@Test
+	public void integrateWithPipe_CommFilesCatPasteStdin_GetStatusCode0() {
+		// comm files
+		// cat, paste standard input
+		
+<span class="fc" id="L221">		String commandline = &quot;comm -c file1 file2 | cat - | paste -s &quot;;</span>
+	
+<span class="fc" id="L223">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L224">		assertEquals(0, Integer.parseInt(results.elementAt(1)));</span>
+<span class="fc" id="L225">	}</span>
+	
+	/**
+	 * Negative scenarios where one utility returns an error
+	 * The error does not include the error when parsing a command line by the shell
+	 * (such as invalid option format for a particular command type).
+	 * Instead, the error is usually whereby a file does not exist 
+	 * (i.e. it is a valid command but there is no such file that can be read from)
+	 */
+	@Test
+	public void integrateWithPipe_GrepError_GetStatusCode1() {
+		// grep file does not exist
+<span class="fc" id="L237">		String commandline = &quot;grep -A 3 abc file | cat - | paste -s &quot;;</span>
+	
+<span class="fc" id="L239">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L240">		assertEquals(1, Integer.parseInt(results.elementAt(1)));</span>
+<span class="fc" id="L241">	}</span>
+	
+	@Test
+	public void integrateWithPipe_CutError_GetStatusCode1() {
+		// cut file does not exist
+<span class="fc" id="L246">		String commandline = &quot;cat emptyFile | cut -c 15-20 file | paste -s &quot;;</span>
+	
+<span class="fc" id="L248">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L249">		assertEquals(1, Integer.parseInt(results.elementAt(1)));</span>
+<span class="fc" id="L250">	}</span>
+	
+	@Test
+	public void integrateWithPipe_PasteError_GetStatusCode1() {
+		// paste file does not exist
+<span class="fc" id="L255">		String commandline = &quot;cut -c 1-10,15-20 file1 file2 | &quot;</span>
+				   + &quot;grep -A 5 test - | &quot;
+				   + &quot;paste file | &quot;
+				   + &quot;wc -m -&quot;;
+	
+<span class="fc" id="L260">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L261">		assertEquals(1, Integer.parseInt(results.elementAt(1)));</span>
+<span class="fc" id="L262">	}</span>
+	
+	@Test
+	public void integrateWithPipe_UniqError_GetStatusCode1() {
+		// uniq file does not exist
+<span class="fc" id="L267">		String commandline = &quot;cat file1 | uniq -f 12 file | grep \&quot;a\&quot; - | wc -l -&quot;;</span>
+	
+<span class="fc" id="L269">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L270">		assertEquals(1, Integer.parseInt(results.elementAt(1)));</span>
+<span class="fc" id="L271">	}</span>
+	
+	@Test
+	public void integrateWithPipe_WcError_GetStatusCode1() {
+		// wc standard input expected
+<span class="fc" id="L276">		String commandline = &quot;wc -l | cat file1 | uniq -i | grep \&quot;a\&quot; -&quot;;</span>
+	
+<span class="fc" id="L278">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L279">		assertEquals(1, Integer.parseInt(results.elementAt(1)));</span>
+
+<span class="fc" id="L281">	}</span>
+	
+	@Test
+	public void integrateWithPipe_CatError_GetStatusCode1() {
+		// cat file does not exist
+<span class="fc" id="L286">		String commandline = &quot;wc emptyFile file2 | &quot;</span>
+				   + &quot;grep file1 - |&quot;
+				   + &quot;cat file&quot;;
+	
+<span class="fc" id="L290">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L291">		assertEquals(1, Integer.parseInt(results.elementAt(1)));</span>
+<span class="fc" id="L292">	}</span>
+	
+	@Test
+	public void integrateWithPipe_LsError_GetStatusCode1() {
+		// ls invalid directory
+<span class="fc" id="L297">		String commandline = &quot;ls invalidDir | cat - | cut -c 3-5&quot;;</span>
+	
+<span class="fc" id="L299">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L300">		assertEquals(1, Integer.parseInt(results.elementAt(1)));</span>
+
+<span class="fc" id="L302">	}</span>
+	
+	@Test
+	public void integrateWithPipe_SortError_GetStatusCode1() {
+		// sort file does not exist
+<span class="fc" id="L307">		file2.setReadable(false);</span>
+<span class="fc" id="L308">		String commandline = &quot;sort file1 file | uniq -f 1 | cut -d + -f 9,2-5,4&quot;;</span>
+	
+<span class="fc" id="L310">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L311">		assertEquals(1, Integer.parseInt(results.elementAt(1)));</span>
+
+<span class="fc" id="L313">		file2.setReadable(true);</span>
+<span class="fc" id="L314">	}</span>
+	
+	@Test
+	public void integrateWithPipe_CommError_GetStatusCode1() {
+		// comm file does not exist
+<span class="fc" id="L319">		String commandline = &quot;comm -c file file2 | cat - | paste -s &quot;;</span>
+	
+<span class="fc" id="L321">		Vector&lt;String&gt; results = Shell.shellTestExecution(commandline);</span>
+<span class="fc" id="L322">		assertEquals(1, Integer.parseInt(results.elementAt(1)));</span>
+<span class="fc" id="L323">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

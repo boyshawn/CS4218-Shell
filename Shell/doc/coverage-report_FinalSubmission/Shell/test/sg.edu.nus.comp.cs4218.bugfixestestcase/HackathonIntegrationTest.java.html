@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>HackathonIntegrationTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.bugfixestestcase</a> &gt; <span class="el_source">HackathonIntegrationTest.java</span></div><h1>HackathonIntegrationTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.bugfixestestcase;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+import sg.edu.nus.comp.cs4218.ITool;
+import sg.edu.nus.comp.cs4218.impl.Shell;
+
+<span class="fc" id="L18">public class HackathonIntegrationTest {</span>
+<span class="fc" id="L19">	public TemporaryFolder folder = new TemporaryFolder();</span>
+	private File testFile;
+	private File testFile2;
+	private File testFile3;
+	private File testDir;
+	private Shell shell;
+	private static File workingDir;
+	private String currUserDir;
+	
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L30">		shell = new Shell();</span>
+<span class="fc" id="L31">		testDir = new File(&quot;testFolder&quot;);</span>
+<span class="fc" id="L32">		workingDir = new File(testDir.getAbsolutePath());</span>
+<span class="fc" id="L33">        testDir.mkdir();</span>
+        
+        // create new file with text
+<span class="fc" id="L36">        testFile = new File(testDir, &quot;test.txt&quot;);</span>
+<span class="fc" id="L37">        testFile.createNewFile();</span>
+<span class="fc" id="L38">        FileWriter fw = new FileWriter(testFile.getAbsoluteFile());</span>
+<span class="fc" id="L39">        BufferedWriter bw = new BufferedWriter(fw);</span>
+<span class="fc" id="L40">        StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L41">        sb.append(&quot;beforeBeforeBeforeApp\n&quot;);</span>
+<span class="fc" id="L42">		sb.append(&quot;beforeBeforeApp\n&quot;);</span>
+<span class="fc" id="L43">		sb.append(&quot;beforeApp\n&quot;);</span>
+<span class="fc" id="L44">		sb.append(&quot;apple\n&quot;);</span>
+<span class="fc" id="L45">		sb.append(&quot;mid\n&quot;);</span>
+<span class="fc" id="L46">		sb.append(&quot;apple\n&quot;);</span>
+<span class="fc" id="L47">		sb.append(&quot;afterApp\n&quot;);</span>
+<span class="fc" id="L48">		sb.append(&quot;afterAfterApp\n&quot;);</span>
+<span class="fc" id="L49">		sb.append(&quot;afterAfterAfterApp\n&quot;);</span>
+<span class="fc" id="L50">		sb.append(&quot;afterAfterAfterAfterApp\n&quot;);</span>
+<span class="fc" id="L51">		bw.write(sb.toString());</span>
+<span class="fc" id="L52">        bw.close();</span>
+        
+<span class="fc" id="L54">		testFile2 = new File(testDir, &quot;test2.txt&quot;);</span>
+<span class="fc" id="L55">        testFile2.createNewFile();</span>
+<span class="fc" id="L56">        FileWriter fw2 = new FileWriter(testFile2.getAbsoluteFile());</span>
+<span class="fc" id="L57">        BufferedWriter bw2 = new BufferedWriter(fw2);</span>
+<span class="fc" id="L58">        StringBuilder sb2 = new StringBuilder();</span>
+<span class="fc" id="L59">		sb2.append(&quot;banana\n&quot;);</span>
+<span class="fc" id="L60">		sb2.append(&quot;bananas\n&quot;);</span>
+<span class="fc" id="L61">		bw2.write(sb2.toString());</span>
+<span class="fc" id="L62">        bw2.close();</span>
+        
+<span class="fc" id="L64">        testFile3 = new File(testDir, &quot;test3.txt&quot;);</span>
+<span class="fc" id="L65">        testFile3.createNewFile();</span>
+<span class="fc" id="L66">        FileWriter fw3 = new FileWriter(testFile3.getAbsoluteFile());</span>
+<span class="fc" id="L67">        BufferedWriter bw3 = new BufferedWriter(fw3);</span>
+<span class="fc" id="L68">        StringBuilder sb3 = new StringBuilder();</span>
+<span class="fc" id="L69">        sb3.append(&quot;apple\n&quot;);</span>
+<span class="fc" id="L70">        sb3.append(&quot;apple\n&quot;);</span>
+<span class="fc" id="L71">		sb3.append(&quot;banana\n&quot;);</span>
+<span class="fc" id="L72">		sb3.append(&quot;bananas\n&quot;);</span>
+<span class="fc" id="L73">		bw3.write(sb3.toString());</span>
+<span class="fc" id="L74">        bw3.close();</span>
+        
+<span class="fc" id="L76">        currUserDir = System.getProperty(&quot;user.dir&quot;);</span>
+<span class="fc" id="L77">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+		// delete all files in directory
+<span class="fc" id="L82">        File[] fileList = testDir.listFiles();</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        for (int i=0; i&lt;fileList.length; i++){</span>
+<span class="fc" id="L84">            File file = fileList[i];</span>
+<span class="fc" id="L85">            file.delete();</span>
+        }
+        // delete directory
+<span class="fc" id="L88">        testDir.delete();</span>
+<span class="fc" id="L89">        shell = null;</span>
+        
+        // restore original current working directory
+<span class="fc" id="L92">		System.setProperty(&quot;user.dir&quot;, currUserDir);</span>
+<span class="fc" id="L93">	}</span>
+	
+	private boolean isWindows() {
+<span class="fc" id="L96">		String os = System.getProperty(&quot;os.name&quot;).toLowerCase();</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">		if (os.contains(&quot;windows&quot;))</span>
+<span class="fc" id="L98">			return true;</span>
+		else
+<span class="nc" id="L100">			return false;</span>
+	}
+	
+	/**
+	 * Chains of Interactions - Test expected behavior
+	 * Executing CD | PWD
+	 * 
+	 * The original test case from the hacking team used the command &quot;cd C:\ | pwd&quot; but this only runs in Windows.
+	 * We created a similar command &quot;cd / | pwd&quot; for other OS like MAC OS
+	 * 
+	 * BUG_ID: #12.1
+	 * Fix Location: Shell (lines 37, lines 818 - 827)
+	 */
+	@Test
+	public void cdPwdTest() {
+
+		String commandLine, actualResult;
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">		if (isWindows()) {</span>
+<span class="fc" id="L118">			commandLine = &quot;cd C:\\ | pwd&quot;;</span>
+<span class="fc" id="L119">			actualResult = &quot;C:\\&quot;;</span>
+<span class="fc" id="L120">		}</span>
+		else {
+<span class="nc" id="L122">			commandLine = &quot;cd &quot; + File.separator + &quot; | pwd&quot;;</span>
+<span class="nc" id="L123">			actualResult = File.separator;</span>
+		}
+		
+<span class="fc" id="L126">		ITool command = shell.parse(commandLine);</span>
+<span class="fc" id="L127">		String result = command.execute(workingDir, null);</span>
+<span class="fc" id="L128">		assertEquals(actualResult, result);</span>
+<span class="fc" id="L129">	}</span>
+	
+	/**
+	 * Chains of Interactions - Test expected behavior
+	 * Executing CAT|PASTE|GREP 
+	 * 
+	 * BUG_ID: #12.2
+	 * Fix Location: PasteTool (lines 151-53)
+	 */
+	@Test
+	public void catPasteGrepTest() {
+<span class="fc" id="L140">		assertTrue(testFile2.exists());</span>
+<span class="fc" id="L141">		String commandLine = &quot;cat \&quot;&quot; + testFile2.getAbsolutePath() + &quot;\&quot; | paste \&quot;&quot; + testFile2.getAbsolutePath() + &quot;\&quot; - | grep ban -&quot;;</span>
+<span class="fc" id="L142">		ITool command = shell.parse(commandLine);</span>
+<span class="fc" id="L143">		String result = command.execute(workingDir, null); </span>
+<span class="fc" id="L144">		assertEquals(&quot;banana\tbanana&quot;+System.lineSeparator()+&quot;bananas\tbananas&quot;+System.lineSeparator(), result);</span>
+<span class="fc" id="L145">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

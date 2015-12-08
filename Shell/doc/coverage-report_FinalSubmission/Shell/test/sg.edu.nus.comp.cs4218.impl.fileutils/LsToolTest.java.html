@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>LsToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.fileutils</a> &gt; <span class="el_source">LsToolTest.java</span></div><h1>LsToolTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.fileutils;
+
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Vector;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.fileutils.ILsTool;
+
+<span class="fc" id="L19">public class LsToolTest {</span>
+	private static ILsTool lsTool;
+	private static String strDefaultDirectory;
+	private static File currentWorkingDirectory;
+	private static final String DIRECTORY_ERROR_MSG = &quot;No such file or directory&quot;;
+
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L27">		strDefaultDirectory = System.getProperty(&quot;user.dir&quot;);</span>
+<span class="fc" id="L28">		currentWorkingDirectory = new File(strDefaultDirectory);</span>
+<span class="fc" id="L29">		lsTool = new LsTool(null);</span>
+<span class="fc" id="L30">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L34">		lsTool = null;</span>
+<span class="fc" id="L35">		System.setProperty(&quot;user.dir&quot;, strDefaultDirectory);</span>
+<span class="fc" id="L36">		strDefaultDirectory = null;</span>
+<span class="fc" id="L37">	}</span>
+
+	@Test
+	public void getFiles_CurrentDirectory_DirectoryListMatch() {
+<span class="fc" id="L41">		final File[] fileList = currentWorkingDirectory.listFiles();</span>
+
+<span class="fc" id="L43">		final List&lt;File&gt; returnStatement = lsTool.getFiles(currentWorkingDirectory);</span>
+
+<span class="fc" id="L45">		assertEquals(fileList.length, returnStatement.size());</span>
+
+<span class="fc bfc" id="L47" title="All 2 branches covered.">		for (int i = 0; i &lt; returnStatement.size(); i++) {</span>
+<span class="fc" id="L48">			assertEquals(fileList[i], returnStatement.get(i));</span>
+		}
+<span class="fc" id="L50">	}</span>
+
+	@Test
+	public void getFiles_EmptyDirectory_EmptyList() {
+<span class="fc" id="L54">		final String newFolderName = &quot;newFolder&quot;; </span>
+<span class="fc" id="L55">		new File(newFolderName).mkdir();</span>
+		
+<span class="fc" id="L57">		final File newFolder = new File(newFolderName);</span>
+<span class="fc" id="L58">		final List&lt;File&gt; fileList = lsTool.getFiles(newFolder);</span>
+
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">		if(fileList == null){</span>
+<span class="nc" id="L61">			fail(&quot;fileList is null object&quot;);</span>
+		}
+
+<span class="fc" id="L64">		assertEquals(0, fileList.size());</span>
+		
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">		if(newFolder.exists()){</span>
+			try {
+<span class="fc" id="L68">				Files.delete(newFolder.toPath());</span>
+<span class="pc" id="L69">			} catch (IOException e) {</span>
+<span class="nc" id="L70">				e.printStackTrace();</span>
+			}
+		}
+<span class="fc" id="L73">	}</span>
+
+	@Test
+	public void getFiles_SingleDirectory_ListOfDirectoryMatched() {
+<span class="fc" id="L77">		final File singleFileDirectroy = new File(&quot;bin&quot;);</span>
+<span class="fc" id="L78">		final List&lt;File&gt; fileList = lsTool.getFiles(singleFileDirectroy);</span>
+
+		
+<span class="fc" id="L81">		assertEquals(new File(&quot;bin&quot;).list().length, fileList.size()); </span>
+<span class="fc" id="L82">		assertEquals(singleFileDirectroy.listFiles()[0], fileList.get(0));</span>
+<span class="fc" id="L83">	}</span>
+
+	@Test
+	public void getFiles_NullDirectory_NullObjectReturned() {
+<span class="fc" id="L87">		final List&lt;File&gt; returnStatement = lsTool.getFiles(null);</span>
+
+<span class="fc" id="L89">		assertNull(returnStatement);</span>
+<span class="fc" id="L90">	}</span>
+
+	@Test
+	public void getFiles_InvalidDirectory_NullObjectReject() {
+<span class="fc" id="L94">		final File invalidDirectory = new File(&quot;invalid&quot;);</span>
+<span class="fc" id="L95">		final List&lt;File&gt; returnStatement = lsTool.getFiles(invalidDirectory);</span>
+
+<span class="fc" id="L97">		assertNull(returnStatement);</span>
+<span class="fc" id="L98">	}</span>
+
+	@Test
+	public void getFiles_MultipleFileNames_ListofDirectoryMatched() {
+<span class="fc" id="L102">		final File singleFileDirectory = new File(&quot;src&quot; + File.separator + &quot;sg&quot;</span>
+<span class="fc" id="L103">				+ File.separator + &quot;edu&quot; + File.separator + &quot;nus&quot;</span>
+<span class="fc" id="L104">				+ File.separator + &quot;comp&quot; + File.separator + &quot;cs4218&quot;</span>
+<span class="fc" id="L105">				+ File.separator + &quot;extended1&quot;);</span>
+
+<span class="fc" id="L107">		final List&lt;File&gt; fileList = lsTool.getFiles(singleFileDirectory);</span>
+		
+<span class="fc bfc" id="L109" title="All 2 branches covered.">		for(int i = 0; i &lt; fileList.size(); i++){</span>
+<span class="fc" id="L110">			assertEquals(singleFileDirectory.listFiles()[i], fileList.get(i));</span>
+		}
+<span class="fc" id="L112">	}</span>
+
+	@Test
+	public void getStringForFiles_NullObject_Error() {
+<span class="fc" id="L116">		final String returnStatement = lsTool.getStringForFiles(null);</span>
+
+<span class="fc" id="L118">		assertEquals(&quot;&quot;, returnStatement);</span>
+<span class="fc" id="L119">	}</span>
+
+	@Test
+	public void getStringForFiles_EmptyList_EmptyStringReturned() {
+<span class="fc" id="L123">		final List&lt;File&gt; emptyList = new ArrayList&lt;File&gt;();</span>
+<span class="fc" id="L124">		final String returnStatement = lsTool.getStringForFiles(emptyList);</span>
+
+<span class="fc" id="L126">		assertEquals(&quot;&quot;, returnStatement);</span>
+<span class="fc" id="L127">	}</span>
+
+	@Test
+	public void execute_CurrentDirectory_ListOfDirectoryMatched() {
+<span class="fc" id="L131">		String[] argument = {&quot;&quot;};</span>
+<span class="fc" id="L132">		lsTool = new LsTool(argument);</span>
+		
+<span class="fc" id="L134">		final File[] fileList = currentWorkingDirectory.listFiles();</span>
+<span class="fc" id="L135">		Vector&lt;String&gt; fileNames = new Vector&lt;&gt;();</span>
+		
+<span class="fc bfc" id="L137" title="All 2 branches covered.">		for(int i = 0; i &lt; fileList.length; i++){</span>
+<span class="fc" id="L138">			fileNames.add(fileList[i].getName());</span>
+		}
+		
+<span class="fc" id="L141">		String[] expectedFileList = fileNames.toArray(new String[fileNames.size()]);</span>
+		
+<span class="fc" id="L143">		final String returnStatement = lsTool.execute(currentWorkingDirectory, null);</span>
+<span class="fc" id="L144">		final String[] testStrFileList = returnStatement.split(System.lineSeparator());</span>
+
+<span class="fc" id="L146">		assertArrayEquals(expectedFileList, testStrFileList);</span>
+
+<span class="fc" id="L148">		assertEquals(0, lsTool.getStatusCode());</span>
+<span class="fc" id="L149">	}</span>
+	
+	@Test
+	public void execute_NullArgument_StatusCodeNonZero(){
+<span class="fc" id="L153">		lsTool = new LsTool(null);</span>
+		
+<span class="fc" id="L155">		assertNotEquals(0, lsTool.execute(currentWorkingDirectory, null));</span>
+<span class="fc" id="L156">	}</span>
+
+	@Test
+	public void execute_EmptyDirectory_EmptyStringReturned() {
+<span class="fc" id="L160">		final String newFolderName = &quot;newFolder&quot;; </span>
+
+<span class="fc" id="L162">		new File(newFolderName).mkdir();</span>
+		
+<span class="fc" id="L164">		final String[] arguement = {newFolderName};</span>
+<span class="fc" id="L165">		lsTool = new LsTool(arguement);</span>
+
+<span class="fc" id="L167">		final String returnStatement = lsTool.execute(currentWorkingDirectory, null);</span>
+
+<span class="fc" id="L169">		assertEquals(&quot;&quot;, returnStatement);</span>
+<span class="fc" id="L170">		assertEquals(0, lsTool.getStatusCode());</span>
+<span class="fc" id="L171">	}</span>
+
+	@Test
+	public void execute_InvalidDirectory_ErrorMessageReturned() {
+<span class="fc" id="L175">		final String[] arguement = {&quot;invalid&quot;};</span>
+<span class="fc" id="L176">		lsTool = new LsTool(arguement);</span>
+<span class="fc" id="L177">		final String returnStatement = lsTool.execute(currentWorkingDirectory, null);</span>
+
+<span class="fc" id="L179">		assertEquals(DIRECTORY_ERROR_MSG, returnStatement);</span>
+		
+<span class="fc" id="L181">		assertNotSame(lsTool.getStatusCode(),0);</span>
+<span class="fc" id="L182">	}</span>
+
+	@Test
+	public void execute_ListCorrectAbsoluteDirectory_CorrectListofDirectoryReturned(){
+<span class="fc" id="L186">		File[] pwdFiles = currentWorkingDirectory.listFiles();</span>
+<span class="fc" id="L187">		int counter = 0;</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">		while(!pwdFiles[counter].isDirectory()){</span>
+<span class="fc" id="L189">			counter++;</span>
+		}
+		
+<span class="fc" id="L192">		String[] argument = {pwdFiles[counter].getAbsolutePath()};</span>
+<span class="fc" id="L193">		lsTool = new LsTool(argument);</span>
+
+<span class="fc" id="L195">		final String returnStatement = lsTool.execute(currentWorkingDirectory, null);</span>
+<span class="fc" id="L196">		File[] files = pwdFiles[counter].listFiles();</span>
+<span class="fc" id="L197">		Vector&lt;String&gt; directoryList = new Vector&lt;&gt;();</span>
+<span class="fc bfc" id="L198" title="All 2 branches covered.">		for(int i = 0; i&lt; files.length; i++){</span>
+<span class="fc" id="L199">			directoryList.add(files[i].getName());</span>
+		}
+<span class="fc" id="L201">		String[] correctDirectoryList = (String[]) directoryList.toArray(new String[directoryList.size()]);</span>
+<span class="fc" id="L202">		Arrays.sort(correctDirectoryList);</span>
+
+<span class="fc" id="L204">		final String[] fileList = returnStatement.split(System.lineSeparator());</span>
+<span class="fc" id="L205">		Arrays.sort(fileList);</span>
+
+<span class="fc" id="L207">		assertArrayEquals(correctDirectoryList, fileList);</span>
+<span class="fc" id="L208">	}</span>
+
+	@Test
+	public void execute_ListIncorrectAbsoluteDirectory_ErrorMessageReturned(){
+<span class="fc" id="L212">		final String[] arguments = {&quot;/us&quot;};</span>
+<span class="fc" id="L213">		lsTool = new LsTool(arguments);</span>
+
+<span class="fc" id="L215">		final String returnStatement = lsTool.execute(currentWorkingDirectory, null);</span>
+
+<span class="fc" id="L217">		assertEquals(returnStatement, DIRECTORY_ERROR_MSG);</span>
+<span class="fc" id="L218">	}</span>
+
+	@Test
+	public void execute_ListCorrectRelativeDirectory_CorrectListofDirectoryReturned(){
+<span class="fc" id="L222">		final String[] arguments = {&quot;src&quot;};</span>
+<span class="fc" id="L223">		lsTool = new LsTool(arguments);</span>
+		
+<span class="fc" id="L225">		String directoryToBeListed = strDefaultDirectory + File.separator + &quot;src&quot;;</span>
+<span class="fc" id="L226">		File directoryListed = new File(directoryToBeListed);</span>
+<span class="fc" id="L227">		File[] fileResult = directoryListed.listFiles();</span>
+		
+<span class="fc" id="L229">		List&lt;String&gt; expectedResult = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L230" title="All 2 branches covered.">		for( File file: fileResult){</span>
+<span class="fc" id="L231">			expectedResult.add(file.getName());</span>
+		}
+
+<span class="fc" id="L234">		final String returnStatement = lsTool.execute(currentWorkingDirectory, null);</span>
+		
+<span class="fc" id="L236">		String[] actualResult = returnStatement.split(System.lineSeparator());</span>
+<span class="fc" id="L237">		assertArrayEquals( expectedResult.toArray(), actualResult);</span>
+<span class="fc" id="L238">	}</span>
+	
+
+	@Test
+	public void execute_ListInCorrectRelativeDirectory_ErrorMessageReturned(){
+<span class="fc" id="L243">		final String[] arguments = {&quot;sr&quot;};</span>
+<span class="fc" id="L244">		lsTool = new LsTool(arguments);</span>
+
+<span class="fc" id="L246">		final String returnStatement = lsTool.execute(currentWorkingDirectory, null);</span>
+
+<span class="fc" id="L248">		assertEquals(returnStatement, DIRECTORY_ERROR_MSG);</span>
+<span class="fc" id="L249">	}</span>
+
+	@Test
+	public void execute_ListCorrectFileName_ListFileName() {
+<span class="fc" id="L253">		final String arguementDirectoryList = &quot;src&quot; + File.separator + &quot;sg&quot;</span>
+<span class="fc" id="L254">				+ File.separator + &quot;edu&quot; + File.separator + &quot;nus&quot;</span>
+<span class="fc" id="L255">				+ File.separator + &quot;comp&quot; + File.separator + &quot;cs4218&quot;</span>
+<span class="fc" id="L256">				+ File.separator + &quot;fileutils&quot; + File.separator</span>
+<span class="fc" id="L257">				+ &quot;ILsTool.java&quot;;</span>
+
+<span class="fc" id="L259">		final String[] arguments = {arguementDirectoryList};</span>
+
+<span class="fc" id="L261">		lsTool = new LsTool(arguments);</span>
+<span class="fc" id="L262">		final String returnStatement = lsTool.execute(currentWorkingDirectory, null);</span>
+
+		//		String correctDirectoryList = arguementDirectoryList + System.lineSeparator();
+
+		//FIXME: Need to return absolute path name in this case
+<span class="fc" id="L267">		assertEquals(&quot;ILsTool.java&quot;,returnStatement);</span>
+<span class="fc" id="L268">	}</span>
+
+	@Test
+	public void execute_ListIncorrectFileName__ErrorMessageReturned(){
+<span class="fc" id="L272">		final String[] arguments = {&quot;src.java&quot;};</span>
+<span class="fc" id="L273">		lsTool = new LsTool(arguments);</span>
+
+<span class="fc" id="L275">		final String returnStatement = lsTool.execute(currentWorkingDirectory, null);</span>
+
+<span class="fc" id="L277">		assertEquals(DIRECTORY_ERROR_MSG, returnStatement);</span>
+<span class="fc" id="L278">	}</span>
+
+	@Test
+	public void execute_ListMultipleDirectoryBothDirectoryCorrect_CorrectListofDirectoryReturned(){
+<span class="fc" id="L282">		final String[] arguments = {&quot;src&quot;, &quot;test&quot;};</span>
+<span class="fc" id="L283">		lsTool = new LsTool(arguments);</span>
+		
+<span class="fc" id="L285">		final String returnStatement = lsTool.execute(currentWorkingDirectory, null);</span>
+//		final String correctDirectoryList = &quot;src:&quot; + System.lineSeparator()
+//				+ &quot;sg&quot; + System.lineSeparator() + System.lineSeparator() + &quot;test:&quot;
+//				+ System.lineSeparator() + &quot;sg&quot;;
+<span class="fc" id="L289">		String[] actualResult = returnStatement.split(System.lineSeparator());</span>
+		
+<span class="fc" id="L291">		File[] fileList = new File(strDefaultDirectory + File.separator + &quot;src&quot;).listFiles();</span>
+		
+<span class="fc" id="L293">		List&lt;String&gt; expectedResult = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L294">		expectedResult.add(&quot;src:&quot;);</span>
+<span class="fc bfc" id="L295" title="All 2 branches covered.">		for(File file : fileList){</span>
+<span class="fc" id="L296">			expectedResult.add(file.getName());</span>
+		}
+		
+<span class="fc" id="L299">		expectedResult.add(&quot;&quot;);</span>
+		
+<span class="fc" id="L301">		fileList = new File(strDefaultDirectory + File.separator + &quot;test&quot;).listFiles();</span>
+		
+<span class="fc" id="L303">		expectedResult.add(&quot;test:&quot;);</span>
+<span class="fc bfc" id="L304" title="All 2 branches covered.">		for(File file : fileList){</span>
+<span class="fc" id="L305">			expectedResult.add(file.getName());</span>
+		}
+
+<span class="fc" id="L308">		assertArrayEquals(expectedResult.toArray(), actualResult);</span>
+<span class="fc" id="L309">	}</span>
+
+	@Test
+	public void execute_ListMultipleDirectoryFirstDirIncorrect_ErrorMsgThenCorrectListOfDirectoryReturned(){
+<span class="fc" id="L313">		final String[] arguments = {&quot;sr&quot;, &quot;test&quot;};</span>
+<span class="fc" id="L314">		lsTool = new LsTool(arguments);</span>
+
+<span class="fc" id="L316">		final String returnStatement = lsTool.execute(currentWorkingDirectory, null);</span>
+		
+<span class="fc" id="L318">		String directoryToBeListed = strDefaultDirectory + File.separator + &quot;test&quot;;</span>
+<span class="fc" id="L319">		File directoryListed = new File(directoryToBeListed);</span>
+<span class="fc" id="L320">		File[] fileResult = directoryListed.listFiles();</span>
+		
+<span class="fc" id="L322">		List&lt;String&gt; expectedResult = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L323">		expectedResult.add(&quot;sr:&quot;);</span>
+<span class="fc" id="L324">		expectedResult.add(DIRECTORY_ERROR_MSG);</span>
+<span class="fc" id="L325">		expectedResult.add(&quot;&quot;);</span>
+<span class="fc" id="L326">		expectedResult.add(&quot;test:&quot;);</span>
+<span class="fc bfc" id="L327" title="All 2 branches covered.">		for( File file: fileResult){</span>
+<span class="fc" id="L328">			expectedResult.add(file.getName());</span>
+		}
+
+		
+<span class="fc" id="L332">		String[] actualResult = returnStatement.split(System.lineSeparator());</span>
+		
+<span class="fc" id="L334">		assertArrayEquals(expectedResult.toArray(), actualResult);</span>
+<span class="fc" id="L335">	}</span>
+	
+	@Test
+	public void execute_NullPresentWorkingDirectory_NonZeroStatusCode(){
+<span class="fc" id="L339">		final String[] argument = {&quot;&quot;};</span>
+<span class="fc" id="L340">		lsTool = new LsTool(argument);</span>
+		
+<span class="fc" id="L342">		lsTool.execute(null, null);</span>
+<span class="fc" id="L343">		assertNotEquals(0, lsTool.getStatusCode());</span>
+<span class="fc" id="L344">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

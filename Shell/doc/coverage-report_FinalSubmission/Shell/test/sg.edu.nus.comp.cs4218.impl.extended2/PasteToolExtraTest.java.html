@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>PasteToolExtraTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.extended2</a> &gt; <span class="el_source">PasteToolExtraTest.java</span></div><h1>PasteToolExtraTest.java</h1><pre class="source lang-java linenums">/**
+ * Additional unit tests on top of the original
+ * test cases for test driven development.
+ */
+
+package sg.edu.nus.comp.cs4218.impl.extended2;
+
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.nio.charset.Charset;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+<span class="fc" id="L17">public class PasteToolExtraTest {</span>
+	private PasteTool pasteTool;
+<span class="fc" id="L19">	private static final String NEW_LINE = System.lineSeparator();</span>
+	private static final String INPUT_FILE_PATH_1 = &quot;__test__input__1__&quot;;
+	private static final String INPUT_FILE_PATH_2 = &quot;__test__input__2__&quot;;
+<span class="fc" id="L22">	private static final String INPUT_FILE_PATH_3 = &quot;__test__input__3__&quot;;</span>
+
+	@Before
+	public void before() {
+<span class="fc" id="L26">		pasteTool = new PasteTool(null);</span>
+<span class="fc" id="L27">		String content1 = &quot;1&quot; + NEW_LINE + &quot;2&quot;;</span>
+<span class="fc" id="L28">		String content2 = &quot;a&quot; + NEW_LINE + &quot;b&quot; + NEW_LINE + &quot;c&quot;;</span>
+<span class="fc" id="L29">		String content3 = &quot;1&quot; + NEW_LINE + &quot;2&quot; + NEW_LINE + &quot;3&quot; + NEW_LINE</span>
+<span class="fc" id="L30">				+ &quot;4&quot;;</span>
+
+<span class="fc" id="L32">		createFile(INPUT_FILE_PATH_1, content1);</span>
+<span class="fc" id="L33">		createFile(INPUT_FILE_PATH_2, content2);</span>
+<span class="fc" id="L34">		createFile(INPUT_FILE_PATH_3, content3);</span>
+<span class="fc" id="L35">	}</span>
+
+	@After
+	public void after() {
+<span class="fc" id="L39">		pasteTool = null;</span>
+
+<span class="fc" id="L41">		deleteFile(INPUT_FILE_PATH_1);</span>
+<span class="fc" id="L42">		deleteFile(INPUT_FILE_PATH_2);</span>
+<span class="fc" id="L43">		deleteFile(INPUT_FILE_PATH_3);</span>
+<span class="fc" id="L44">	}</span>
+
+	@Test
+	/**
+	 * Negative test
+	 * pasteSerial() with null arg
+	 */
+	public void pasteSerial_NullArgument_StatusCodeZero() {
+<span class="fc" id="L52">		assertEquals(&quot;&quot;, pasteTool.pasteSerial(null));</span>
+<span class="fc" id="L53">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L54">	}</span>
+
+	@Test
+	/**
+	 * Negative test
+	 * pasteSerial() with null string in the arary
+	 */
+	public void pasteSerial_ArrayWithNullString_StatusCodeZero() {
+<span class="fc" id="L62">		assertEquals(&quot;&quot;, pasteTool.pasteSerial(new String[4]));</span>
+<span class="fc" id="L63">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L64">	}</span>
+
+	@Test
+	/**
+	 * Negative test
+	 * pasteSerial() with empty string in the arary
+	 */
+	public void pasteSerial_ArrayWithEmptyString_StatusCodeZero() {
+<span class="fc" id="L72">		String[] input = { &quot;&quot;, &quot;&quot; };</span>
+<span class="fc" id="L73">		assertEquals(&quot;\t&quot;, pasteTool.pasteSerial(input));</span>
+<span class="fc" id="L74">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L75">	}</span>
+
+	@Test
+	/**
+	 * Positive test
+	 * pasteSerial() with one string in the input array
+	 */
+	public void pasteSerial_ArrayWithOneString_StatusCodeZero() {
+<span class="fc" id="L83">		String[] input = { &quot;quorra&quot; };</span>
+<span class="fc" id="L84">		assertEquals(&quot;quorra&quot;, pasteTool.pasteSerial(input));</span>
+<span class="fc" id="L85">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L86">	}</span>
+
+	@Test
+	/**
+	 * Positive test
+	 * pasteSerial() with some empty string in the array
+	 */
+	public void pasteSerial_ArrayWithMultipleAndEmptyString_StatusCodeZero() {
+<span class="fc" id="L94">		String[] input = { &quot;&quot;, &quot;quorra&quot;, &quot;2&quot; };</span>
+<span class="fc" id="L95">		String output = &quot;\tquorra\t2&quot;;</span>
+
+<span class="fc" id="L97">		assertEquals(output, pasteTool.pasteSerial(input));</span>
+<span class="fc" id="L98">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L99">	}</span>
+
+	@Test
+	/**
+	 * Negative test
+	 * pasteUseDelimiter() with null delimiter arg
+	 */
+	public void pasteUseDelimiter_NullDelimiter_StatusCodeZero() {
+<span class="fc" id="L107">		String[] input = { &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot; };</span>
+<span class="fc" id="L108">		String output = &quot;1\t2\t3\t4\t5\t6&quot;;</span>
+
+<span class="fc" id="L110">		assertEquals(output, pasteTool.pasteUseDelimiter(null, input));</span>
+<span class="fc" id="L111">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L112">	}</span>
+
+	@Test
+	/**
+	 * Positive test
+	 * pasteUseDelimiter() with delimiter = &quot;&quot;
+	 */
+	public void pasteUseDelimiter_EmptyStringDelimiter_StatusCodeZero() {
+<span class="fc" id="L120">		String[] input = { &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot; };</span>
+<span class="fc" id="L121">		String output = &quot;123456&quot;;</span>
+
+<span class="fc" id="L123">		assertEquals(output, pasteTool.pasteUseDelimiter(&quot;&quot;, input));</span>
+<span class="fc" id="L124">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L125">	}</span>
+	
+
+	
+
+	@Test
+	public void pasteUseDelimiter_DelimiterContainsBackslash_StatusCodeZero() {
+<span class="fc" id="L132">		String[] input = { &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot; };</span>
+<span class="fc" id="L133">		String output = &quot;1;2;3;4;5;6&quot;;</span>
+
+<span class="fc" id="L135">		assertEquals(output, pasteTool.pasteUseDelimiter(&quot;\\;&quot;, input));</span>
+<span class="fc" id="L136">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L137">	}</span>
+
+	@Test
+	/**
+	 * Negative test
+	 * pasteUseDelimiter() with input = null
+	 */
+	public void pasteUseDelimiter_NullInput_StatusCodeZero() {
+<span class="fc" id="L145">		assertEquals(&quot;&quot;, pasteTool.pasteUseDelimiter(&quot;\t&quot;, null));</span>
+<span class="fc" id="L146">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L147">	}</span>
+
+	@Test
+	/**
+	 * Negative test
+	 * execute() with invalid option
+	 */
+	public void execute_InvalidOption_StatusCodeOne() {
+<span class="fc" id="L155">		String[] args = { &quot;-a&quot; };</span>
+<span class="fc" id="L156">		pasteTool = new PasteTool(args);</span>
+
+<span class="fc" id="L158">		String expectedOutput = String.format(PasteTool.ERR_MSG_INVALID_OPTION,</span>
+<span class="fc" id="L159">				args[0]);</span>
+
+<span class="fc" id="L161">		assertEquals(expectedOutput, pasteTool.execute(new File(&quot;&quot;), &quot;&quot;));</span>
+<span class="fc" id="L162">		assertEquals(PasteTool.ERR_CODE_INVALID_OPTION,</span>
+<span class="fc" id="L163">				pasteTool.getStatusCode());</span>
+<span class="fc" id="L164">	}</span>
+
+	@Test
+	/**
+	 * Negative test
+	 * execute() with invalid option arg
+	 * for example -d option without specifying delimiter
+	 */
+	public void execute_InvalidOptionArg_StatusCodeTwo() {
+<span class="fc" id="L173">		String[] args = { &quot;-d&quot; };</span>
+<span class="fc" id="L174">		pasteTool = new PasteTool(args);</span>
+
+<span class="fc" id="L176">		String expectedOutput = String.format(</span>
+<span class="fc" id="L177">				PasteTool.ERR_MSG_INVALID_OPTION_ARG, args[0]);</span>
+
+<span class="fc" id="L179">		assertEquals(expectedOutput, pasteTool.execute(new File(&quot;&quot;), &quot;&quot;));</span>
+<span class="fc" id="L180">		assertEquals(PasteTool.ERR_CODE_INVALID_OPTION_ARG,</span>
+<span class="fc" id="L181">				pasteTool.getStatusCode());</span>
+<span class="fc" id="L182">	}</span>
+
+	@Test
+	/**
+	 * Negative test
+	 * execute() with file that does not exist
+	 */
+	public void execute_FileNotExists_StatusCodeThree() {
+		// Get a file name that does not point to any file
+<span class="fc" id="L191">		int label = 0;</span>
+<span class="fc" id="L192">		String fileName = &quot;__tmp__&quot; + label;</span>
+<span class="fc" id="L193">		File invalidFile = new File(fileName);</span>
+
+<span class="pc bpc" id="L195" title="1 of 2 branches missed.">		while (invalidFile.exists()) {</span>
+<span class="nc" id="L196">			label += 1;</span>
+<span class="nc" id="L197">			fileName = &quot;__tmp__&quot; + label;</span>
+<span class="nc" id="L198">			invalidFile = new File(fileName);</span>
+		}
+
+<span class="fc" id="L201">		String[] args = { fileName };</span>
+<span class="fc" id="L202">		pasteTool = new PasteTool(args);</span>
+
+<span class="fc" id="L204">		String expectedOutput = String.format(PasteTool.ERR_MSG_FILE_NOT_EXIST, fileName);</span>
+
+<span class="fc" id="L206">		assertEquals(expectedOutput, pasteTool.execute(new File(&quot;&quot;), &quot;&quot;));</span>
+<span class="fc" id="L207">		assertEquals(PasteTool.ERR_CODE_FILE_NOT_EXIST,</span>
+<span class="fc" id="L208">				pasteTool.getStatusCode());</span>
+<span class="fc" id="L209">	}</span>
+
+	@Test
+	/**
+	 * Positive test
+	 * execute() with null arg i.e. no input file given
+	 * should redirect input to stdin
+	 */
+	public void execute_NullArg_StatusCodeZero() {
+<span class="fc" id="L218">		String input = &quot;1&quot; + NEW_LINE + &quot;2&quot;;</span>
+<span class="fc" id="L219">		String expectedOutput = input;</span>
+
+<span class="fc" id="L221">		assertEquals(expectedOutput, pasteTool.execute(new File(&quot;&quot;), input));</span>
+<span class="fc" id="L222">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L223">	}</span>
+
+	@Test
+	/**
+	 * Positive test
+	 * execute() with one file input
+	 */
+	public void execute_OneFile_StatusCodeZero() {
+<span class="fc" id="L231">		String[] args = { INPUT_FILE_PATH_1 };</span>
+<span class="fc" id="L232">		pasteTool = new PasteTool(args);</span>
+
+<span class="fc" id="L234">		String expectedOutput = pasteTool.readFile(INPUT_FILE_PATH_1,</span>
+<span class="fc" id="L235">				Charset.forName(&quot;UTF-8&quot;));</span>
+
+<span class="fc" id="L237">		assertEquals(expectedOutput, pasteTool.execute(new File(&quot;&quot;), &quot;&quot;));</span>
+<span class="fc" id="L238">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L239">	}</span>
+
+	@Test
+	/**
+	 * Positive test
+	 * execute() with two file inputs
+	 */
+	public void execute_TwoFiles_StatusCodeZero() {
+<span class="fc" id="L247">		String[] args = { INPUT_FILE_PATH_1, INPUT_FILE_PATH_2 };</span>
+<span class="fc" id="L248">		pasteTool = new PasteTool(args);</span>
+
+<span class="fc" id="L250">		String expectedOutput = &quot;1\ta&quot; + NEW_LINE + &quot;2\tb&quot; + NEW_LINE + &quot;\tc&quot;;</span>
+
+<span class="fc" id="L252">		assertEquals(expectedOutput, pasteTool.execute(new File(&quot;&quot;), &quot;&quot;));</span>
+<span class="fc" id="L253">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L254">	}</span>
+
+	@Test
+	/**
+	 * Positive test
+	 * execute() with three file input
+	 */
+	public void execute_ThreeFiles_StatusCodeZero() {
+<span class="fc" id="L262">		String[] args = { INPUT_FILE_PATH_1, INPUT_FILE_PATH_2,</span>
+<span class="fc" id="L263">				INPUT_FILE_PATH_3 };</span>
+<span class="fc" id="L264">		pasteTool = new PasteTool(args);</span>
+
+<span class="fc" id="L266">		String expectedOutput = &quot;1\ta\t1&quot; + NEW_LINE + &quot;2\tb\t2&quot; + NEW_LINE</span>
+<span class="fc" id="L267">				+ &quot;\tc\t3&quot; + NEW_LINE + &quot;\t\t4&quot;;</span>
+
+<span class="fc" id="L269">		assertEquals(expectedOutput, pasteTool.execute(new File(&quot;&quot;), &quot;&quot;));</span>
+<span class="fc" id="L270">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L271">	}</span>
+
+	@Test
+	/**
+	 * Positive test
+	 * execute() with option -s
+	 */
+	public void execute_SerialOption_StatusCodeZero() {
+<span class="fc" id="L279">		String[] args = { &quot;-s&quot;, INPUT_FILE_PATH_1, INPUT_FILE_PATH_2 };</span>
+<span class="fc" id="L280">		pasteTool = new PasteTool(args);</span>
+
+<span class="fc" id="L282">		String expectedOutput = &quot;1\t2&quot; + NEW_LINE + &quot;a\tb\tc&quot;;</span>
+
+<span class="fc" id="L284">		assertEquals(expectedOutput, pasteTool.execute(new File(&quot;&quot;), &quot;&quot;));</span>
+<span class="fc" id="L285">		assertEquals(0, pasteTool.getStatusCode());</span>
+
+<span class="fc" id="L287">	}</span>
+
+	@Test
+	/**
+	 * Positive test
+	 * execute() with option -d DELIM-LIST 
+	 */
+	public void execute_DelimOption_StatusCodeZero() {
+<span class="fc" id="L295">		String[] args = { &quot;-d&quot;, &quot;*;&quot;, INPUT_FILE_PATH_1, INPUT_FILE_PATH_2,</span>
+<span class="fc" id="L296">				INPUT_FILE_PATH_3 };</span>
+<span class="fc" id="L297">		pasteTool = new PasteTool(args);</span>
+
+<span class="fc" id="L299">		String expectedOutput = &quot;1*a;1&quot; + NEW_LINE + &quot;2*b;2&quot; + NEW_LINE</span>
+<span class="fc" id="L300">				+ &quot;*c;3&quot; + NEW_LINE + &quot;*;4&quot;;</span>
+
+<span class="fc" id="L302">		assertEquals(expectedOutput, pasteTool.execute(new File(&quot;&quot;), &quot;&quot;));</span>
+<span class="fc" id="L303">		assertEquals(0, pasteTool.getStatusCode());</span>
+
+<span class="fc" id="L305">	}</span>
+
+	@Test
+	/**
+	 * Positive test
+	 * With delimiter and serial options
+	 * execute() with option -d DELIM-LIST -s
+	 */
+	public void execute_DelimSerialOption_StatusCodeZero() {
+<span class="fc" id="L314">		String[] args = { &quot;-d&quot;, &quot;*;&quot;, &quot;-s&quot;, INPUT_FILE_PATH_1,</span>
+<span class="fc" id="L315">				INPUT_FILE_PATH_2, INPUT_FILE_PATH_3 };</span>
+<span class="fc" id="L316">		pasteTool = new PasteTool(args);</span>
+
+<span class="fc" id="L318">		String expectedOutput = &quot;1*2&quot; + NEW_LINE + &quot;a*b;c&quot; + NEW_LINE</span>
+<span class="fc" id="L319">				+ &quot;1*2;3*4&quot;;</span>
+
+<span class="fc" id="L321">		assertEquals(expectedOutput, pasteTool.execute(new File(&quot;&quot;), &quot;&quot;));</span>
+<span class="fc" id="L322">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L323">	}</span>
+
+	@Test
+	/**
+	 * Positive test
+	 * execute() with option -h option
+	 */
+	public void execute_HelpOption_StatusCodeZero() {
+<span class="fc" id="L331">		String[] args = { &quot;-help&quot; };</span>
+<span class="fc" id="L332">		pasteTool = new PasteTool(args);</span>
+
+<span class="fc" id="L334">		String expectedOutput = pasteTool.readFile(PasteTool.FILE_PATH_HELP,</span>
+<span class="fc" id="L335">				Charset.forName(&quot;UTF-8&quot;));</span>
+
+<span class="fc" id="L337">		assertEquals(expectedOutput, pasteTool.execute(new File(&quot;&quot;), &quot;&quot;));</span>
+<span class="fc" id="L338">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L339">	}</span>
+
+	@Test
+	/**
+	 * Positive test
+	 * execute() with option - 
+	 */
+	public void execute_FromStdin_StatusCodeZero() {
+<span class="fc" id="L347">		String[] args = { &quot;-&quot;, INPUT_FILE_PATH_2 };</span>
+<span class="fc" id="L348">		pasteTool = new PasteTool(args);</span>
+
+<span class="fc" id="L350">		String expectedOutput = &quot;1\ta&quot; + NEW_LINE + &quot;2\tb&quot; + NEW_LINE + &quot;\tc&quot;;</span>
+
+<span class="fc" id="L352">		String stdin = &quot;1&quot; + NEW_LINE + &quot;2&quot;;</span>
+
+<span class="fc" id="L354">		assertEquals(expectedOutput, pasteTool.execute(new File(&quot;&quot;), stdin));</span>
+<span class="fc" id="L355">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L356">	}</span>
+
+	@Test
+	/**
+	 * Positive test
+	 * execute() with multiple - -
+	 * Both - will refer to same stdin
+	 */
+	public void execute_FromMultipleStdin_StatusCodeZero() {
+<span class="fc" id="L365">		String[] args = { &quot;-&quot;, INPUT_FILE_PATH_2, &quot;-&quot; };</span>
+<span class="fc" id="L366">		pasteTool = new PasteTool(args);</span>
+
+<span class="fc" id="L368">		String expectedOutput = &quot;1\ta\t1&quot; + NEW_LINE + &quot;2\tb\t2&quot; + NEW_LINE</span>
+<span class="fc" id="L369">				+ &quot;\tc&quot;;</span>
+
+<span class="fc" id="L371">		String stdin = &quot;1&quot; + NEW_LINE + &quot;2&quot;;</span>
+
+<span class="fc" id="L373">		assertEquals(expectedOutput, pasteTool.execute(new File(&quot;&quot;), stdin));</span>
+<span class="fc" id="L374">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L375">	}</span>
+
+	@Test
+	/**
+	 * Positive test
+	 * With delimiter and serial options and standard input options
+	 * execute with -option -d DELIM-LIST -s -
+	 */
+	public void execute_WithOptionsFromStdin_StatusCodeZero() {
+<span class="fc" id="L384">		String[] args = { &quot;-d&quot;, &quot;*;&quot;, &quot;-s&quot;, INPUT_FILE_PATH_1, &quot;-&quot;,</span>
+<span class="fc" id="L385">				INPUT_FILE_PATH_3 };</span>
+<span class="fc" id="L386">		pasteTool = new PasteTool(args);</span>
+
+<span class="fc" id="L388">		String input = &quot;a&quot; + NEW_LINE + &quot;b&quot; + NEW_LINE + &quot;c&quot;;</span>
+<span class="fc" id="L389">		String expectedOutput = &quot;1*2&quot; + NEW_LINE + &quot;a*b;c&quot; + NEW_LINE</span>
+<span class="fc" id="L390">				+ &quot;1*2;3*4&quot;;</span>
+
+<span class="fc" id="L392">		assertEquals(expectedOutput, pasteTool.execute(new File(&quot;&quot;), input));</span>
+<span class="fc" id="L393">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L394">	}</span>
+
+	/**
+	 * Helper method to create temporary file
+	 * 
+	 * @param path
+	 * @param content
+	 */
+	public void createFile(String path, String content) {
+<span class="fc" id="L403">		pasteTool.writeToFile(path, content);</span>
+<span class="fc" id="L404">	}</span>
+
+	/**
+	 * Helper method to delete temporary file
+	 * 
+	 * @param path
+	 */
+	public void deleteFile(String path) {
+<span class="fc" id="L412">		File file = new File(path);</span>
+<span class="pc bpc" id="L413" title="1 of 2 branches missed.">		if (!file.exists()) {</span>
+<span class="nc" id="L414">			return;</span>
+		}
+		
+<span class="fc" id="L417">		file.delete();</span>
+		
+<span class="fc" id="L419">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>CdTool.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">src</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.fileutils</a> &gt; <span class="el_source">CdTool.java</span></div><h1>CdTool.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.fileutils;
+
+import java.io.File;
+
+import sg.edu.nus.comp.cs4218.fileutils.ICdTool;
+import sg.edu.nus.comp.cs4218.impl.ATool;
+
+/**
+ * @author Francis Pang
+ *
+ */
+public class CdTool extends ATool implements ICdTool {
+	
+	private final static String TOOL_NAME = &quot;cd: &quot;;
+	
+	public final static int DIRECTORY_ERROR_CODE = 1;
+	private final static String DIRECTORY_ERROR = &quot;The system cannot find the path specified.&quot;;
+	
+	private final static int FILE_ERROR_CODE = 2;
+	private final static String FILE_NOT_FOUND_ERROR = &quot;: No such file or directory&quot;;
+	
+	private static final int NOT_EXECUTED_FINISH_CODE = -1;
+	private static final int EXECUTED_FINISHED_CODE = 0;
+	
+	private final static String USER_DIRECTORY = &quot;user.dir&quot;;
+	private final static String HOME_DIRECTORY = &quot;user.home&quot;;
+	protected static String previousDirectory;
+
+	//Constructor
+	/**
+	 * Create a new CdTool instance so that it represents an unexecuted cd command. 
+	 * 
+	 * @param arguments
+	 * 	the argument that is to be passed in to execute the command
+	 */
+	public CdTool(final String[] arguments) {
+<span class="fc" id="L37">		super(arguments);</span>
+<span class="fc" id="L38">	}</span>
+
+	public CdTool(final String[] arguments, boolean resetPreviewDirectory){
+<span class="fc" id="L41">		super(arguments);</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">		if(resetPreviewDirectory){</span>
+<span class="fc" id="L43">			previousDirectory = null;</span>
+		}
+<span class="fc" id="L45">	}</span>
+
+	/**
+	 * Executes the tool with arguments provided in the constructor
+	 * 
+	 * @param workingDir
+	 *            the current working directory path
+	 * 
+	 * @param stdin
+	 *            the additional input from the stdin
+	 * 
+	 * @return the message to be shown on the shell, null if there is no error
+	 *         from the command
+	 */
+	@Override
+	public String execute(final File workingDir, final String stdin) {
+<span class="fc" id="L61">		setStatusCode(NOT_EXECUTED_FINISH_CODE);</span>
+<span class="fc" id="L62">		String output = &quot;&quot;;</span>
+
+		/*
+		 * Error case:
+		 * 1. Current working directory is null object
+		 * 2. Current working directory is not a valid directory/ file
+		 * 3. Current working directory is not a directory
+		 * 4. The argument is null object
+		 */
+<span class="fc bfc" id="L71" title="All 4 branches covered.">		if (workingDir == null || !workingDir.exists()</span>
+<span class="fc bfc" id="L72" title="All 4 branches covered.">				|| !workingDir.isDirectory() || this.args == null) {</span>
+<span class="fc" id="L73">			setStatusCode(DIRECTORY_ERROR_CODE);</span>
+<span class="fc" id="L74">			output = TOOL_NAME + DIRECTORY_ERROR;			</span>
+<span class="fc" id="L75">		}</span>
+		else{
+			final String newDirectory;
+
+<span class="fc bfc" id="L79" title="All 4 branches covered.">			if(&quot;-&quot;.equals(this.args[0]) &amp;&amp; previousDirectory != null){</span>
+<span class="fc" id="L80">				newDirectory = previousDirectory;</span>
+<span class="fc" id="L81">			}</span>
+			else{
+<span class="fc" id="L83">				newDirectory = this.args[0];</span>
+			}
+
+<span class="fc bfc" id="L86" title="All 2 branches covered.">			if(	newDirectory.equals(workingDir.getAbsolutePath())){</span>
+<span class="fc" id="L87">				output = workingDir.getAbsolutePath();</span>
+<span class="fc" id="L88">			}</span>
+			else{
+<span class="fc" id="L90">				File result = changeDirectory(newDirectory);</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">				if(result == null){</span>
+<span class="fc" id="L92">					setStatusCode(FILE_ERROR_CODE);</span>
+<span class="fc" id="L93">					output = TOOL_NAME + args[0] + FILE_NOT_FOUND_ERROR;</span>
+<span class="fc" id="L94">				}</span>
+				else{
+<span class="fc" id="L96">					previousDirectory = workingDir.getAbsolutePath();</span>
+<span class="fc" id="L97">					output = result.getAbsolutePath();</span>
+				}
+			}
+			
+		}
+<span class="fc bfc" id="L102" title="All 2 branches covered.">		if(getStatusCode() == NOT_EXECUTED_FINISH_CODE){</span>
+<span class="fc" id="L103">			setStatusCode(EXECUTED_FINISHED_CODE);</span>
+		}
+<span class="fc" id="L105">		return output;</span>
+	}
+
+	/**
+	 * Change the current working directory to the specified string.
+	 * &lt;p&gt;
+	 * If the new file directory is the same as the current working directory,
+	 * there will be no change of working directory
+	 * 
+	 * @param newDirectory
+	 *            the new file directory to be changed
+	 * 
+	 * @return the working directory with the specified file directory, null if
+	 *         &lt;i&gt;newDirectory&lt;/i&gt; is invalid
+	 */
+	@Override
+	public File changeDirectory(final String newDirectory) {
+<span class="fc" id="L122">		setStatusCode(NOT_EXECUTED_FINISH_CODE);</span>
+<span class="fc" id="L123">		File directory = null;</span>
+
+<span class="fc bfc" id="L125" title="All 2 branches covered.">		if (newDirectory == null) {</span>
+<span class="fc" id="L126">			directory = null;</span>
+<span class="fc" id="L127">		}</span>
+<span class="fc bfc" id="L128" title="All 2 branches covered.">		else if(&quot;&quot;.equals(newDirectory)){	//Home directory</span>
+<span class="fc" id="L129">			directory = new File(System.getProperty(HOME_DIRECTORY));</span>
+<span class="fc" id="L130">			System.setProperty(USER_DIRECTORY, directory.getAbsolutePath());</span>
+
+<span class="fc" id="L132">		}</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">		else if(&quot;..&quot;.equals(newDirectory)){	//Parent directory</span>
+<span class="fc" id="L134">			directory = new File(System.getProperty(USER_DIRECTORY));</span>
+<span class="fc" id="L135">			directory = directory.getParentFile();</span>
+<span class="fc" id="L136">			System.setProperty(USER_DIRECTORY, directory.getAbsolutePath());</span>
+<span class="fc" id="L137">		}</span>
+		//Change to a relative directory navigating from home
+<span class="fc bfc" id="L139" title="All 2 branches covered.">		else if(newDirectory.startsWith(&quot;~&quot; + File.separator)){</span>
+<span class="fc" id="L140">			final int NUM_PREFIX = newDirectory.indexOf(File.separator);</span>
+<span class="fc" id="L141">			final String HOME_ABSOLUTE_PATH = System.getProperty(HOME_DIRECTORY);</span>
+<span class="fc" id="L142">			String relativeDir = newDirectory.substring(NUM_PREFIX);</span>
+<span class="fc" id="L143">			relativeDir = HOME_ABSOLUTE_PATH.concat(relativeDir);</span>
+<span class="fc" id="L144">			directory = new File (relativeDir);</span>
+
+<span class="fc bfc" id="L146" title="All 2 branches covered.">			if(!directory.exists()){</span>
+<span class="fc" id="L147">				setStatusCode(FILE_ERROR_CODE);</span>
+<span class="fc" id="L148">				directory = null;</span>
+<span class="fc" id="L149">			}</span>
+			else{
+<span class="fc" id="L151">				System.setProperty(USER_DIRECTORY, relativeDir);</span>
+			}
+<span class="fc" id="L153">		}</span>
+		else{
+<span class="fc" id="L155">			directory = new File(newDirectory);</span>
+
+<span class="fc bfc" id="L157" title="All 2 branches covered.">			if (!directory.isDirectory()) {</span>
+<span class="fc" id="L158">				setStatusCode(DIRECTORY_ERROR_CODE);</span>
+<span class="fc" id="L159">				directory = null;</span>
+<span class="fc" id="L160">			} </span>
+<span class="fc bfc" id="L161" title="All 2 branches covered.">			else if (directory.isAbsolute()) { // Absolute directory</span>
+<span class="fc" id="L162">				System.setProperty(USER_DIRECTORY, newDirectory);</span>
+<span class="fc" id="L163">			} </span>
+			else { // Relative directory
+<span class="fc" id="L165">				System.setProperty(USER_DIRECTORY, directory.getAbsolutePath());</span>
+			}
+		}
+		
+<span class="fc bfc" id="L169" title="All 2 branches covered.">		if(getStatusCode() == NOT_EXECUTED_FINISH_CODE){</span>
+<span class="fc" id="L170">			setStatusCode(EXECUTED_FINISHED_CODE);</span>
+		}
+<span class="fc" id="L172">		return directory;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

@@ -1,0 +1,988 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>CutToolExtraTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.extended2</a> &gt; <span class="el_source">CutToolExtraTest.java</span></div><h1>CutToolExtraTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.extended2;
+
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.extended2.ICutTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.CutTool;
+
+<span class="fc" id="L19">public class CutToolExtraTest {</span>
+	// Static Variables
+	private static ICutTool cutTool;
+	private static File workingDir;
+	private static File tempDir;
+	private static File inputNoDelimiter;
+	private static File inputNoDelimiterTwo;
+	private static File inputWithDelimiter;
+	private static File inputWithDelimiterTwo;
+	private static String inputNoDelimiterStr;
+	private static String inputNoDelimiterTwoStr;
+	private static String inputWithDelimiterStr;
+	private static String inputWithDelimiterTwoStr;
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+<span class="fc" id="L35">		workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+
+		/* Creation of directories and files for testing purposes */
+<span class="fc" id="L38">		tempDir = new File(Files.createDirectory(</span>
+<span class="fc" id="L39">				new File(workingDir.toString() + File.separator + &quot;tempDir&quot;)</span>
+<span class="fc" id="L40">						.toPath()).toString());</span>
+<span class="fc" id="L41">		inputNoDelimiter = new File(tempDir.toString() + File.separator</span>
+<span class="fc" id="L42">				+ &quot;inputNoDelimiter&quot;);</span>
+<span class="fc" id="L43">		inputNoDelimiter.createNewFile();</span>
+
+<span class="fc" id="L45">		inputNoDelimiterTwo = new File(tempDir.toString() + File.separator</span>
+<span class="fc" id="L46">				+ &quot;inputNoDelimiterTwo&quot;);</span>
+<span class="fc" id="L47">		inputNoDelimiterTwo.createNewFile();</span>
+
+<span class="fc" id="L49">		inputWithDelimiter = new File(tempDir.toString() + File.separator</span>
+<span class="fc" id="L50">				+ &quot;inputWithDelimiter&quot;);</span>
+<span class="fc" id="L51">		inputWithDelimiter.createNewFile();</span>
+
+<span class="fc" id="L53">		inputWithDelimiterTwo = new File(tempDir.toString() + File.separator</span>
+<span class="fc" id="L54">				+ &quot;inputWithDelimiterTwo&quot;);</span>
+<span class="fc" id="L55">		inputWithDelimiterTwo.createNewFile();</span>
+
+		/* Writing of content into files */
+<span class="fc" id="L58">		inputNoDelimiterStr = &quot;012345678901234567890&quot; + System.lineSeparator()</span>
+<span class="fc" id="L59">				+ &quot;123456789 0123456789&quot;;</span>
+
+<span class="fc" id="L61">		inputNoDelimiterTwoStr = &quot;123456789 0123456789&quot;</span>
+<span class="fc" id="L62">				+ System.lineSeparator() + &quot;012345678901234567890&quot;;</span>
+
+<span class="fc" id="L64">		inputWithDelimiterStr = &quot;0123456789;0123456789;0123456789&quot;</span>
+<span class="fc" id="L65">				+ System.lineSeparator() + &quot;0123456789;0123456789;0123456789&quot;</span>
+<span class="fc" id="L66">				+ System.lineSeparator() + &quot;0123456789 0123456789;0123456789&quot;;</span>
+
+<span class="fc" id="L68">		inputWithDelimiterTwoStr = &quot;9876543210;9876543210;9876543210&quot;</span>
+<span class="fc" id="L69">				+ System.lineSeparator() + &quot;9876543210;9876543210;9876543210&quot;</span>
+<span class="fc" id="L70">				+ System.lineSeparator() + &quot;9876543210;9876543210;9876543210&quot;;</span>
+
+<span class="fc" id="L72">		Files.write(inputNoDelimiter.toPath(), inputNoDelimiterStr.getBytes(),</span>
+<span class="fc" id="L73">				StandardOpenOption.APPEND);</span>
+<span class="fc" id="L74">		Files.write(inputNoDelimiterTwo.toPath(),</span>
+<span class="fc" id="L75">				inputNoDelimiterTwoStr.getBytes(), StandardOpenOption.APPEND);</span>
+<span class="fc" id="L76">		Files.write(inputWithDelimiter.toPath(),</span>
+<span class="fc" id="L77">				inputWithDelimiterStr.getBytes(), StandardOpenOption.APPEND);</span>
+<span class="fc" id="L78">		Files.write(inputWithDelimiterTwo.toPath(),</span>
+<span class="fc" id="L79">				inputWithDelimiterTwoStr.getBytes(), StandardOpenOption.APPEND);</span>
+
+<span class="fc" id="L81">	}</span>
+
+	@Before
+	public void setUp() {
+<span class="fc" id="L85">		cutTool = new CutTool(null);</span>
+<span class="fc" id="L86">	}</span>
+
+	@After
+	public void tearDown() {
+<span class="fc" id="L90">		cutTool = null;</span>
+<span class="fc" id="L91">	}</span>
+
+	@AfterClass
+	public static void tearDownAfterClass() throws IOException {
+		/* Delete all temporary testing files */
+<span class="fc" id="L96">		deleteFolder(tempDir);</span>
+
+		/* Setting all file objects to null */
+<span class="fc" id="L99">		workingDir = null;</span>
+<span class="fc" id="L100">		tempDir = null;</span>
+<span class="fc" id="L101">		inputNoDelimiter = null;</span>
+<span class="fc" id="L102">		inputNoDelimiterTwo = null;</span>
+<span class="fc" id="L103">		inputWithDelimiter = null;</span>
+<span class="fc" id="L104">		inputWithDelimiterTwo = null;</span>
+
+		/* Setting all file object Strings to null */
+<span class="fc" id="L107">		inputNoDelimiterStr = null;</span>
+<span class="fc" id="L108">		inputNoDelimiterTwoStr = null;</span>
+<span class="fc" id="L109">		inputWithDelimiterStr = null;</span>
+<span class="fc" id="L110">		inputWithDelimiterTwoStr = null;</span>
+<span class="fc" id="L111">	}</span>
+
+	// Our Black Box Positive Test Cases
+	@Test
+	public void getHelp_HelpInformationReturned() throws IOException {
+
+<span class="fc" id="L117">		final String expectedMessage = new String(Files.readAllBytes(new File(</span>
+<span class="fc" id="L118">				&quot;help_files&quot; + File.separator + &quot;cut_help&quot;).toPath()));</span>
+<span class="fc" id="L119">		assertEquals(expectedMessage, cutTool.getHelp());</span>
+<span class="fc" id="L120">	}</span>
+
+	@Test
+	public void cutSpecifiedCharactersOneCharacterOnly_OneCharacterReturned() {
+
+<span class="fc" id="L125">		final String list = &quot;1&quot;;</span>
+<span class="fc" id="L126">		final String expectedMessage = &quot;0&quot; + System.lineSeparator() + &quot;1&quot;;</span>
+<span class="fc" id="L127">		final String returnMessage = cutTool.cutSpecfiedCharacters(list,</span>
+<span class="fc" id="L128">				inputNoDelimiterStr);</span>
+
+<span class="fc" id="L130">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L131">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L133">	}</span>
+
+	@Test
+	public void cutSpecifiedCharactersMultipleSingleCharacters_MultipleCharactersReturned() {
+
+<span class="fc" id="L138">		final String list = &quot;1,3,5,7,9&quot;;</span>
+<span class="fc" id="L139">		final String expectedMessage = &quot;02468&quot; + System.lineSeparator()</span>
+<span class="fc" id="L140">				+ &quot;13579&quot;;</span>
+<span class="fc" id="L141">		final String returnMessage = cutTool.cutSpecfiedCharacters(list,</span>
+<span class="fc" id="L142">				inputNoDelimiterStr);</span>
+
+<span class="fc" id="L144">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L145">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L147">	}</span>
+
+	@Test
+	public void cutSpecifiedCharactersMultipleRangedSingleCharacters_MultipleCharactersReturned() {
+
+<span class="fc" id="L152">		final String list = &quot;1-3,7-20,3-5,6,21,19&quot;;</span>
+<span class="fc" id="L153">		final String expectedMessage = &quot;012345678901234567890&quot;</span>
+<span class="fc" id="L154">				+ System.lineSeparator() + &quot;123456789 0123456789&quot;;</span>
+<span class="fc" id="L155">		final String returnMessage = cutTool.cutSpecfiedCharacters(list,</span>
+<span class="fc" id="L156">				inputNoDelimiterStr);</span>
+
+<span class="fc" id="L158">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L159">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L161">	}</span>
+
+	@Test
+	public void cutSpecifiedCharactersEndRange_MultipleCharactersReturned() {
+
+<span class="fc" id="L166">		final String list = &quot;-3,-6,-5&quot;;</span>
+<span class="fc" id="L167">		final String expectedMessage = &quot;012345&quot; + System.lineSeparator()</span>
+<span class="fc" id="L168">				+ &quot;123456&quot;;</span>
+<span class="fc" id="L169">		final String returnMessage = cutTool.cutSpecfiedCharacters(list,</span>
+<span class="fc" id="L170">				inputNoDelimiterStr);</span>
+
+<span class="fc" id="L172">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L173">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L175">	}</span>
+
+	@Test
+	public void cutSpecifiedCharactersStartRange_MultipleCharactersReturned() {
+
+<span class="fc" id="L180">		final String list = &quot;3-,6-,5-&quot;;</span>
+<span class="fc" id="L181">		final String expectedMessage = &quot;2345678901234567890&quot;</span>
+<span class="fc" id="L182">				+ System.lineSeparator() + &quot;3456789 0123456789&quot;;</span>
+
+<span class="fc" id="L184">		final String returnMessage = cutTool.cutSpecfiedCharacters(list,</span>
+<span class="fc" id="L185">				inputNoDelimiterStr);</span>
+
+<span class="fc" id="L187">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L188">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L190">	}</span>
+
+	@Test
+	public void cutSpecifiedCharactersWithDelimiterSingleFieldOpDtoOpF_SingleFieldReturned() {
+
+<span class="fc" id="L195">		final String delim = &quot;;&quot;;</span>
+<span class="fc" id="L196">		final String fields = &quot;1&quot;;</span>
+
+<span class="fc" id="L198">		final String expectedMessage = &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L199">				+ &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L200">				+ &quot;0123456789 0123456789&quot;;</span>
+
+<span class="fc" id="L202">		final String returnMessage = cutTool</span>
+<span class="fc" id="L203">				.cutSpecifiedCharactersUseDelimiter(fields, delim,</span>
+<span class="fc" id="L204">						inputWithDelimiterStr);</span>
+
+<span class="fc" id="L206">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L207">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L209">	}</span>
+
+	@Test
+	public void cutSpecifiedCharactersWithDelimiterMultipleFieldOpDtoOpF_MultipleFieldsReturned() {
+
+<span class="fc" id="L214">		final String delim = &quot;;&quot;;</span>
+<span class="fc" id="L215">		final String fields = &quot;1,2-3&quot;;</span>
+
+<span class="fc" id="L217">		final String expectedMessage = &quot;0123456789;0123456789;0123456789&quot;</span>
+<span class="fc" id="L218">				+ System.lineSeparator() + &quot;0123456789;0123456789;0123456789&quot;</span>
+<span class="fc" id="L219">				+ System.lineSeparator() + &quot;0123456789 0123456789;0123456789&quot;;</span>
+
+<span class="fc" id="L221">		final String returnMessage = cutTool</span>
+<span class="fc" id="L222">				.cutSpecifiedCharactersUseDelimiter(fields, delim,</span>
+<span class="fc" id="L223">						inputWithDelimiterStr);</span>
+
+<span class="fc" id="L225">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L226">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L228">	}</span>
+
+	@Test
+	public void cutSpecifiedCharactersWithDelimiterMultipleFieldEndRange_MultipleFieldsReturned() {
+
+<span class="fc" id="L233">		final String delim = &quot;;&quot;;</span>
+<span class="fc" id="L234">		final String fields = &quot;-1&quot;;</span>
+
+<span class="fc" id="L236">		final String expectedMessage = &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L237">				+ &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L238">				+ &quot;0123456789 0123456789&quot;;</span>
+
+<span class="fc" id="L240">		final String returnMessage = cutTool</span>
+<span class="fc" id="L241">				.cutSpecifiedCharactersUseDelimiter(fields, delim,</span>
+<span class="fc" id="L242">						inputWithDelimiterStr);</span>
+
+<span class="fc" id="L244">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L245">		assertEquals(0, cutTool.getStatusCode());</span>
+<span class="fc" id="L246">	}</span>
+
+	@Test
+	public void cutSpecifiedCharactersWithDelimiterMultipleFieldStartRange_MultipleFieldsReturned() {
+
+<span class="fc" id="L251">		final String delim = &quot;;&quot;;</span>
+<span class="fc" id="L252">		final String fields = &quot;3-&quot;;</span>
+
+<span class="fc" id="L254">		final String expectedMessage = &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L255">				+ &quot;0123456789&quot;;</span>
+
+<span class="fc" id="L257">		final String returnMessage = cutTool</span>
+<span class="fc" id="L258">				.cutSpecifiedCharactersUseDelimiter(fields, delim,</span>
+<span class="fc" id="L259">						inputWithDelimiterStr);</span>
+
+<span class="fc" id="L261">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L262">		assertEquals(0, cutTool.getStatusCode());</span>
+<span class="fc" id="L263">	}</span>
+
+	@Test
+	public void cutSpecifiedCharactersWithDelimiterOpF_OriginalInputReturned() {
+
+<span class="fc" id="L268">		final String fields = &quot;1-3&quot;;</span>
+
+<span class="fc" id="L270">		final String expectedMessage = &quot;0123456789;0123456789;0123456789&quot;</span>
+<span class="fc" id="L271">				+ System.lineSeparator() + &quot;0123456789;0123456789;0123456789&quot;</span>
+<span class="fc" id="L272">				+ System.lineSeparator() + &quot;0123456789 0123456789;0123456789&quot;;</span>
+
+<span class="fc" id="L274">		final String returnMessage = cutTool</span>
+<span class="fc" id="L275">				.cutSpecifiedCharactersUseDelimiter(fields, &quot;&quot;,</span>
+<span class="fc" id="L276">						inputWithDelimiterStr);</span>
+
+<span class="fc" id="L278">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L279">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L281">	}</span>
+
+	@Test
+	public void execute_getHelp_HelpInformationReturned() throws IOException {
+
+<span class="fc" id="L286">		final String[] args = { &quot;-help&quot; };</span>
+<span class="fc" id="L287">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L289">		final String expectedMessage = new String(Files.readAllBytes(new File(</span>
+<span class="fc" id="L290">				&quot;help_files/cut_help&quot;).toPath()));</span>
+<span class="fc" id="L291">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L293">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L294">	}</span>
+
+	@Test
+	public void execute_getHelpWithOtherOptions_HelpInformationReturned()
+			throws IOException {
+
+<span class="fc" id="L300">		final String[] args = { &quot;-help&quot;, &quot;-c&quot;, &quot;1-10&quot;,</span>
+<span class="fc" id="L301">				inputNoDelimiter.toString() };</span>
+<span class="fc" id="L302">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L304">		final String expectedMessage = new String(Files.readAllBytes(new File(</span>
+<span class="fc" id="L305">				&quot;help_files/cut_help&quot;).toPath()));</span>
+<span class="fc" id="L306">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L308">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L309">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersOneCharacterOnly_OneCharacterReturned() {
+
+<span class="fc" id="L314">		final String[] args = { &quot;-c&quot;, &quot;1&quot;, inputNoDelimiter.toString() };</span>
+<span class="fc" id="L315">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L317">		final String expectedMessage = &quot;0&quot; + System.lineSeparator() + &quot;1&quot;;</span>
+<span class="fc" id="L318">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L320">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L321">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L323">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersMultipleSingleCharacters_MultipleCharactersReturned() {
+
+<span class="fc" id="L328">		final String[] args = { &quot;-c&quot;, &quot;1,3,5,7,9&quot;, inputNoDelimiter.toString() };</span>
+<span class="fc" id="L329">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L331">		final String expectedMessage = &quot;02468&quot; + System.lineSeparator()</span>
+<span class="fc" id="L332">				+ &quot;13579&quot;;</span>
+<span class="fc" id="L333">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L335">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L336">		assertEquals(0, cutTool.getStatusCode());</span>
+<span class="fc" id="L337">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersMultipleRangedCharacters_MultipleCharactersReturned() {
+
+<span class="fc" id="L342">		final String[] args = { &quot;-c&quot;, &quot;1-3,3-5,5-7,7-100&quot;,</span>
+<span class="fc" id="L343">				inputNoDelimiter.toString() };</span>
+<span class="fc" id="L344">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L346">		final String expectedMessage = &quot;012345678901234567890&quot;</span>
+<span class="fc" id="L347">				+ System.lineSeparator() + &quot;123456789 0123456789&quot;;</span>
+<span class="fc" id="L348">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L350">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L351">		assertEquals(0, cutTool.getStatusCode());</span>
+<span class="fc" id="L352">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersMultipleRangedSingleCharacters_MultipleCharactersReturned() {
+
+<span class="fc" id="L357">		final String[] args = { &quot;-c&quot;, &quot;1-3,7-20,3-5,6,21,19&quot;,</span>
+<span class="fc" id="L358">				inputNoDelimiter.toString() };</span>
+<span class="fc" id="L359">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L361">		final String expectedMessage = &quot;012345678901234567890&quot;</span>
+<span class="fc" id="L362">				+ System.lineSeparator() + &quot;123456789 0123456789&quot;;</span>
+<span class="fc" id="L363">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L365">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L366">		assertEquals(0, cutTool.getStatusCode());</span>
+<span class="fc" id="L367">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersEndRange_MultipleCharactersReturned() {
+
+<span class="fc" id="L372">		final String[] args = { &quot;-c&quot;, &quot;-3,-6,-5&quot;, inputNoDelimiter.toString() };</span>
+<span class="fc" id="L373">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L375">		final String expectedMessage = &quot;012345&quot; + System.lineSeparator()</span>
+<span class="fc" id="L376">				+ &quot;123456&quot;;</span>
+<span class="fc" id="L377">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L379">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L380">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L382">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersStartRange_MultipleCharactersReturned() {
+
+<span class="fc" id="L387">		final String[] args = { &quot;-c&quot;, &quot;3-,6-,5-&quot;, inputNoDelimiter.toString() };</span>
+<span class="fc" id="L388">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L390">		final String expectedMessage = &quot;2345678901234567890&quot;</span>
+<span class="fc" id="L391">				+ System.lineSeparator() + &quot;3456789 0123456789&quot;;</span>
+<span class="fc" id="L392">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L394">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L395">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L397">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithDelimiterSingleFieldOpDtoOpF_SingleFieldReturned() {
+
+<span class="fc" id="L402">		final String[] args = { &quot;-d&quot;, &quot;';'&quot;, &quot;-f&quot;, &quot;1&quot;,</span>
+<span class="fc" id="L403">				inputWithDelimiter.toString() };</span>
+<span class="fc" id="L404">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L406">		final String expectedMessage = &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L407">				+ &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L408">				+ &quot;0123456789 0123456789&quot;;</span>
+
+<span class="fc" id="L410">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L412">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L413">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L415">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithDelimiterSingleFieldOpFtoOpD_SingleFieldReturned() {
+
+<span class="fc" id="L420">		final String[] args = { &quot;-f&quot;, &quot;1&quot;, &quot;-d&quot;, &quot;';'&quot;,</span>
+<span class="fc" id="L421">				inputWithDelimiter.toString() };</span>
+<span class="fc" id="L422">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L424">		final String expectedMessage = &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L425">				+ &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L426">				+ &quot;0123456789 0123456789&quot;;</span>
+
+<span class="fc" id="L428">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L430">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L431">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L433">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithDelimiterMultipleFieldOpDtoOpF_MultipleFieldsReturned() {
+
+<span class="fc" id="L438">		final String[] args = { &quot;-d&quot;, &quot;';'&quot;, &quot;-f&quot;, &quot;1,2-3&quot;,</span>
+<span class="fc" id="L439">				inputWithDelimiter.toString() };</span>
+<span class="fc" id="L440">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L442">		final String expectedMessage = &quot;0123456789;0123456789;0123456789&quot;</span>
+<span class="fc" id="L443">				+ System.lineSeparator() + &quot;0123456789;0123456789;0123456789&quot;</span>
+<span class="fc" id="L444">				+ System.lineSeparator() + &quot;0123456789 0123456789;0123456789&quot;;</span>
+
+<span class="fc" id="L446">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L448">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L449">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L451">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithDelimiterMultipleFieldOpFtoOpD_MultipleFieldsReturned() {
+
+<span class="fc" id="L456">		final String[] args = { &quot;-f&quot;, &quot;1,2-3&quot;, &quot;-d&quot;, &quot;';'&quot;,</span>
+<span class="fc" id="L457">				inputWithDelimiter.toString() };</span>
+<span class="fc" id="L458">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L460">		final String expectedMessage = &quot;0123456789;0123456789;0123456789&quot;</span>
+<span class="fc" id="L461">				+ System.lineSeparator() + &quot;0123456789;0123456789;0123456789&quot;</span>
+<span class="fc" id="L462">				+ System.lineSeparator() + &quot;0123456789 0123456789;0123456789&quot;;</span>
+
+<span class="fc" id="L464">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L466">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L467">		assertEquals(0, cutTool.getStatusCode());</span>
+<span class="fc" id="L468">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithDelimiterMultipleFieldEndRange_MultipleFieldsReturned() {
+
+<span class="fc" id="L473">		final String[] args = { &quot;-f&quot;, &quot;-1&quot;, &quot;-d&quot;, &quot;\&quot;;\&quot;&quot;,</span>
+<span class="fc" id="L474">				inputWithDelimiter.toString() };</span>
+<span class="fc" id="L475">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L477">		final String expectedMessage = &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L478">				+ &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L479">				+ &quot;0123456789 0123456789&quot;;</span>
+
+<span class="fc" id="L481">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L483">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L484">		assertEquals(0, cutTool.getStatusCode());</span>
+<span class="fc" id="L485">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithDelimiterMultipleFieldStartRange_MultipleFieldsReturned() {
+
+<span class="fc" id="L490">		final String[] args = { &quot;-f&quot;, &quot;3-&quot;, &quot;-d&quot;, &quot;';'&quot;,</span>
+<span class="fc" id="L491">				inputWithDelimiter.toString() };</span>
+<span class="fc" id="L492">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L494">		final String expectedMessage = &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L495">				+ &quot;0123456789&quot;;</span>
+
+<span class="fc" id="L497">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L499">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L500">		assertEquals(0, cutTool.getStatusCode());</span>
+<span class="fc" id="L501">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithDelimiterOpF_OriginalInputReturned() {
+
+<span class="fc" id="L506">		final String[] args = { &quot;-f&quot;, &quot;1-3&quot;, inputWithDelimiter.toString() };</span>
+<span class="fc" id="L507">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L509">		final String expectedMessage = &quot;0123456789;0123456789;0123456789&quot;</span>
+<span class="fc" id="L510">				+ System.lineSeparator() + &quot;0123456789;0123456789;0123456789&quot;</span>
+<span class="fc" id="L511">				+ System.lineSeparator() + &quot;0123456789 0123456789;0123456789&quot;;</span>
+
+<span class="fc" id="L513">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L515">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L516">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L518">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersMultipleFiles_MultipleLinesReturned() {
+
+<span class="fc" id="L523">		final String[] args = { &quot;-c&quot;, &quot;7-8,1-5,10&quot;,</span>
+<span class="fc" id="L524">				inputNoDelimiter.toString(), inputNoDelimiterTwo.toString() };</span>
+<span class="fc" id="L525">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L527">		final String expectedMessage = &quot;01234679&quot; + System.lineSeparator()</span>
+<span class="fc" id="L528">				+ &quot;1234578&quot; + System.lineSeparator() + &quot;1234578 &quot;</span>
+<span class="fc" id="L529">				+ System.lineSeparator() + &quot;01234679&quot;;</span>
+
+<span class="fc" id="L531">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L533">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L534">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L536">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithDelimiterMultipleFiles_MultipleLinesReturned() {
+
+<span class="fc" id="L541">		final String[] args = { &quot;-f&quot;, &quot;1-2&quot;, &quot;-d&quot;, &quot;';'&quot;,</span>
+<span class="fc" id="L542">				inputWithDelimiter.toString(), inputWithDelimiterTwo.toString() };</span>
+<span class="fc" id="L543">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L545">		final String expectedMessage = &quot;0123456789;0123456789&quot;</span>
+<span class="fc" id="L546">				+ System.lineSeparator() + &quot;0123456789;0123456789&quot;</span>
+<span class="fc" id="L547">				+ System.lineSeparator() + &quot;0123456789 0123456789;0123456789&quot;</span>
+<span class="fc" id="L548">				+ System.lineSeparator() + &quot;9876543210;9876543210&quot;</span>
+<span class="fc" id="L549">				+ System.lineSeparator() + &quot;9876543210;9876543210&quot;</span>
+<span class="fc" id="L550">				+ System.lineSeparator() + &quot;9876543210;9876543210&quot;;</span>
+
+<span class="fc" id="L552">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L554">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L555">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L557">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithStandardInput_CharactersReturned() {
+
+<span class="fc" id="L562">		final String[] args = { &quot;-c&quot;, &quot;1&quot;, &quot;-&quot; };</span>
+<span class="fc" id="L563">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L565">		final String expectedMessage = &quot;0&quot; + System.lineSeparator() + &quot;1&quot;;</span>
+
+<span class="fc" id="L567">		final String returnMessage = cutTool.execute(workingDir,</span>
+<span class="fc" id="L568">				inputNoDelimiterStr);</span>
+
+<span class="fc" id="L570">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L571">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L573">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersUseDelimiterWithStandardInput_CharactersReturned() {
+
+<span class="fc" id="L578">		final String[] args = { &quot;-f&quot;, &quot;1&quot;, &quot;-d&quot;, &quot;';'&quot;, &quot;-&quot; };</span>
+<span class="fc" id="L579">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L581">		final String expectedMessage = &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L582">				+ &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L583">				+ &quot;0123456789 0123456789&quot;;</span>
+
+<span class="fc" id="L585">		final String returnMessage = cutTool.execute(workingDir,</span>
+<span class="fc" id="L586">				inputWithDelimiterStr);</span>
+
+<span class="fc" id="L588">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L589">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L591">	}</span>
+
+	// Team Rocket's Black Box Negative Test Cases
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithStartIndexZeroRange_ErrorMessageReturned() {
+
+<span class="fc" id="L598">		final String[] args = { &quot;-c&quot;, &quot;0-1&quot;, inputNoDelimiter.toString(),</span>
+<span class="fc" id="L599">				inputNoDelimiterTwo.toString() };</span>
+<span class="fc" id="L600">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L602">		final String expectedMessage = &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L603">				+ System.lineSeparator()</span>
+<span class="fc" id="L604">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+
+<span class="fc" id="L606">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L608">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L609">		assertEquals(-1, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L611">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithEndIndexZeroRange_ErrorMessageReturned() {
+
+<span class="fc" id="L616">		final String[] args = { &quot;-c&quot;, &quot;1-0&quot;, inputNoDelimiter.toString(),</span>
+<span class="fc" id="L617">				inputNoDelimiterTwo.toString() };</span>
+<span class="fc" id="L618">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L620">		final String expectedMessage = &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L621">				+ System.lineSeparator()</span>
+<span class="fc" id="L622">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+
+<span class="fc" id="L624">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L626">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L627">		assertEquals(-1, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L629">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithIndexZeroNoRange_ErrorMessageReturned() {
+
+<span class="fc" id="L634">		final String[] args = { &quot;-c&quot;, &quot;0&quot;, inputNoDelimiter.toString(),</span>
+<span class="fc" id="L635">				inputNoDelimiterTwo.toString() };</span>
+<span class="fc" id="L636">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L638">		final String expectedMessage = &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L639">				+ System.lineSeparator()</span>
+<span class="fc" id="L640">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+
+<span class="fc" id="L642">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L644">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L645">		assertEquals(-1, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L647">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithEndIndexZero_ErrorMessageReturned() {
+
+<span class="fc" id="L652">		final String[] args = { &quot;-c&quot;, &quot;-0&quot;, inputNoDelimiter.toString(),</span>
+<span class="fc" id="L653">				inputNoDelimiterTwo.toString() };</span>
+<span class="fc" id="L654">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L656">		final String expectedMessage = &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L657">				+ System.lineSeparator()</span>
+<span class="fc" id="L658">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+
+<span class="fc" id="L660">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L662">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L663">		assertEquals(-1, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L665">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithStartIndexZero_ErrorMessageReturned() {
+
+<span class="fc" id="L670">		final String[] args = { &quot;-c&quot;, &quot;0-&quot;, inputNoDelimiter.toString(),</span>
+<span class="fc" id="L671">				inputNoDelimiterTwo.toString() };</span>
+<span class="fc" id="L672">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L674">		final String expectedMessage = &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L675">				+ System.lineSeparator()</span>
+<span class="fc" id="L676">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+
+<span class="fc" id="L678">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L680">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L681">		assertEquals(-1, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L683">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithDelimiterWithIndexZeroNoRange_ErrorMessageReturned() {
+
+<span class="fc" id="L688">		final String[] args = { &quot;-f&quot;, &quot;0&quot;, &quot;-d&quot;, &quot;';'&quot;,</span>
+<span class="fc" id="L689">				inputWithDelimiter.toString(), inputWithDelimiterTwo.toString() };</span>
+<span class="fc" id="L690">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L692">		final String expectedMessage = &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L693">				+ System.lineSeparator()</span>
+<span class="fc" id="L694">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+
+<span class="fc" id="L696">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L698">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L699">		assertEquals(-1, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L701">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithDelimiterWithStartIndexZeroRange_ErrorMessageReturned() {
+
+<span class="fc" id="L706">		final String[] args = { &quot;-f&quot;, &quot;0-1&quot;, &quot;-d&quot;, &quot;';'&quot;,</span>
+<span class="fc" id="L707">				inputWithDelimiter.toString(), inputWithDelimiterTwo.toString() };</span>
+<span class="fc" id="L708">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L710">		final String expectedMessage = &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L711">				+ System.lineSeparator()</span>
+<span class="fc" id="L712">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+
+<span class="fc" id="L714">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L716">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L717">		assertEquals(-1, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L719">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithDelimiterWithEndIndexZeroRange_ErrorMessageReturned() {
+
+<span class="fc" id="L724">		final String[] args = { &quot;-f&quot;, &quot;1-0&quot;, &quot;-d&quot;, &quot;';'&quot;,</span>
+<span class="fc" id="L725">				inputWithDelimiter.toString(), inputWithDelimiterTwo.toString() };</span>
+<span class="fc" id="L726">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L728">		final String expectedMessage = &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L729">				+ System.lineSeparator()</span>
+<span class="fc" id="L730">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+
+<span class="fc" id="L732">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L734">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L735">		assertEquals(-1, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L737">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithDelimiterWithEndIndexZero_ErrorMessageReturned() {
+
+<span class="fc" id="L742">		final String[] args = { &quot;-f&quot;, &quot;-0&quot;, &quot;-d&quot;, &quot;';'&quot;,</span>
+<span class="fc" id="L743">				inputWithDelimiter.toString(), inputWithDelimiterTwo.toString() };</span>
+<span class="fc" id="L744">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L746">		final String expectedMessage = &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L747">				+ System.lineSeparator()</span>
+<span class="fc" id="L748">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+
+<span class="fc" id="L750">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L752">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L753">		assertEquals(-1, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L755">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithDelimiterWithStartIndexZero_ErrorMessageReturned() {
+
+<span class="fc" id="L760">		final String[] args = { &quot;-f&quot;, &quot;0-&quot;, &quot;-d&quot;, &quot;';'&quot;,</span>
+<span class="fc" id="L761">				inputWithDelimiter.toString(), inputWithDelimiterTwo.toString() };</span>
+<span class="fc" id="L762">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L764">		final String expectedMessage = &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L765">				+ System.lineSeparator()</span>
+<span class="fc" id="L766">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+
+<span class="fc" id="L768">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L770">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L771">		assertEquals(-1, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L773">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersFileDoesNotExist_ErrorMessageReturned() {
+
+<span class="fc" id="L778">		final String[] args = { &quot;-c&quot;, &quot;1-5&quot;, inputNoDelimiter.toString(),</span>
+<span class="fc" id="L779">				&quot;fileDoesNotExists.txt&quot; };</span>
+<span class="fc" id="L780">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L782">		final String expectedMessage = &quot;01234&quot; + System.lineSeparator()</span>
+<span class="fc" id="L783">				+ &quot;12345&quot; + System.lineSeparator()</span>
+<span class="fc" id="L784">				+ &quot;cut: fileDoesNotExists.txt: No such file or directory&quot;;</span>
+<span class="fc" id="L785">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L787">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L788">		assertEquals(-2, cutTool.getStatusCode());</span>
+<span class="fc" id="L789">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithDelimiterFileDoesNotExist_ErrorMessageReturned() {
+
+<span class="fc" id="L794">		final String[] args = { &quot;-d&quot;, &quot;';'&quot;, &quot;-f&quot;, &quot;1&quot;,</span>
+<span class="fc" id="L795">				inputWithDelimiter.toString(), &quot;fileDoesNotExists.txt&quot; };</span>
+<span class="fc" id="L796">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L798">		final String expectedMessage = &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L799">				+ &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L800">				+ &quot;0123456789 0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L801">				+ &quot;cut: fileDoesNotExists.txt: No such file or directory&quot;;</span>
+
+<span class="fc" id="L803">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L805">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L806">		assertEquals(-2, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L808">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersRangeEndingWithComma_ErrorMessageReturned() {
+
+<span class="fc" id="L813">		final String[] args = { &quot;-c&quot;, &quot;1,&quot;, inputNoDelimiter.toString() };</span>
+<span class="fc" id="L814">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L816">		final String expectedMessage = &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L817">				+ System.lineSeparator()</span>
+<span class="fc" id="L818">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+<span class="fc" id="L819">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L821">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L822">		assertEquals(-1, cutTool.getStatusCode());</span>
+<span class="fc" id="L823">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithDelimiterRangeEndingWithComma_ErrorMessageReturned() {
+
+<span class="fc" id="L828">		final String[] args = { &quot;-d&quot;, &quot;';'&quot;, &quot;-f&quot;, &quot;1,&quot;,</span>
+<span class="fc" id="L829">				inputWithDelimiter.toString() };</span>
+<span class="fc" id="L830">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L832">		final String expectedMessage = &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L833">				+ System.lineSeparator()</span>
+<span class="fc" id="L834">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+<span class="fc" id="L835">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L837">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L838">		assertEquals(-1, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L840">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersRangeStartingWithComma_ErrorMessageReturned() {
+
+<span class="fc" id="L845">		final String[] args = { &quot;-c&quot;, &quot;,1&quot;, inputNoDelimiter.toString() };</span>
+<span class="fc" id="L846">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L848">		final String expectedMessage = &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L849">				+ System.lineSeparator()</span>
+<span class="fc" id="L850">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+<span class="fc" id="L851">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L853">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L854">		assertEquals(-1, cutTool.getStatusCode());</span>
+<span class="fc" id="L855">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithDelimiterRangeStartingWithComma_ErrorMessageReturned() {
+
+<span class="fc" id="L860">		final String[] args = { &quot;-d&quot;, &quot;';'&quot;, &quot;-f&quot;, &quot;,1&quot;,</span>
+<span class="fc" id="L861">				inputWithDelimiter.toString() };</span>
+<span class="fc" id="L862">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L864">		final String expectedMessage = &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L865">				+ System.lineSeparator()</span>
+<span class="fc" id="L866">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+<span class="fc" id="L867">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L869">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L870">		assertEquals(-1, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L872">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersInsufficientArguments_ErrorMessageReturned() {
+
+<span class="fc" id="L877">		final String[] args = { &quot;-c&quot; };</span>
+<span class="fc" id="L878">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L880">		final String expectedMessage = &quot;cut: option requires an argument -- 'c'&quot;</span>
+<span class="fc" id="L881">				+ System.lineSeparator()</span>
+<span class="fc" id="L882">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+<span class="fc" id="L883">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L885">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L886">		assertEquals(-4, cutTool.getStatusCode());</span>
+<span class="fc" id="L887">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithNoArguments_ErrorMessageReturned() {
+
+<span class="fc" id="L892">		final String[] args = {};</span>
+<span class="fc" id="L893">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L895">		final String expectedMessage = &quot;cut: you must specify a list of bytes, characters, or fields&quot;</span>
+<span class="fc" id="L896">				+ System.lineSeparator()</span>
+<span class="fc" id="L897">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+
+<span class="fc" id="L899">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L901">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L902">		assertEquals(-4, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L904">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithOneDashOnly_ErrorMessageReturned() {
+
+<span class="fc" id="L909">		final String[] args = { &quot;-&quot; };</span>
+<span class="fc" id="L910">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L912">		final String expectedMessage = &quot;cut: you must specify a list of bytes, characters, or fields&quot;</span>
+<span class="fc" id="L913">				+ System.lineSeparator()</span>
+<span class="fc" id="L914">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+
+<span class="fc" id="L916">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L918">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L919">		assertEquals(-4, cutTool.getStatusCode());</span>
+<span class="fc" id="L920">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithMoreThanOneDelimiter_ErrorMessageReturned() {
+
+<span class="fc" id="L925">		final String[] args = { &quot;-f&quot;, &quot;1&quot;, &quot;-d&quot;, &quot;';  '&quot;,</span>
+<span class="fc" id="L926">				inputWithDelimiter.toString() };</span>
+<span class="fc" id="L927">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L929">		final String expectedMessage = &quot;cut: the delimiter must be a single character&quot;</span>
+<span class="fc" id="L930">				+ System.lineSeparator()</span>
+<span class="fc" id="L931">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+<span class="fc" id="L932">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L934">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L935">		assertEquals(-5, cutTool.getStatusCode());</span>
+<span class="fc" id="L936">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersWithDelimiterNoDelimiter_ErrorMessageReturned() {
+
+<span class="fc" id="L941">		final String[] args = { &quot;-f&quot;, &quot;1&quot;, &quot;-d&quot;, inputWithDelimiter.toString() };</span>
+<span class="fc" id="L942">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L944">		final String expectedMessage = &quot;cut: option requires an argument -- 'd'&quot;</span>
+<span class="fc" id="L945">				+ System.lineSeparator()</span>
+<span class="fc" id="L946">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+
+<span class="fc" id="L948">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L950">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L951">		assertEquals(-4, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L953">	}</span>
+
+	@Test
+	public void execute_cutSpecifiedCharactersInvalidOption_ErrorMessageReturned() {
+
+<span class="fc" id="L958">		final String[] args = { &quot;-g&quot;, &quot;1&quot;, inputNoDelimiter.toString() };</span>
+<span class="fc" id="L959">		cutTool = new CutTool(args);</span>
+
+<span class="fc" id="L961">		final String expectedMessage = &quot;cut: invalid option -- 'g'&quot;</span>
+<span class="fc" id="L962">				+ System.lineSeparator()</span>
+<span class="fc" id="L963">				+ &quot;Try 'cut -help' for more information.&quot;;</span>
+<span class="fc" id="L964">		final String returnMessage = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L966">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L967">		assertEquals(-3, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L969">	}</span>
+
+	// Helper Functions
+	public static void deleteFolder(File folder) throws IOException {
+<span class="fc" id="L973">		File[] files = folder.listFiles();</span>
+<span class="pc bpc" id="L974" title="1 of 2 branches missed.">		if (files != null) { // some JVMs return null for empty dirs</span>
+<span class="fc bfc" id="L975" title="All 2 branches covered.">			for (File f : files) {</span>
+<span class="pc bpc" id="L976" title="1 of 2 branches missed.">				if (f.isDirectory()) {</span>
+<span class="nc" id="L977">					deleteFolder(f);</span>
+<span class="nc" id="L978">				} else {</span>
+<span class="fc" id="L979">					f.delete();</span>
+				}
+			}
+			
+<span class="fc" id="L983">			Files.delete(folder.toPath());</span>
+		} 
+<span class="fc" id="L985">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

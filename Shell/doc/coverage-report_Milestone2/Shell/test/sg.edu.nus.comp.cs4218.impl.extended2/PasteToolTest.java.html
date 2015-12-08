@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>PasteToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.extended2</a> &gt; <span class="el_source">PasteToolTest.java</span></div><h1>PasteToolTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.extended2;
+
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+<span class="fc" id="L11">public class PasteToolTest {</span>
+	private PasteTool pasteTool;
+<span class="fc" id="L13">	private static final String NEW_LINE = System.lineSeparator();</span>
+	private static final String INPUT_FILE_PATH_1 = &quot;__test__input__1__&quot;;
+	private static final String INPUT_FILE_PATH_2 = &quot;__test__input__2__&quot;;
+<span class="fc" id="L16">	private static final String INPUT_FILE_PATH_3 = &quot;__test__input__3__&quot;;</span>
+	
+	@Before
+	public void before() {
+<span class="fc" id="L20">		pasteTool = new PasteTool(null);</span>
+<span class="fc" id="L21">		String content1 = &quot;1&quot; + NEW_LINE + &quot;2&quot;;</span>
+<span class="fc" id="L22">		String content2 = &quot;a&quot; + NEW_LINE + &quot;b&quot; + NEW_LINE + &quot;c&quot;;</span>
+<span class="fc" id="L23">		String content3 = &quot;1&quot; + NEW_LINE + &quot;2&quot; + NEW_LINE + &quot;3&quot; + NEW_LINE</span>
+<span class="fc" id="L24">				+ &quot;4&quot;;</span>
+
+<span class="fc" id="L26">		createFile(INPUT_FILE_PATH_1, content1);</span>
+<span class="fc" id="L27">		createFile(INPUT_FILE_PATH_2, content2);</span>
+<span class="fc" id="L28">		createFile(INPUT_FILE_PATH_3, content3);</span>
+<span class="fc" id="L29">	}</span>
+
+	@After
+	public void after() {
+<span class="fc" id="L33">		pasteTool = null;</span>
+
+<span class="fc" id="L35">		deleteFile(INPUT_FILE_PATH_1);</span>
+<span class="fc" id="L36">		deleteFile(INPUT_FILE_PATH_2);</span>
+<span class="fc" id="L37">		deleteFile(INPUT_FILE_PATH_3);</span>
+<span class="fc" id="L38">	}</span>
+	
+	@Corrected
+	/**
+	 * For serial, the default delimiter is tab rather than space.
+	 */
+	@Test
+	/**
+	 * Positive test
+	 * pasteSerial() with multiple strings
+	 */
+	public void pasteSerial_ArrayWithMultipleString_StatusCodeZero() {
+<span class="fc" id="L50">		String[] input = { &quot;quorra&quot;, &quot;1&quot;, &quot;2&quot; };</span>
+<span class="fc" id="L51">		String output = &quot;quorra\t1\t2&quot;;</span>
+
+<span class="fc" id="L53">		assertEquals(output, pasteTool.pasteSerial(input));</span>
+<span class="fc" id="L54">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L55">	}</span>
+	
+	@Corrected
+	/**
+	 * The delimiter should not be included after the last string in the input
+	 */
+	@Test
+	/**
+	 * Positive test
+	 * pasteUseDelimiter() with delimiter is a single char
+	 */
+	public void pasteUseDelimiter_SingleDelimiter_StatusCodeZero() {
+<span class="fc" id="L67">		String[] input = { &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot; };</span>
+<span class="fc" id="L68">		String output = &quot;1;2;3;4;5;6&quot;;</span>
+
+<span class="fc" id="L70">		assertEquals(output, pasteTool.pasteUseDelimiter(&quot;;&quot;, input));</span>
+<span class="fc" id="L71">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L72">	}</span>
+	
+	@Corrected
+	/**
+	 * The delimiter should not be included after the last string in the input
+	 */
+	@Test
+	/**
+	 * Positive test
+	 * pasteUseDelimiter() with multiple delimiters
+	 */
+	public void pasteUseDelimiter_MultipleDelimiter_StatusCodeZero() {
+<span class="fc" id="L84">		String[] input = { &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot; };</span>
+<span class="fc" id="L85">		String output = &quot;1|2.3;4|5.6&quot;;</span>
+
+<span class="fc" id="L87">		assertEquals(output, pasteTool.pasteUseDelimiter(&quot;|.;&quot;, input));</span>
+<span class="fc" id="L88">		assertEquals(0, pasteTool.getStatusCode());</span>
+<span class="fc" id="L89">	}</span>
+	
+	/**
+	 * Helper method to create temporary file
+	 * @param path
+	 * @param content
+	 */
+	public void createFile(String path, String content) {
+<span class="fc" id="L97">		File file = new File(path);</span>
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">		if (file.exists()) {</span>
+<span class="nc" id="L99">			System.err.println(&quot;Cannot create file in JUnit test for uniq.&quot;);</span>
+<span class="nc" id="L100">			System.err.println(path + &quot; already exists.&quot;);</span>
+<span class="nc" id="L101">			System.err.println(&quot;Please enter another name for test input file.&quot;);</span>
+		}
+		
+<span class="fc" id="L104">		pasteTool.writeToFile(path, content);</span>
+<span class="fc" id="L105">	}</span>
+
+	/**
+	 * Helper method to delete temporary file
+	 * 
+	 * @param path
+	 */
+	public void deleteFile(String path) {
+<span class="fc" id="L113">		File file = new File(path);</span>
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">		if (!file.exists()) {</span>
+<span class="nc" id="L115">			return;</span>
+		}
+
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">		if (!file.delete()) {</span>
+<span class="nc" id="L119">			System.err.println(path + &quot; deletion fails.&quot;);</span>
+<span class="nc" id="L120">			System.err.println(&quot;Please delete the file manually.&quot;);</span>
+		}
+<span class="fc" id="L122">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

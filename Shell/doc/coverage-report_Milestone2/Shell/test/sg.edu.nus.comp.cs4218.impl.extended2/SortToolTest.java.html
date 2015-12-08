@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>SortToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.extended2</a> &gt; <span class="el_source">SortToolTest.java</span></div><h1>SortToolTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.extended2;
+
+import static org.junit.Assert.assertEquals;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.extended2.ISortTool;
+
+<span class="fc" id="L18">public class SortToolTest {</span>
+	// TODO Always test against the interface!
+	private static ISortTool sortTool;
+	
+<span class="fc" id="L22">	final String SORT_HELP = &quot;sort : sort lines of text files&quot;</span>
+<span class="fc" id="L23">			+ System.lineSeparator() + &quot;Command Format - sort [OPTIONS] [FILE]&quot;</span>
+<span class="fc" id="L24">			+ System.lineSeparator() + &quot;FILE - Name of the file&quot;</span>
+<span class="fc" id="L25">			+ System.lineSeparator() + &quot;-c : Check whether the given file is&quot;</span>
+<span class="fc" id="L26">			+ &quot; already sorted, if it is not all sorted, print a diagnostic&quot;</span>
+<span class="fc" id="L27">			+ &quot; containing the first line that is out of order&quot;</span>
+<span class="fc" id="L28">			+ System.lineSeparator()</span>
+<span class="fc" id="L29">			+ &quot;-help : Brief information about supported options&quot;;</span>
+
+	public static void writeFile(String fileName, String s) throws IOException {
+<span class="fc" id="L32">		BufferedWriter out = new BufferedWriter(new FileWriter(fileName));</span>
+<span class="fc" id="L33">		out.write(s);</span>
+<span class="fc" id="L34">		out.close();</span>
+<span class="fc" id="L35">	}</span>
+
+	@BeforeClass
+	public static void initialize() throws IOException {
+
+		// creating testFile of sorted and unsorted order
+<span class="fc" id="L41">		File myFile1 = new File(&quot;unSortFile.txt&quot;);</span>
+<span class="fc" id="L42">		myFile1.createNewFile();</span>
+<span class="fc" id="L43">		writeFile(&quot;unSortFile.txt&quot;, &quot;zzz\r\nbbb\r\naaa\r\nggg\r\nfff&quot;);</span>
+
+		// creating testFile 1/2 with sorted order
+<span class="fc" id="L46">		File myFile2 = new File(&quot;sortFile.txt&quot;);</span>
+<span class="fc" id="L47">		myFile2.createNewFile();</span>
+<span class="fc" id="L48">		writeFile(&quot;sortFile.txt&quot;, &quot;aaa\r\nbbb\r\nccc\r\nddd\r\neee&quot;);</span>
+
+<span class="fc" id="L50">	}</span>
+
+	@Before
+	public void before() throws IOException {
+<span class="fc" id="L54">		sortTool = new SortTool(null);</span>
+<span class="fc" id="L55">	}</span>
+
+	@After
+	public void after() {
+<span class="fc" id="L59">		sortTool = null;</span>
+<span class="fc" id="L60">	}</span>
+
+	@AfterClass
+	public static void method() {
+
+<span class="fc" id="L65">		File file1 = new File(&quot;sortFile.txt&quot;);</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">		if (file1.exists()) {</span>
+<span class="fc" id="L67">			file1.delete();</span>
+		}
+
+<span class="fc" id="L70">		File file2 = new File(&quot;unSortFile.txt&quot;);</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">		if (file2.exists()) {</span>
+<span class="fc" id="L72">			file2.delete();</span>
+		}
+<span class="fc" id="L74">	}</span>
+
+	/*
+	 * =========================================================================
+	 * The Following test method verify for the correctness of the core function
+	 * of the class
+	 * =========================================================================
+	 */
+
+	@Corrected
+	// Swap result and expected
+	// No new line at result
+	// Change the &quot;\n&quot; to System.lineSeparator
+	@Test
+	public void sortFileTestForUnsortedFile() {
+<span class="fc" id="L89">		String result = sortTool.sortFile(&quot;unSortFile.txt&quot;);</span>
+<span class="fc" id="L90">		assertEquals(</span>
+<span class="fc" id="L91">				&quot;aaa&quot; + System.lineSeparator() + &quot;bbb&quot; + System.lineSeparator()</span>
+<span class="fc" id="L92">						+ &quot;fff&quot; + System.lineSeparator() + &quot;ggg&quot;</span>
+<span class="fc" id="L93">						+ System.lineSeparator() + &quot;zzz&quot;, result);</span>
+<span class="fc" id="L94">	}</span>
+
+	@Corrected
+	// Swap result and expected
+	// No new line at result
+	// Wrong output
+	@Test
+	public void checkIfSortedTestForUnsortedFile() {
+<span class="fc" id="L102">		String result = sortTool.checkIfSorted(&quot;unSortFile.txt&quot;);</span>
+<span class="fc" id="L103">		assertEquals(&quot;sort: unSortFile.txt:2: disorder: bbb&quot;, result);</span>
+<span class="fc" id="L104">	}</span>
+
+	@Corrected
+	// Swap result and expected
+	// No new line at result
+	// Use System.lineSeparator instead of &quot;\n&quot;
+	@Test
+	public void sortFileTestForSortedFile() {
+<span class="fc" id="L112">		String result = sortTool.sortFile(&quot;sortFile.txt&quot;);</span>
+<span class="fc" id="L113">		assertEquals(</span>
+<span class="fc" id="L114">				&quot;aaa&quot; + System.lineSeparator() + &quot;bbb&quot; + System.lineSeparator()</span>
+<span class="fc" id="L115">						+ &quot;ccc&quot; + System.lineSeparator() + &quot;ddd&quot;</span>
+<span class="fc" id="L116">						+ System.lineSeparator() + &quot;eee&quot;, result);</span>
+<span class="fc" id="L117">	}</span>
+
+	@Test
+	public void checkIfSortedTestForSortedFile() {
+<span class="fc" id="L121">		String result = sortTool.checkIfSorted(&quot;sortFile.txt&quot;);</span>
+<span class="fc" id="L122">		assertEquals(result, &quot;&quot;);</span>
+<span class="fc" id="L123">	}</span>
+
+	@Corrected
+	//Change the output of the help message
+	@Test
+	public void getHelpTest() {
+<span class="fc" id="L129">		assertEquals(SORT_HELP, sortTool.getHelp());</span>
+<span class="fc" id="L130">	}</span>
+	
+	@Test
+	public void checkIfSorted_InvalidFile_FileNotFoundError(){
+<span class="fc" id="L134">		assertEquals(</span>
+<span class="fc" id="L135">				&quot;sort: open failed: notExist.txt: No such file or directory&quot;,</span>
+<span class="fc" id="L136">				sortTool.checkIfSorted(&quot;notExist.txt&quot;));</span>
+<span class="fc" id="L137">	}</span>
+	
+	@Test
+	public void sortFile_InvalidFile_FileNotFoundError(){
+<span class="fc" id="L141">		assertEquals(</span>
+<span class="fc" id="L142">				&quot;sort: open failed: notExist.txt: No such file or directory&quot;,</span>
+<span class="fc" id="L143">				sortTool.sortFile(&quot;notExist.txt&quot;));</span>
+<span class="fc" id="L144">	}</span>
+	
+	/**
+	 * Helper class
+	 */
+//	@Test
+//	public void sortMultipleFiles_InvalidFile_FileNotFoundError(){
+//		SortTool concreteSortTool = new SortTool(null);
+//		
+//		List&lt;String&gt; fileList = new Vector&lt;&gt;();
+//		fileList.add(&quot;notExist.txt&quot;);
+//		
+//		assertEquals(
+//				&quot;sort: open failed: notExist.txt: No such file or directory&quot;,
+//				concreteSortTool.sortMultipleFiles(fileList));
+//	}
+
+	/*
+	 * ======================================================================
+	 * The Following test method verify for the error check of the
+	 * arguments/ file not exist etc ...
+	 * ======================================================================
+	 */
+
+	@Test
+	public void fileNotExist() throws IOException {
+
+<span class="fc" id="L171">		String[] argument = { &quot;notExist.txt&quot; };</span>
+
+<span class="fc" id="L173">		sortTool = new SortTool(argument);</span>
+
+<span class="fc" id="L175">		File myFile = new File(&quot;user.dir&quot;);</span>
+<span class="fc" id="L176">		String result = sortTool.execute(myFile, null);</span>
+<span class="fc" id="L177">		assertEquals(</span>
+<span class="fc" id="L178">				&quot;sort: open failed: notExist.txt: No such file or directory&quot;,</span>
+<span class="fc" id="L179">				result);</span>
+<span class="fc" id="L180">	}</span>
+
+	@Corrected
+	// Swap result and expected
+	// Split the test case into individual test case
+	@Test
+	public void execute_FileNotExistWithOption_OpenFailError() {
+<span class="fc" id="L187">		String[] argument2 = { &quot;-c&quot;, &quot;notExist.txt&quot; };</span>
+
+<span class="fc" id="L189">		sortTool = new SortTool(argument2);</span>
+
+<span class="fc" id="L191">		String result2 = sortTool.execute(new File(&quot;user.dir&quot;), null);</span>
+<span class="fc" id="L192">		assertEquals(</span>
+<span class="fc" id="L193">				&quot;sort: open failed: notExist.txt: No such file or directory&quot;,</span>
+<span class="fc" id="L194">				result2);</span>
+<span class="fc" id="L195">	}</span>
+
+	@Corrected
+	// Swap result and expected
+	// Split the test case into individual test case
+	@Test
+	public void invalidOptionFileExist() throws IOException {
+
+<span class="fc" id="L203">		String[] argument1 = { &quot;unknown&quot;, &quot;sortFile.txt&quot; };</span>
+
+<span class="fc" id="L205">		sortTool = new SortTool(argument1);</span>
+
+<span class="fc" id="L207">		String result = sortTool.execute(new File(&quot;user.dir&quot;), null);</span>
+<span class="fc" id="L208">		assertEquals(&quot;sort: open failed: unknown: No such file or directory&quot;,</span>
+<span class="fc" id="L209">				result);</span>
+<span class="fc" id="L210">	}</span>
+
+	@Corrected
+	//Use System.lineSeparator instead of \n
+	@Test
+	public void execute_InvalidOption_OptionError() {
+<span class="fc" id="L216">		String[] argument2 = { &quot;-unknown&quot;, &quot;sortFile.txt&quot; };</span>
+
+<span class="fc" id="L218">		sortTool = new SortTool(argument2);</span>
+<span class="fc" id="L219">		String result2 = sortTool.execute(new File(&quot;user.dir&quot;), null);</span>
+
+<span class="fc" id="L221">		assertEquals(&quot;sort: unknown option -- u&quot; + System.lineSeparator()</span>
+<span class="fc" id="L222">				+ &quot;Try 'sort -help' for more information&quot;, result2);</span>
+<span class="fc" id="L223">	}</span>
+
+	@Corrected
+	// Swap result and expected
+	// Split the test case into individual test case
+	@Test
+	public void invalidArguments() throws IOException {
+
+<span class="fc" id="L231">		String[] argument1 = { &quot;unknown&quot;, &quot;unknown&quot; };</span>
+
+<span class="fc" id="L233">		sortTool = new SortTool(argument1);</span>
+
+<span class="fc" id="L235">		String result = sortTool.execute(new File(&quot;user.dir&quot;), null);</span>
+<span class="fc" id="L236">		assertEquals(&quot;sort: open failed: unknown: No such file or directory&quot;,</span>
+<span class="fc" id="L237">				result);</span>
+<span class="fc" id="L238">	}</span>
+
+	@Test
+	public void execute_3InvalidFile_OpenFailError() {
+<span class="fc" id="L242">		String[] argument2 = { &quot;unknown&quot;, &quot;unknown&quot;, &quot;unknown&quot; };</span>
+
+<span class="fc" id="L244">		sortTool = new SortTool(argument2);</span>
+
+<span class="fc" id="L246">		String result2 = sortTool.execute(new File(&quot;user.dir&quot;), null);</span>
+<span class="fc" id="L247">		assertEquals(&quot;sort: open failed: unknown: No such file or directory&quot;,</span>
+<span class="fc" id="L248">				result2);</span>
+<span class="fc" id="L249">	}</span>
+
+	@Corrected
+	//Use System.lineSeparator instead of \n
+	@Test
+	public void nullArguments() throws IOException {
+
+<span class="fc" id="L256">		String[] argument = {};</span>
+
+<span class="fc" id="L258">		sortTool = new SortTool(argument);</span>
+
+<span class="fc" id="L260">		String result = sortTool.execute(new File(&quot;user.dir&quot;), null);</span>
+<span class="fc" id="L261">		assertEquals(&quot;sort: missing operand &quot;+ System.lineSeparator()</span>
+<span class="fc" id="L262">				+ &quot;Try 'sort -help' for more information&quot;, result);</span>
+<span class="fc" id="L263">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

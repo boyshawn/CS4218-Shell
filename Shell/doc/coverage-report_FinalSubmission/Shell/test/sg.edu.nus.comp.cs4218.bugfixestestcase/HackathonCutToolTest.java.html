@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>HackathonCutToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.bugfixestestcase</a> &gt; <span class="el_source">HackathonCutToolTest.java</span></div><h1>HackathonCutToolTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.bugfixestestcase;
+
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.extended2.ICutTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.CutTool;
+
+<span class="fc" id="L14">public class HackathonCutToolTest {</span>
+
+	private ICutTool cuttool;
+
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L20">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L24">		cuttool = null;</span>
+<span class="fc" id="L25">	}</span>
+
+	/**
+	 * &lt;p&gt;
+	 * Bug Fix Comment
+	 * &lt;/p&gt;
+	 * &lt;p&gt;
+	 * &lt;ol&gt;
+	 * &lt;li&gt;&lt;b&gt;BUG_ID : &lt;/b&gt;#5.1&lt;/li&gt;
+	 * &lt;li&gt;&lt;b&gt;Class : &lt;/b&gt;CutTool.java&lt;/li&gt;
+	 * &lt;li&gt;&lt;b&gt;Method : &lt;/b&gt;getStartEndIdxWithDelim(String listItem, int dashIdx,
+	 * int delimitedArrLen)&lt;/li&gt;
+	 * &lt;li&gt;&lt;b&gt;Line Numbers : &lt;/b&gt;679 - 681&lt;/li&gt;
+	 * &lt;/ol&gt;
+	 * &lt;/p&gt;
+	 * 
+	 */
+	@Test
+	public void cutSpecfiedCharDecreasingRangeTest() throws IOException {
+<span class="fc" id="L44">		cuttool = new CutTool(new String[] {});</span>
+<span class="fc" id="L45">		String expectedResult = &quot;Error: invalid decreasing range&quot;;</span>
+<span class="fc" id="L46">		assertEquals(</span>
+<span class="fc" id="L47">				expectedResult,</span>
+<span class="fc" id="L48">				cuttool.cutSpecifiedCharactersUseDelimiter(&quot;8-6&quot;, &quot;:&quot;,</span>
+<span class="fc" id="L49">						&quot;alpha:beta:gamma:delta:epsilon:zeta:eta:teta:iota:kappa:lambda:mu&quot;));</span>
+<span class="fc" id="L50">	}</span>
+
+	/**
+	 * &lt;p&gt;
+	 * Bug Fix Comment
+	 * &lt;/p&gt;
+	 * &lt;p&gt;
+	 * &lt;ol&gt;
+	 * &lt;li&gt;&lt;b&gt;BUG_ID : &lt;/b&gt;#5.2&lt;/li&gt;
+	 * &lt;li&gt;&lt;b&gt;Class : &lt;/b&gt;CutTool.java&lt;/li&gt;
+	 * &lt;li&gt;&lt;b&gt;Method : &lt;/b&gt;cutSpecifiedCharactersUseDelimiter(String list,
+	 * String delim, String input)&lt;/li&gt;
+	 * &lt;li&gt;&lt;b&gt;Line Numbers : &lt;/b&gt;169 - 171&lt;/li&gt;
+	 * &lt;/ol&gt;
+	 * &lt;/p&gt;
+	 * 
+	 */
+	@Test
+	public void cutSpecfiedCharNotNumberRangeTest() throws IOException {
+<span class="fc" id="L69">		cuttool = new CutTool(new String[] {});</span>
+<span class="fc" id="L70">		String expectedResult = &quot;Error: invalid list argument for -c&quot;;</span>
+<span class="fc" id="L71">		assertEquals(</span>
+<span class="fc" id="L72">				expectedResult,</span>
+<span class="fc" id="L73">				cuttool.cutSpecifiedCharactersUseDelimiter(&quot;abc&quot;, &quot;:&quot;,</span>
+<span class="fc" id="L74">						&quot;alpha:beta:gamma:delta:epsilon:zeta:eta:teta:iota:kappa:lambda:mu&quot;));</span>
+<span class="fc" id="L75">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

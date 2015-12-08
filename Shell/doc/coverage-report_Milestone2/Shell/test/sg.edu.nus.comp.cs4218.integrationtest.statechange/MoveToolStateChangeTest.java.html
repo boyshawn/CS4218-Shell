@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>MoveToolStateChangeTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.integrationtest.statechange</a> &gt; <span class="el_source">MoveToolStateChangeTest.java</span></div><h1>MoveToolStateChangeTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.integrationtest.statechange;
+
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.Vector;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.impl.Shell;
+
+<span class="fc" id="L18">public class MoveToolStateChangeTest {</span>
+
+	// Static Variables
+	private static File workingDir;
+	private static File tempDir;
+	private static File input;
+	private static String inputStr;
+	private static String workingDirPath;
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+<span class="fc" id="L29">		File temp = new File(&quot;tempDir&quot;);</span>
+<span class="pc bpc" id="L30" title="1 of 2 branches missed.">		if (temp.exists()) {</span>
+<span class="nc" id="L31">			deleteFolder(temp);</span>
+		}
+		
+<span class="fc" id="L34">		workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+<span class="fc" id="L35">		tempDir = new File(Files.createDirectory(</span>
+<span class="fc" id="L36">				new File(workingDir.toString() + File.separator + &quot;tempDir&quot;)</span>
+<span class="fc" id="L37">						.toPath()).toString());</span>
+
+<span class="fc" id="L39">		input = new File(tempDir.toString() + File.separator + &quot;input&quot;);</span>
+<span class="fc" id="L40">		input.createNewFile();</span>
+
+<span class="fc" id="L42">		inputStr = &quot;0123456789012345678901234567890123456789&quot;</span>
+<span class="fc" id="L43">				+ System.lineSeparator()</span>
+<span class="fc" id="L44">				+ &quot;0123456789012345678901234567890123456789&quot;</span>
+<span class="fc" id="L45">				+ System.lineSeparator()</span>
+<span class="fc" id="L46">				+ &quot;0123456789 0123456789 0123456789 0123456789&quot;;</span>
+
+<span class="fc" id="L48">		Files.write(input.toPath(), inputStr.getBytes(),</span>
+<span class="fc" id="L49">				StandardOpenOption.APPEND);</span>
+<span class="fc" id="L50">	}</span>
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">		if (input.exists()) {</span>
+<span class="fc" id="L56">			Files.delete(input.toPath());</span>
+<span class="fc" id="L57">			Files.delete(tempDir.toPath());</span>
+		}
+
+<span class="fc" id="L60">		File f = new File(workingDir.toString() + File.separator + &quot;inputNew&quot;);</span>
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">		if (f.exists()) {</span>
+<span class="nc" id="L62">			f.delete();</span>
+		}
+<span class="fc" id="L64">		workingDir = null;</span>
+
+<span class="fc" id="L66">	}</span>
+
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L70">		workingDirPath = System.getProperty(&quot;user.dir&quot;);</span>
+<span class="fc" id="L71">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+		
+<span class="fc" id="L76">		input.createNewFile();</span>
+<span class="fc" id="L77">		Files.write(input.toPath(), inputStr.getBytes(),</span>
+<span class="fc" id="L78">				StandardOpenOption.APPEND);</span>
+		
+		// reset the user.dir property to original state prior to the test case
+<span class="fc" id="L81">		System.setProperty(&quot;user.dir&quot;, workingDirPath);</span>
+<span class="fc" id="L82">	}</span>
+
+	// Positive Testing
+	@Test
+	public void cdMoveLsWithPiping_FilesListed() {
+
+<span class="fc" id="L88">		final String cdCmdStr = &quot;cd \&quot;&quot; + tempDir.toString() + &quot;\&quot;&quot;;</span>
+
+<span class="fc" id="L90">		final String moveCmdStr = &quot;move \&quot;&quot; + input.toString() + &quot;\&quot; &quot; + &quot;\&quot;&quot;</span>
+<span class="fc" id="L91">				+ workingDir.toString() + File.separator + &quot;inputNew\&quot;&quot;;</span>
+
+<span class="fc" id="L93">		final String lsCmdStr = &quot;ls&quot;;</span>
+
+<span class="fc" id="L95">		final String complexCmdStr = cdCmdStr + &quot;|&quot; + moveCmdStr + &quot;|&quot;</span>
+<span class="fc" id="L96">				+ lsCmdStr;</span>
+
+<span class="fc" id="L98">		final Vector&lt;String&gt; finalResult = Shell.shellTestExecution(complexCmdStr);</span>
+<span class="fc" id="L99">		assertTrue(finalResult.get(0).contains(&quot;input&quot;));</span>
+		
+		// remove inputNew
+<span class="fc" id="L102">		File file = new File(workingDir.toString() + File.separator + &quot;inputNew&quot;);</span>
+<span class="fc" id="L103">		file.delete();</span>
+
+<span class="fc" id="L105">	}</span>
+	
+
+	@Test
+	public void cdMoveLsWithSequentialExecution_FilesListed() {
+
+<span class="fc" id="L111">		final String cdCmdStr = &quot;cd \&quot;&quot; + tempDir.toString() + &quot;\&quot;&quot;;</span>
+
+<span class="fc" id="L113">		final String moveCmdStr = &quot;move \&quot;&quot; + input.toString() + &quot;\&quot; &quot; + &quot;\&quot;&quot;</span>
+<span class="fc" id="L114">				+ workingDir.toString() + File.separator + &quot;inputNew\&quot;&quot;;</span>
+
+<span class="fc" id="L116">		final String lsCmdStr = &quot;ls&quot;;</span>
+
+<span class="fc" id="L118">		final Vector&lt;String&gt; finalResult = Shell.shellTestExecution(cdCmdStr, moveCmdStr, lsCmdStr);</span>
+<span class="fc" id="L119">		assertTrue(finalResult.get(0).contains(&quot;&quot;));</span>
+		
+		// remove inputNew
+<span class="fc" id="L122">		File file = new File(workingDir.toString() + File.separator + &quot;inputNew&quot;);</span>
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">		if (file.exists()) {</span>
+<span class="fc" id="L124">			file.delete();</span>
+		}
+<span class="fc" id="L126">	}</span>
+
+
+	// Negative Testing
+
+	@Test
+	public void lsMoveDeleteWithPiping_FileNotFound() {
+
+<span class="fc" id="L134">		final String lsCmdStr = &quot;ls&quot;;</span>
+<span class="fc" id="L135">		final String moveCmdStr = &quot;move \&quot;&quot; + input.toString() + &quot;\&quot; &quot; + &quot;\&quot;&quot;</span>
+<span class="fc" id="L136">				+ workingDir.toString() + File.separator + &quot;inputNew\&quot;&quot;;</span>
+<span class="fc" id="L137">		final String deleteCmdStr = &quot;delete &quot; + tempDir.getName()</span>
+<span class="fc" id="L138">				+ File.separator + &quot;inputNew&quot;;</span>
+
+<span class="fc" id="L140">		final String complexCmdStr = lsCmdStr + &quot;|&quot; + moveCmdStr + &quot;|&quot;</span>
+<span class="fc" id="L141">				+ deleteCmdStr;</span>
+
+<span class="fc" id="L143">		final Vector&lt;String&gt; finalResult = Shell.shellTestExecution(complexCmdStr);</span>
+
+<span class="fc" id="L145">		final String expectedMessage = &quot;delete: tempDir&quot;+File.separator+&quot;inputNew: No such file or directory&quot;;</span>
+
+<span class="fc" id="L147">		assertTrue(finalResult.get(0).contains(expectedMessage));</span>
+
+<span class="fc" id="L149">	}</span>
+
+	@Test
+	public void lsMoveDeleteWithSequentialExecution_FileNotFound() {
+
+<span class="fc" id="L154">		final String lsCmdStr = &quot;ls&quot;;</span>
+<span class="fc" id="L155">		final String moveCmdStr = &quot;move \&quot;&quot; + input.toString() + &quot;\&quot; &quot; + &quot;\&quot;&quot;</span>
+<span class="fc" id="L156">				+ workingDir.toString() + File.separator + &quot;inputNew\&quot;&quot;;</span>
+<span class="fc" id="L157">		final String deleteCmdStr = &quot;delete &quot; + tempDir.getName()</span>
+<span class="fc" id="L158">				+ File.separator + &quot;inputNew&quot;;</span>
+
+<span class="fc" id="L160">		final Vector&lt;String&gt; finalResult = Shell.shellTestExecution(lsCmdStr,</span>
+<span class="fc" id="L161">				moveCmdStr, deleteCmdStr);</span>
+
+<span class="fc" id="L163">		final String expectedMessage = &quot;delete: tempDir&quot;+File.separator+&quot;inputNew: No such file or directory&quot;;</span>
+<span class="fc" id="L164">		assertTrue(finalResult.get(0).contains(expectedMessage));</span>
+
+<span class="fc" id="L166">	}</span>
+	
+	public static void deleteFolder(File folder) {
+<span class="nc" id="L169">		File[] files = folder.listFiles();</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">		if (files != null) { // some JVMs return null for empty dirs</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">			for (File f : files) {</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">				if (f.isDirectory()) {</span>
+<span class="nc" id="L173">					deleteFolder(f);</span>
+<span class="nc" id="L174">				} else {</span>
+<span class="nc" id="L175">					f.delete();</span>
+				}
+			}
+		}
+<span class="nc" id="L179">		folder.delete();</span>
+<span class="nc" id="L180">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

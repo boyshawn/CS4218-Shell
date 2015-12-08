@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>MoveToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.fileutils</a> &gt; <span class="el_source">MoveToolTest.java</span></div><h1>MoveToolTest.java</h1><pre class="source lang-java linenums">/**
+ * Assumption(s) Made: 
+ * The Move command only supports the following functions:
+ * 
+ * 1. Move file1 to file2
+ * 2. Move directory dir1 to dir2
+ * 3. Move multiple files into directory
+ *
+ * These functions are tested in the test cases below.
+ * 
+ */
+package sg.edu.nus.comp.cs4218.impl.fileutils;
+
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.fileutils.IMoveTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.MoveTool;
+
+<span class="fc" id="L28">public class MoveToolTest {</span>
+	// Variables
+	private IMoveTool moveTool;
+	private File workingDir;
+	private File sourceDir;
+	private File destDir;
+	private File fileToMove;
+	private String initialWorkingDirStr;
+	private String fileContent;
+
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L40">		moveTool = new MoveTool(null);</span>
+
+<span class="fc" id="L42">		initialWorkingDirStr = System.getProperty(&quot;user.dir&quot;);</span>
+<span class="fc" id="L43">		workingDir = new File(initialWorkingDirStr);</span>
+
+<span class="fc" id="L45">		sourceDir = new File(Files.createDirectory(</span>
+<span class="fc" id="L46">				new File(workingDir.toString() + File.separator + &quot;sourceDir&quot;)</span>
+<span class="fc" id="L47">						.toPath()).toString());</span>
+<span class="fc" id="L48">		destDir = new File(Files.createDirectory(</span>
+<span class="fc" id="L49">				new File(workingDir.toString() + File.separator + &quot;destDir&quot;)</span>
+<span class="fc" id="L50">						.toPath()).toString());</span>
+
+<span class="fc" id="L52">		fileToMove = new File(sourceDir.toString() + File.separator</span>
+<span class="fc" id="L53">				+ &quot;fileToMove.txt&quot;);</span>
+<span class="fc" id="L54">		fileToMove.createNewFile();</span>
+
+<span class="fc" id="L56">		fileContent = &quot;1111111&quot;;</span>
+<span class="fc" id="L57">		Files.write(fileToMove.toPath(), fileContent.getBytes(),</span>
+<span class="fc" id="L58">				StandardOpenOption.APPEND);</span>
+<span class="fc" id="L59">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L63">		moveTool = null;</span>
+
+<span class="fc" id="L65">		deleteFolder(sourceDir);</span>
+<span class="fc" id="L66">		deleteFolder(destDir);</span>
+
+<span class="fc" id="L68">		workingDir = null;</span>
+<span class="fc" id="L69">		sourceDir = null;</span>
+<span class="fc" id="L70">		destDir = null;</span>
+
+<span class="fc" id="L72">		System.setProperty(&quot;user.dir&quot;, initialWorkingDirStr);</span>
+<span class="fc" id="L73">	}</span>
+
+	// Black Box Positive Testing
+
+	@Test
+	public void move_renameFileTest() throws IOException {
+
+<span class="fc" id="L80">		boolean fileMoved = moveTool</span>
+<span class="fc" id="L81">				.move(fileToMove, new File(destDir.toString() + File.separator</span>
+<span class="fc" id="L82">						+ &quot;fileMoved.txt&quot;));</span>
+
+<span class="fc" id="L84">		assertTrue(fileMoved == true);</span>
+<span class="fc" id="L85">		assertEquals(0, moveTool.getStatusCode());</span>
+
+<span class="fc" id="L87">	}</span>
+
+	@Test
+	public void move_renameDirectoryTest() throws IOException {
+
+<span class="fc" id="L92">		File from = new File(Files.createDirectory(</span>
+<span class="fc" id="L93">				new File(workingDir.toString() + File.separator + &quot;from&quot;)</span>
+<span class="fc" id="L94">						.toPath()).toString());</span>
+<span class="fc" id="L95">		File to = new File(&quot;renamedDir&quot;);</span>
+
+<span class="fc" id="L97">		boolean fileMoved = moveTool.move(from, to);</span>
+
+<span class="fc" id="L99">		assertTrue(fileMoved == true);</span>
+<span class="fc" id="L100">		assertEquals(0, moveTool.getStatusCode());</span>
+
+<span class="fc" id="L102">		to.delete();</span>
+
+<span class="fc" id="L104">	}</span>
+
+	@Test
+	public void execute_renameFileTest() throws IOException {
+
+<span class="fc" id="L109">		File to = new File(destDir.toString() + File.separator</span>
+<span class="fc" id="L110">				+ &quot;renamedMovedFile.txt&quot;);</span>
+
+<span class="fc" id="L112">		String[] args = { fileToMove.toString(), to.toString() };</span>
+
+<span class="fc" id="L114">		moveTool = new MoveTool(args);</span>
+<span class="fc" id="L115">		String returnMessage = moveTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L117">		assertEquals(0, moveTool.getStatusCode());</span>
+<span class="fc" id="L118">		assertEquals(&quot;&quot;, returnMessage);</span>
+
+<span class="fc" id="L120">		to.delete();</span>
+<span class="fc" id="L121">	}</span>
+
+	@Test
+	public void execute_renameDirectoryTest() throws IOException {
+
+<span class="fc" id="L126">		File from = new File(Files.createDirectory(</span>
+<span class="fc" id="L127">				new File(workingDir.toString() + File.separator + &quot;from&quot;)</span>
+<span class="fc" id="L128">						.toPath()).toString());</span>
+<span class="fc" id="L129">		File to = new File(&quot;renamedDir&quot;);</span>
+
+<span class="fc" id="L131">		String[] args = { from.toString(), to.toString() };</span>
+
+<span class="fc" id="L133">		moveTool = new MoveTool(args);</span>
+<span class="fc" id="L134">		String returnMessage = moveTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L136">		assertEquals(0, moveTool.getStatusCode());</span>
+<span class="fc" id="L137">		assertEquals(&quot;&quot;, returnMessage);</span>
+
+<span class="fc" id="L139">		to.delete();</span>
+<span class="fc" id="L140">	}</span>
+
+	@Test
+	public void execute_FilesToDirectoryTest() throws IOException {
+
+<span class="fc" id="L145">		File aFile = null;</span>
+
+<span class="fc" id="L147">		String[] args = new String[5];</span>
+
+<span class="fc bfc" id="L149" title="All 2 branches covered.">		for (int i = 0; i &lt; args.length - 1; i++) {</span>
+<span class="fc" id="L150">			aFile = new File(sourceDir.toString() + File.separator</span>
+<span class="fc" id="L151">					+ &quot;fileToMove_&quot; + i + &quot;.txt&quot;);</span>
+<span class="fc" id="L152">			aFile.createNewFile();</span>
+<span class="fc" id="L153">			Files.write(aFile.toPath(), fileContent.getBytes(),</span>
+<span class="fc" id="L154">					StandardOpenOption.APPEND);</span>
+<span class="fc" id="L155">			args[i] = aFile.toString();</span>
+		}
+
+<span class="fc" id="L158">		args[args.length - 1] = destDir.toString();</span>
+
+<span class="fc" id="L160">		moveTool = new MoveTool(args);</span>
+<span class="fc" id="L161">		String returnMessage = moveTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L163">		assertEquals(0, moveTool.getStatusCode());</span>
+<span class="fc" id="L164">		assertEquals(&quot;&quot;, returnMessage);</span>
+
+<span class="fc" id="L166">	}</span>
+
+	// Black Box Negative Testing
+
+	@Test
+	public void execute_NoArgumentsTest() throws IOException {
+
+<span class="fc" id="L173">		String[] args = {};</span>
+
+<span class="fc" id="L175">		moveTool = new MoveTool(args);</span>
+<span class="fc" id="L176">		String returnMessage = moveTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L178">		assertEquals(-1, moveTool.getStatusCode());</span>
+<span class="fc" id="L179">		assertEquals(&quot;move: missing file operand&quot;, returnMessage);</span>
+
+<span class="fc" id="L181">	}</span>
+
+	@Test
+	public void execute_SingleArgumentTest() throws IOException {
+
+<span class="fc" id="L186">		String[] args = { fileToMove.toString() };</span>
+
+<span class="fc" id="L188">		moveTool = new MoveTool(args);</span>
+<span class="fc" id="L189">		String returnMessage = moveTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L191">		assertEquals(-2, moveTool.getStatusCode());</span>
+<span class="fc" id="L192">		assertEquals(&quot;move: missing destination file operand after '&quot; + args[0]</span>
+<span class="fc" id="L193">				+ &quot;'&quot;, returnMessage);</span>
+
+<span class="fc" id="L195">	}</span>
+
+	@Test
+	public void execute_renameFile_FileNotFoundTest() throws IOException {
+
+<span class="fc" id="L200">		File from = new File(sourceDir.toString() + File.separator</span>
+<span class="fc" id="L201">				+ &quot;fileNotFound.txt&quot;);</span>
+<span class="fc" id="L202">		File to = new File(sourceDir.toString() + File.separator</span>
+<span class="fc" id="L203">				+ &quot;renamedMovedFile.txt&quot;);</span>
+
+<span class="fc" id="L205">		String[] args = { from.toString(), to.toString() };</span>
+
+<span class="fc" id="L207">		moveTool = new MoveTool(args);</span>
+<span class="fc" id="L208">		String returnMessage = moveTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L210">		assertEquals(1, moveTool.getStatusCode());</span>
+<span class="fc" id="L211">		assertEquals(&quot;move: '&quot; + from.getName()</span>
+<span class="fc" id="L212">				+ &quot;': No such file or directory&quot;, returnMessage);</span>
+
+<span class="fc" id="L214">	}</span>
+
+	@Test
+	public void execute_renameDirectory_FileNotFoundTest() throws IOException {
+
+<span class="fc" id="L219">		File from = new File(sourceDir.toString() + File.separator</span>
+<span class="fc" id="L220">				+ &quot;dirNotFound&quot;);</span>
+<span class="fc" id="L221">		File to = new File(&quot;renamedDir&quot;);</span>
+
+<span class="fc" id="L223">		String[] args = { from.toString(), to.toString() };</span>
+
+<span class="fc" id="L225">		moveTool = new MoveTool(args);</span>
+<span class="fc" id="L226">		String returnMessage = moveTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L228">		assertEquals(1, moveTool.getStatusCode());</span>
+<span class="fc" id="L229">		assertEquals(&quot;move: '&quot; + from.getName()</span>
+<span class="fc" id="L230">				+ &quot;': No such file or directory&quot;, returnMessage);</span>
+
+<span class="fc" id="L232">		to.delete();</span>
+<span class="fc" id="L233">	}</span>
+
+	@Test
+	public void execute_FilesToNonDirectoryTest() throws IOException {
+
+<span class="fc" id="L238">		File aFile = null;</span>
+
+<span class="fc" id="L240">		String[] args = new String[5];</span>
+
+<span class="fc bfc" id="L242" title="All 2 branches covered.">		for (int i = 0; i &lt; args.length - 1; i++) {</span>
+<span class="fc" id="L243">			aFile = new File(sourceDir.toString() + File.separator</span>
+<span class="fc" id="L244">					+ &quot;fileToMove&quot; + i + &quot;.txt&quot;);</span>
+<span class="fc" id="L245">			aFile.createNewFile();</span>
+<span class="fc" id="L246">			Files.write(aFile.toPath(), fileContent.getBytes(),</span>
+<span class="fc" id="L247">					StandardOpenOption.APPEND);</span>
+<span class="fc" id="L248">			args[i] = aFile.toString();</span>
+		}
+
+<span class="fc" id="L251">		args[args.length - 1] = destDir.toString() + File.separator + &quot;notADir&quot;;</span>
+
+<span class="fc" id="L253">		moveTool = new MoveTool(args);</span>
+<span class="fc" id="L254">		String returnMessage = moveTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L256">		assertEquals(-3, moveTool.getStatusCode());</span>
+<span class="fc" id="L257">		assertEquals(&quot;move: target '&quot; + args[args.length - 1]</span>
+<span class="fc" id="L258">				+ &quot;' is not a directory&quot;, returnMessage);</span>
+
+<span class="fc" id="L260">	}</span>
+
+	@Test
+	public void execute_MultipleFilesToDirectory_FileNotFoundTest()
+			throws IOException {
+
+<span class="fc" id="L266">		String[] args = new String[5];</span>
+<span class="fc" id="L267">		File aFile = null;</span>
+		
+<span class="fc" id="L269">		args[0] = new File(sourceDir.toString() + File.separator</span>
+<span class="fc" id="L270">				+ &quot;newFileToCopy_&quot; + 0 + &quot;.txt&quot;).toString();</span>
+<span class="fc" id="L271">		aFile = new File(args[0]);</span>
+<span class="fc" id="L272">		aFile.createNewFile();</span>
+<span class="fc" id="L273">		Files.write(aFile.toPath(), fileContent.getBytes(),</span>
+<span class="fc" id="L274">				StandardOpenOption.APPEND);</span>
+
+<span class="fc" id="L276">		args[1] = sourceDir.toString() + File.separator + &quot;fileNotFound1.txt&quot;;</span>
+
+<span class="fc" id="L278">		args[2] = new File(sourceDir.toString() + File.separator</span>
+<span class="fc" id="L279">				+ &quot;newFileToCopy_&quot; + 2 + &quot;.txt&quot;).toString();</span>
+<span class="fc" id="L280">		aFile = new File(args[2]);</span>
+<span class="fc" id="L281">		aFile.createNewFile();</span>
+<span class="fc" id="L282">		Files.write(aFile.toPath(), fileContent.getBytes(),</span>
+<span class="fc" id="L283">				StandardOpenOption.APPEND);</span>
+
+<span class="fc" id="L285">		args[3] = sourceDir.toString() + File.separator + &quot;fileNotFound2.txt&quot;;</span>
+<span class="fc" id="L286">		args[4] = destDir.toString();</span>
+
+<span class="fc" id="L288">		moveTool = new MoveTool(args);</span>
+<span class="fc" id="L289">		String returnMessage = moveTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L291">		assertEquals(&quot;move: 'fileNotFound1.txt': No such file or directory&quot;</span>
+<span class="fc" id="L292">				+ System.lineSeparator() + System.lineSeparator()</span>
+<span class="fc" id="L293">				+ &quot;move: 'fileNotFound2.txt': No such file or directory&quot;,</span>
+<span class="fc" id="L294">				returnMessage);</span>
+<span class="fc" id="L295">	}</span>
+
+	// Helper Functions
+	public static void deleteFolder(File folder) throws IOException {
+<span class="fc" id="L299">		File[] files = folder.listFiles();</span>
+<span class="pc bpc" id="L300" title="1 of 2 branches missed.">		if (files != null) { // some JVMs return null for empty dirs</span>
+<span class="fc bfc" id="L301" title="All 2 branches covered.">			for (File f : files) {</span>
+<span class="pc bpc" id="L302" title="1 of 2 branches missed.">				if (f.isDirectory()) {</span>
+<span class="nc" id="L303">					deleteFolder(f);</span>
+<span class="nc" id="L304">				} else {</span>
+<span class="fc" id="L305">					f.delete();</span>
+				}
+			}
+		}
+
+<span class="fc" id="L310">		Files.delete(folder.toPath());</span>
+<span class="fc" id="L311">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

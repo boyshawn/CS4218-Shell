@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>HackathonGrepToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.bugfixestestcase</a> &gt; <span class="el_source">HackathonGrepToolTest.java</span></div><h1>HackathonGrepToolTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.bugfixestestcase;
+
+import static org.junit.Assert.*;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+import sg.edu.nus.comp.cs4218.impl.extended1.GrepTool;
+
+<span class="fc" id="L18">public class HackathonGrepToolTest {</span>
+	@Rule
+<span class="fc" id="L20">	public TemporaryFolder folder = new TemporaryFolder();</span>
+	private File testFile;
+	private File testDir;
+	private GrepTool grepTool;
+
+	@Before
+	public void before() throws IOException {
+<span class="fc" id="L27">		testDir = new File(&quot;testCutFolder&quot;);</span>
+<span class="fc" id="L28">        testDir.mkdir();</span>
+        
+        // create new file with text
+<span class="fc" id="L31">        testFile = new File(testDir, &quot;test.txt&quot;);</span>
+<span class="fc" id="L32">        testFile.createNewFile();</span>
+<span class="fc" id="L33">        FileWriter fw = new FileWriter(testFile.getAbsoluteFile());</span>
+<span class="fc" id="L34">        BufferedWriter bw = new BufferedWriter(fw);</span>
+<span class="fc" id="L35">        StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L36">        sb.append(&quot;beforeBeforeBeforeApp&quot; + System.lineSeparator());</span>
+<span class="fc" id="L37">		sb.append(&quot;beforeBeforeApp&quot; + System.lineSeparator());</span>
+<span class="fc" id="L38">		sb.append(&quot;beforeApp&quot; + System.lineSeparator());</span>
+<span class="fc" id="L39">		sb.append(&quot;apple&quot; + System.lineSeparator());</span>
+<span class="fc" id="L40">		sb.append(&quot;mid&quot; + System.lineSeparator());</span>
+<span class="fc" id="L41">		sb.append(&quot;apples&quot; + System.lineSeparator());</span>
+<span class="fc" id="L42">		sb.append(&quot;afterApp&quot; + System.lineSeparator());</span>
+<span class="fc" id="L43">		sb.append(&quot;afterAfterApp&quot; + System.lineSeparator());</span>
+<span class="fc" id="L44">		sb.append(&quot;afterAfterAfterApp&quot; + System.lineSeparator());</span>
+<span class="fc" id="L45">		sb.append(&quot;afterAfterAfterAfterApp&quot; + System.lineSeparator());</span>
+<span class="fc" id="L46">		bw.write(sb.toString());</span>
+<span class="fc" id="L47">        bw.close();</span>
+<span class="fc" id="L48">	}</span>
+
+	@After
+	public void after() {
+<span class="fc" id="L52">		grepTool = null;</span>
+		
+		// delete all files in directory
+<span class="fc" id="L55">        File[] fileList = testDir.listFiles();</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        for (int i=0; i&lt;fileList.length; i++){</span>
+<span class="fc" id="L57">            File file = fileList[i];</span>
+<span class="fc" id="L58">            file.delete();</span>
+        }
+        // delete directory
+<span class="fc" id="L61">        testDir.delete();</span>
+        // garbage collector swoop in right about here
+<span class="fc" id="L63">        grepTool = null;</span>
+<span class="fc" id="L64">	}</span>
+	
+	/**
+	 * Bug 11.1: Grep should handle exception thrown when no fileName.
+	 * Fixed in sg.edu.nus.comp.cs4218.impl.extended1.GrepTool.java:286-289
+	 */
+	@Test
+	public void executeFileNameMissingTest(){
+<span class="fc" id="L72">		grepTool = new GrepTool(new String[]{&quot;-A&quot;, &quot;2&quot;, &quot;apple&quot;});</span>
+<span class="fc" id="L73">		assertEquals(GrepTool.ERR_MSG_INVALID_ARG, grepTool.execute(testDir, null));</span>
+<span class="fc" id="L74">		assertEquals(1, grepTool.getStatusCode());</span>
+<span class="fc" id="L75">	}</span>
+	
+	/**
+	 * Bug 11.2: Grep count line should handle null pattern value.
+	 * Fixed in sg.edu.nus.comp.cs4218.impl.extended1.GrepTool.java:443-445
+	 */
+	@Test
+	public void getCountOfMatchingLinesWithNullPatternTest() {
+<span class="fc" id="L83">		grepTool = new GrepTool(new String[0]);</span>
+<span class="fc" id="L84">		assertEquals(0, grepTool.getCountOfMatchingLines(null, &quot;abc\ndef&quot;));</span>
+<span class="fc" id="L85">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L86">	}</span>
+	
+	/**
+	 * Bug 11.3: Grep -A, -B and -C should handle -ve number.
+	 * Fixed in sg.edu.nus.comp.cs4218.impl.extended1.GrepTool.java:277, 311, 342
+	 * @throws IOException
+	 */
+	@Test
+	public void executeNegativeNumberATest() throws IOException{
+<span class="fc" id="L95">        grepTool = new GrepTool(new String[]{&quot;-A&quot;, &quot;-2&quot;, &quot;a.&quot;, testFile.getAbsolutePath()});</span>
+<span class="fc" id="L96">		assertEquals(&quot;grep: -2: invalid context length argument&quot;, grepTool.execute(testDir, null));</span>
+<span class="fc" id="L97">		assertEquals(1, grepTool.getStatusCode());</span>
+<span class="fc" id="L98">	}</span>
+	
+	/**
+	 * Bug 11.4: Grep count line should handle null input.
+	 * Fixed in sg.edu.nus.comp.cs4218.impl.extended1.GrepTool.java:443
+	 */
+	@Test
+	public void getCountOfMatchingLinesWithNullInputTest() {
+<span class="fc" id="L106">		grepTool = new GrepTool(new String[0]);</span>
+<span class="fc" id="L107">		assertEquals(0, grepTool.getCountOfMatchingLines(&quot;&quot;, null));</span>
+<span class="fc" id="L108">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L109">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

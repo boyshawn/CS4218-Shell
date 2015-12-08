@@ -1,0 +1,1029 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>Shell.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">src</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl</a> &gt; <span class="el_source">Shell.java</span></div><h1>Shell.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import sg.edu.nus.comp.cs4218.IShell;
+import sg.edu.nus.comp.cs4218.ITool;
+import sg.edu.nus.comp.cs4218.impl.extended1.GrepTool;
+import sg.edu.nus.comp.cs4218.impl.extended1.PipingTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.CommTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.CutTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.PasteTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.SortTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.UniqTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.WcTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.CatTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.CdTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.CopyTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.DeleteTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.EchoTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.LsTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.MoveTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.PWDTool;
+
+<span class="fc" id="L35">public class Shell implements IShell {</span>
+	
+	final private static String DIR_REGEX_NO_SPACE  = &quot;(((~|.|[a-zA-Z]:)[\\\\/])?([\\\\/]*[a-zA-Z][a-zA-Z0-9_&amp;-]*)+[\\\\/]*)&quot;;
+	final private static String DIR_REGEX_SPACE     = &quot;(((~|.|[a-zA-Z]:)[\\\\/])?([\\\\/]*[a-zA-Z]([a-zA-Z0-9_&amp;-]|\\s)*)+[\\\\/]*)&quot;;
+	final private static String DIR_REGEX_Q_SPACE   = &quot;\&quot;&quot;+DIR_REGEX_SPACE+&quot;\&quot;&quot;;
+	final private static String DIR_REGEX           = &quot;(&quot;+DIR_REGEX_NO_SPACE+&quot;|&quot;+DIR_REGEX_Q_SPACE+&quot;)&quot;;
+	final private static String DIR_FILE_REGEX_NO_SPACE = &quot;(&quot;+DIR_REGEX_NO_SPACE+&quot;(((\\.)[a-zA-Z0-9]+)+)?)&quot;;
+	final private static String DIR_FILE_REGEX_Q_SPACE  = &quot;(\&quot;&quot;+DIR_REGEX_SPACE+&quot;(((\\.)[a-zA-Z0-9]+)+)?\&quot;)&quot;;
+	final private static String DIR_FILE_REGEX          = &quot;(&quot;+DIR_FILE_REGEX_NO_SPACE+&quot;|&quot;+DIR_FILE_REGEX_Q_SPACE+&quot;)&quot;;
+	
+<span class="fc" id="L45">	private static boolean stdinRequired = false;</span>
+<span class="fc" id="L46">	private static String stdIn = null;</span>
+<span class="fc" id="L47">	protected static String result = null;</span>
+<span class="fc" id="L48">	protected static boolean underTest = false;</span>
+	
+	/**
+	 * Parses the command line and instantiates the corresponding tool.
+	 * @param commandline	command line entered by the user
+	 * @return				the tool object to process the command line
+	 */
+	@Override
+	public ITool parse(String commandline) {
+<span class="fc" id="L57">		String commandTrim = commandline.trim();</span>
+		String[] args;
+
+<span class="fc" id="L60">		stdinRequired = false;</span>
+<span class="fc" id="L61">		stdIn = null;</span>
+		
+<span class="fc bfc" id="L63" title="All 2 branches covered.">		if (commandTrim.indexOf(&quot;|&quot;) != -1) {</span>
+<span class="fc" id="L64">			Vector&lt;ITool&gt; tools = getPipeTools(commandTrim);</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">			return tools == null ? null : new PipingTool(tools);</span>
+		}
+		
+<span class="fc bfc" id="L68" title="All 2 branches covered.">		else if (commandTrim.startsWith(&quot;pwd&quot;))</span>
+<span class="fc" id="L69">			return new PWDTool(); // ignore trailing arguments in pwd command</span>
+		
+<span class="fc bfc" id="L71" title="All 2 branches covered.">		else if (commandTrim.startsWith(&quot;cd&quot;)) {</span>
+<span class="fc" id="L72">			args = getBasicCommandArgs(&quot;cd&quot;, commandTrim);</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">			return args == null ? null : new CdTool(args);</span>
+		}
+		
+<span class="fc bfc" id="L76" title="All 2 branches covered.">		else if (commandTrim.startsWith(&quot;ls&quot;)) {</span>
+<span class="fc" id="L77">			args = getBasicCommandArgs(&quot;ls&quot;, commandTrim);</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">			return args == null ? null : new LsTool(args);</span>
+		}
+		
+<span class="fc bfc" id="L81" title="All 2 branches covered.">		else if (commandTrim.startsWith(&quot;copy&quot;)) {</span>
+<span class="fc" id="L82">			args = getBasicCommandArgs(&quot;copy&quot;, commandTrim);</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">			return args == null ? null : new CopyTool(args);</span>
+		}
+		
+<span class="fc bfc" id="L86" title="All 2 branches covered.">		else if (commandTrim.startsWith(&quot;move&quot;)) {</span>
+<span class="fc" id="L87">			args = getBasicCommandArgs(&quot;move&quot;, commandTrim);</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">			return args == null ? null : new MoveTool(args);</span>
+		}
+		
+<span class="fc bfc" id="L91" title="All 2 branches covered.">		else if (commandTrim.startsWith(&quot;delete&quot;)) {</span>
+<span class="fc" id="L92">			args = getBasicCommandArgs(&quot;delete&quot;, commandTrim);</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">			return args == null ? null : new DeleteTool(args);</span>
+		}
+		
+		
+<span class="fc bfc" id="L97" title="All 2 branches covered.">		else if (commandTrim.startsWith(&quot;cat&quot;)) {</span>
+<span class="fc" id="L98">			args = getBasicCommandArgs(&quot;cat&quot;, commandTrim);</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">			return args == null ? null : new CatTool(args);</span>
+		}
+		
+<span class="fc bfc" id="L102" title="All 2 branches covered.">		else if (commandTrim.startsWith(&quot;echo&quot;)) {</span>
+<span class="fc" id="L103">			args = getBasicCommandArgs(&quot;echo&quot;, commandTrim);</span>
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">			return args == null ? null : new EchoTool(args);</span>
+		}
+		
+<span class="fc bfc" id="L107" title="All 2 branches covered.">		else if (commandTrim.startsWith(&quot;grep&quot;)) {</span>
+<span class="fc" id="L108">			args = getGrepArgs(commandTrim);</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">			return args == null ? null : new GrepTool(args);</span>
+		}
+		
+<span class="fc bfc" id="L112" title="All 2 branches covered.">		else if (commandTrim.startsWith(&quot;cut&quot;)) {</span>
+<span class="fc" id="L113">			args = getTextUtilArgs(&quot;cut&quot;, commandTrim);</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">			return args == null ? null : new CutTool(args);</span>
+		}
+		
+<span class="fc bfc" id="L117" title="All 2 branches covered.">		else if (commandTrim.startsWith(&quot;paste&quot;)) {</span>
+<span class="fc" id="L118">			args = getTextUtilArgs(&quot;paste&quot;, commandTrim);</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">			return args == null ? null : new PasteTool(args);</span>
+		}
+		
+<span class="fc bfc" id="L122" title="All 2 branches covered.">		else if (commandTrim.startsWith(&quot;comm&quot;)) {</span>
+<span class="fc" id="L123">			args = getTextUtilArgs(&quot;comm&quot;, commandTrim);</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">			return args == null ? null : new CommTool(args);</span>
+		}
+		
+<span class="fc bfc" id="L127" title="All 2 branches covered.">		else if (commandTrim.startsWith(&quot;sort&quot;)) {</span>
+<span class="fc" id="L128">			args = getTextUtilArgs(&quot;sort&quot;, commandTrim);</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">			return args == null ? null : new SortTool(args);</span>
+		}
+		
+<span class="fc bfc" id="L132" title="All 2 branches covered.">		else if (commandTrim.startsWith(&quot;uniq&quot;)) {</span>
+<span class="fc" id="L133">			args = getTextUtilArgs(&quot;uniq&quot;, commandTrim);</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">			return args == null ? null : new UniqTool(args);</span>
+		}
+		
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">		else if (commandTrim.startsWith(&quot;wc&quot;)) {</span>
+<span class="fc" id="L138">			args = getTextUtilArgs(&quot;wc&quot;, commandTrim);</span>
+<span class="fc bfc" id="L139" title="All 2 branches covered.">			return args == null ? null : new WcTool(args);</span>
+		}
+		
+		else
+<span class="nc" id="L143">			return null;</span>
+		
+	}
+	
+	/**
+	 * Retrieves the arguments for the commandline depending on the command type
+	 * @param commandType	type of command such as cd, copy, delete, cat, echo
+	 * @param commandline	command line entered by user
+	 * @return				If the arguments are valid according to the command type, then they will be returned. 
+	 * 						Else return null.
+	 * 						For commands &quot;ls&quot;, &quot;cd&quot; and &quot;echo&quot;, if there are no arguments, 
+	 * 						it will return a String array with 1 element of empty string.
+	 * 						For &quot;pwd&quot; it will return null since arguments do not matter
+	 */
+	protected String[] getBasicCommandArgs(String commandType, String commandline) {
+		
+<span class="fc" id="L159">		String argsStr = null;</span>
+<span class="fc" id="L160">		String commandTrim = commandline.trim();</span>
+		
+<span class="fc bfc" id="L162" title="All 2 branches covered.">		if (commandType.equals(&quot;pwd&quot;))</span>
+<span class="fc" id="L163">			return null;</span>
+		
+<span class="fc" id="L165">		String [] splitted = commandTrim.split(&quot;\\s+&quot;,2);</span>
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">		if (!splitted[0].equals(commandType))</span>
+<span class="nc" id="L167">			return null;</span>
+		
+<span class="fc bfc" id="L169" title="All 2 branches covered.">		if (splitted.length != 2) {</span>
+<span class="fc bfc" id="L170" title="All 6 branches covered.">			if (commandType.equals(&quot;cd&quot;) || commandType.equals(&quot;ls&quot;) || commandType.equals(&quot;echo&quot;) )</span>
+<span class="fc" id="L171">				return new String[]{&quot;&quot;};</span>
+<span class="fc bfc" id="L172" title="All 2 branches covered.">			else if (commandType.equals(&quot;cat&quot;))</span>
+<span class="fc" id="L173">				return new String[]{&quot;-&quot;};</span>
+			else
+<span class="fc" id="L175">				return null;</span>
+		}
+		else 
+<span class="fc" id="L178">			argsStr = splitted[1];</span>
+		
+<span class="pc bpc" id="L180" title="8 of 22 branches missed.">		switch(commandType) {</span>
+			case &quot;copy&quot;:
+			case &quot;move&quot;:
+<span class="fc" id="L183">				return getCopyMoveArgs(argsStr);</span>
+				
+			case &quot;echo&quot;:
+<span class="fc" id="L186">				Vector&lt;String&gt; argsVect = new Vector&lt;String&gt;();</span>
+<span class="fc" id="L187">				argsVect.add(argsStr);</span>
+<span class="fc" id="L188">				return cleanUpArguments(argsVect);</span>
+				
+			case &quot;delete&quot;:
+			case &quot;ls&quot;:
+<span class="fc" id="L192">				return getAllDirFileArgs(argsStr);</span>
+			
+			case &quot;cd&quot; :
+<span class="fc" id="L195">				return getCdArgs(argsStr);</span>
+				
+			case &quot;cat&quot;:
+<span class="fc" id="L198">				return getCatArgs(argsStr);</span>
+				
+			default:
+<span class="nc" id="L201">				return null;</span>
+		}
+	}
+	
+	/**
+	 * Get arguments for cd command. 
+	 * Valid arguments are [directory], &quot;-&quot; or &quot;..&quot;
+	 * @param argsStr	string of arguments in a &quot;cd&quot; command
+	 * @return			an array of valid arguments
+	 */
+	private String[] getCdArgs(String argsStr) {
+<span class="fc" id="L212">		Vector&lt;String&gt; argsVect = new Vector&lt;String&gt;();</span>
+		
+<span class="fc bfc" id="L214" title="All 4 branches covered.">		if (argsStr.equals(&quot;-&quot;) || argsStr.equals(&quot;..&quot;))</span>
+<span class="fc" id="L215">			return new String[] {argsStr};</span>
+		else {
+<span class="fc" id="L217">			String matchedStr = findDirFile(argsStr, true);</span>
+<span class="pc bpc" id="L218" title="1 of 2 branches missed.">			if (matchedStr != null) {</span>
+<span class="fc" id="L219">				argsVect.add(matchedStr);</span>
+<span class="fc bfc" id="L220" title="All 2 branches covered.">				if (!reduceString(matchedStr, argsStr).trim().isEmpty())</span>
+<span class="fc" id="L221">					return null;</span>
+			}
+			else
+<span class="nc" id="L224">				return null;</span>
+		}
+<span class="fc" id="L226">		return cleanUpArguments(argsVect);</span>
+	}
+	
+	/**
+	 * Get arguments for cat command
+	 * Valid arguments are &quot;-&quot;, [file] or [directory]
+	 * @param argsStr	string of arguments in a &quot;cat&quot; command
+	 * @return			an array of valid arguments
+	 */
+	private String[] getCatArgs(String argsStr) {
+		
+<span class="fc" id="L237">		String mainArgsStr = argsStr;</span>
+<span class="fc" id="L238">		Vector&lt;String&gt; argsVect = new Vector&lt;String&gt;();</span>
+<span class="fc" id="L239">		boolean catArgsDone = false;</span>
+<span class="fc" id="L240">		stdinRequired = false;</span>
+		
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">		if (mainArgsStr.isEmpty())</span>
+<span class="nc" id="L243">			return new String[]{&quot;-&quot;};</span>
+		
+<span class="fc bfc" id="L245" title="All 2 branches covered.">		while (!catArgsDone) {</span>
+<span class="fc" id="L246">			String matchedStr = findMatch(&quot;-&quot;, mainArgsStr);</span>
+<span class="fc bfc" id="L247" title="All 2 branches covered.">			if (matchedStr != null) {</span>
+				// cannot have more than 1 &quot;-&quot;
+<span class="fc bfc" id="L249" title="All 2 branches covered.">				if (stdinRequired == true)</span>
+<span class="fc" id="L250">					return null;</span>
+<span class="fc" id="L251">				argsVect.add(matchedStr);</span>
+<span class="fc" id="L252">				mainArgsStr = reduceString(matchedStr, mainArgsStr);</span>
+<span class="fc" id="L253">				stdinRequired = true;</span>
+<span class="fc" id="L254">			}</span>
+<span class="pc bpc" id="L255" title="1 of 2 branches missed.">			else if ((matchedStr = findDirFile(mainArgsStr, false)) != null) {</span>
+<span class="fc" id="L256">				argsVect.add(matchedStr);</span>
+<span class="fc" id="L257">				mainArgsStr = reduceString(matchedStr, mainArgsStr);</span>
+<span class="fc" id="L258">			}</span>
+			else {
+<span class="nc" id="L260">				return null;	</span>
+			}
+<span class="fc" id="L262">			mainArgsStr.trim();</span>
+<span class="fc bfc" id="L263" title="All 2 branches covered.">			if (mainArgsStr.isEmpty())</span>
+<span class="fc" id="L264">				catArgsDone = true;</span>
+		}
+		
+<span class="fc" id="L267">		return cleanUpArguments(argsVect);</span>
+	}
+	
+	/**
+	 * Split a string according to arguments of file/directory name
+	 * @param argsStr	string of arguments 
+	 * @return			an array of file/directory names
+	 */
+	private String[] getAllDirFileArgs(String argsStr) {
+<span class="fc" id="L276">		String mainArgsStr = argsStr;</span>
+<span class="fc" id="L277">		Vector&lt;String&gt; argsVect = new Vector&lt;String&gt;();</span>
+		
+<span class="fc bfc" id="L279" title="All 2 branches covered.">		while(!mainArgsStr.isEmpty()) {</span>
+<span class="fc" id="L280">			String matchedStr = findDirFile(mainArgsStr, false);</span>
+			
+<span class="fc bfc" id="L282" title="All 2 branches covered.">			if (matchedStr == null)</span>
+<span class="fc" id="L283">				return null;</span>
+			
+<span class="fc" id="L285">			argsVect.add(matchedStr);</span>
+<span class="fc" id="L286">			mainArgsStr = reduceString(matchedStr, mainArgsStr);</span>
+		}
+		
+<span class="fc" id="L289">		return cleanUpArguments(argsVect);</span>
+	}
+	
+	/**
+	 * Get arguments for move, copy command.
+	 * Valid arguments are [file][file] or [file]+[directory]
+	 * @param argsStr	string of arguments in a &quot;move&quot;/&quot;copy&quot; command
+	 * @return			an array of valid arguments
+	 */
+	private String[] getCopyMoveArgs(String argsStr) {
+<span class="fc" id="L299">		String[] args = getAllDirFileArgs(argsStr);</span>
+		
+		// if there are supposedly more than 2 file names, check if the 
+		// last name could be that of a directory name
+<span class="fc bfc" id="L303" title="All 2 branches covered.">		if (args.length &gt; 2) {</span>
+<span class="fc" id="L304">			String lastArg = args[args.length-1];</span>
+<span class="fc" id="L305">			String matchedStr = findDirFile(lastArg, true);</span>
+<span class="pc bpc" id="L306" title="1 of 4 branches missed.">			if (matchedStr == null || !reduceString(matchedStr, lastArg).isEmpty())</span>
+<span class="fc" id="L307">				return null;</span>
+		}
+		
+<span class="fc bfc" id="L310" title="All 2 branches covered.">		else if (args.length &lt; 2)</span>
+<span class="fc" id="L311">			return null;</span>
+		
+<span class="fc" id="L313">		return args;</span>
+	}
+	
+	/**
+	 * Returns the arguments for Grep command.
+	 * Valid arguments are [-(A|B|C|c|o|v|help)]? [pattern] [- or file+]?
+	 * @param commandline	Grep command entered by user
+	 * @return				If the arguments are valid, then they will be returned. 
+	 * 						Else return null.
+	 */
+	protected String[] getGrepArgs (String commandline) {
+<span class="fc" id="L324">		String argsStr = null;</span>
+<span class="fc" id="L325">		Vector&lt;String&gt; argsVect = new Vector&lt;String&gt;();</span>
+<span class="fc" id="L326">		boolean hasPattern = false, hasOption = false, hasOptionHelp = false, </span>
+<span class="fc" id="L327">				hasStdin = false, hasFiles = false;</span>
+		
+<span class="fc" id="L329">		String commandTrim = commandline.trim();</span>
+		
+<span class="fc" id="L331">		String [] splitted = commandTrim.split(&quot;\\s+&quot;, 2);</span>
+<span class="pc bpc" id="L332" title="1 of 4 branches missed.">		if (splitted.length &lt; 2 || !splitted[0].equals(&quot;grep&quot;))</span>
+<span class="fc" id="L333">			return null;</span>
+<span class="fc" id="L334">		argsStr = splitted[1];</span>
+		
+<span class="fc bfc" id="L336" title="All 2 branches covered.">		while (!argsStr.isEmpty()) {</span>
+<span class="fc" id="L337">			boolean hasDone = false;</span>
+			
+			// get an option if any
+<span class="fc bfc" id="L340" title="All 2 branches covered.">			if (!hasOption) {</span>
+<span class="fc" id="L341">				String option = findMatch(&quot;-(A|B|C|c|o|v|help)&quot;, argsStr);</span>
+<span class="fc bfc" id="L342" title="All 2 branches covered.">				if (option != null) {</span>
+<span class="fc" id="L343">					hasOption = true;</span>
+<span class="fc" id="L344">					hasDone = true;</span>
+					
+<span class="fc" id="L346">					argsStr = reduceString(option, argsStr);</span>
+<span class="fc" id="L347">					argsVect.insertElementAt(option, 0);</span>
+					
+<span class="fc bfc" id="L349" title="All 2 branches covered.">					if (option.matches(&quot;-(A|B|C)&quot;)) {</span>
+<span class="fc" id="L350">						String numStr = getNum(argsStr);</span>
+<span class="fc bfc" id="L351" title="All 2 branches covered.">						if (numStr == null)</span>
+<span class="fc" id="L352">							return null;</span>
+						else {
+<span class="fc" id="L354">							argsVect.add(numStr);</span>
+<span class="fc" id="L355">							argsStr = reduceString(numStr, argsStr);</span>
+						}
+<span class="fc" id="L357">					}</span>
+<span class="fc bfc" id="L358" title="All 2 branches covered.">					else if (option.equals(&quot;-help&quot;))</span>
+<span class="fc" id="L359">						hasOptionHelp = true;</span>
+				}
+<span class="fc" id="L361">			}</span>
+			else {
+				// check for multiple options
+<span class="fc" id="L364">				String option = findMatch(&quot;-(A|B|C|c|o|v|help)&quot;, argsStr);</span>
+<span class="fc bfc" id="L365" title="All 2 branches covered.">				if (option != null)</span>
+<span class="fc" id="L366">					return null;</span>
+			}
+			
+<span class="fc bfc" id="L369" title="All 4 branches covered.">			if (!hasDone &amp;&amp; !hasPattern) {</span>
+				// get pattern
+<span class="fc" id="L371">				String pattern = getPatternOrDelimiter(argsStr);</span>
+<span class="pc bpc" id="L372" title="1 of 2 branches missed.">				if (pattern == null)</span>
+<span class="nc" id="L373">					return null;</span>
+				else {
+<span class="fc" id="L375">					argsVect.add(pattern);</span>
+<span class="fc" id="L376">					argsStr = reduceString(pattern, argsStr);</span>
+<span class="fc" id="L377">					hasPattern = true;</span>
+<span class="fc" id="L378">					hasDone = true;</span>
+				}
+			}
+			
+			// if there is a pattern, look for &quot;-&quot; or filename
+<span class="pc bpc" id="L383" title="2 of 6 branches missed.">			if (!hasDone &amp;&amp; hasPattern &amp;&amp; !hasStdin) {</span>
+<span class="fc bfc" id="L384" title="All 2 branches covered.">				if (argsStr.charAt(0) == '-') {</span>
+<span class="fc" id="L385">					argsVect.add(&quot;-&quot;);</span>
+<span class="fc" id="L386">					argsStr = argsStr.substring(1);</span>
+<span class="fc" id="L387">					stdinRequired = true;</span>
+<span class="fc" id="L388">					hasStdin = true;</span>
+<span class="fc" id="L389">					hasDone = true;</span>
+<span class="fc" id="L390">				}</span>
+				else {
+					String matchedStr;
+<span class="fc bfc" id="L393" title="All 2 branches covered.">					while ((matchedStr = findDirFile(argsStr, false)) != null) {</span>
+<span class="fc" id="L394">						argsVect.add(matchedStr);</span>
+<span class="fc" id="L395">						argsStr = reduceString(matchedStr, argsStr);</span>
+<span class="fc" id="L396">						hasDone = true;</span>
+<span class="fc" id="L397">						hasFiles = true;</span>
+					}
+				}
+			}
+			
+<span class="pc bpc" id="L402" title="1 of 2 branches missed.">			if (!hasDone)</span>
+<span class="nc" id="L403">				return null;</span>
+		}
+		
+		// if there's no pattern but if there's &quot;-help&quot; then having no pattern is acceptable
+<span class="pc bpc" id="L407" title="1 of 4 branches missed.">		if (!hasOptionHelp &amp;&amp; !hasPattern)</span>
+<span class="nc" id="L408">			return null;</span>
+		
+<span class="fc bfc" id="L410" title="All 6 branches covered.">		else if (!hasOptionHelp &amp;&amp; !hasStdin &amp;&amp; !hasFiles) {</span>
+<span class="fc" id="L411">			argsVect.add(&quot;-&quot;);</span>
+<span class="fc" id="L412">			stdinRequired = true;</span>
+		}
+		
+<span class="fc" id="L415">		return cleanUpArguments(argsVect);</span>
+	}
+	
+	/**
+	 * Processes the piping command and generates a set of ITools corresponding to each part
+	 * of the command
+	 * @param commandline
+	 * @return
+	 */
+	protected Vector&lt;ITool&gt; getPipeTools(String commandline) {
+<span class="fc" id="L425">		String commandTrim = commandline.trim();</span>
+		
+		// check that there is no | at the end or beginning of commandline
+<span class="fc bfc" id="L428" title="All 4 branches covered.">		if (commandTrim.startsWith(&quot;|&quot;) || commandTrim.endsWith(&quot;|&quot;))</span>
+<span class="fc" id="L429">			return null;</span>
+		
+<span class="fc" id="L431">		Vector&lt;ITool&gt; tools = new Vector&lt;ITool&gt;();</span>
+		
+<span class="fc" id="L433">		String[] programs = commandTrim.split(&quot;(\\s)*(\\|)(\\s)*&quot;);</span>
+<span class="fc" id="L434">		boolean stdinRequiredTemp = false;</span>
+<span class="fc bfc" id="L435" title="All 2 branches covered.">		for (int i=0; i&lt;programs.length; ++i) {</span>
+<span class="fc" id="L436">			String prog = programs[i];</span>
+<span class="fc" id="L437">			ITool tool = parse(prog);</span>
+			// only take stdin for the first command
+<span class="fc bfc" id="L439" title="All 2 branches covered.">			if (i == 0)</span>
+<span class="fc" id="L440">				stdinRequiredTemp = stdinRequired;</span>
+<span class="pc bpc" id="L441" title="1 of 2 branches missed.">			if (tool == null)</span>
+<span class="nc" id="L442">				return null;</span>
+<span class="fc" id="L443">			tools.add(tool);</span>
+		}
+		
+<span class="fc bfc" id="L446" title="All 2 branches covered.">		if (tools.size() &lt; 2)</span>
+<span class="fc" id="L447">			return null;</span>
+		
+<span class="fc" id="L449">		stdinRequired = stdinRequiredTemp;</span>
+<span class="fc" id="L450">		return tools;</span>
+	}
+	
+	/**
+	 * Retrieves the arguments for the commandline depending on the command type
+	 * @param commandType	type of command such as cut, paste, comm, sort, uniq, wc
+	 * @param commandline	command line entered by user
+	 * @return				If the arguments are valid according to the command type, then they will be returned. 
+	 * 						Else return null.
+	 */
+	protected String[] getTextUtilArgs(String commandType, String commandline) {
+<span class="fc" id="L461">		String argsStr = null;</span>
+<span class="fc" id="L462">		String commandTrim = commandline.trim();</span>
+		
+<span class="fc" id="L464">		String [] splitted = commandTrim.split(&quot;\\s+&quot;,2);</span>
+<span class="fc bfc" id="L465" title="All 2 branches covered.">		if (!splitted[0].equals(commandType))</span>
+<span class="fc" id="L466">			return null;</span>
+		
+		// if there is no argument, assume standard input
+<span class="fc bfc" id="L469" title="All 2 branches covered.">		if (splitted.length != 2) {</span>
+<span class="fc bfc" id="L470" title="All 2 branches covered.">			if (commandType.matches(&quot;(uniq|paste|wc)&quot;)) {</span>
+<span class="fc" id="L471">				stdinRequired = true;</span>
+<span class="fc" id="L472">				return new String[]{&quot;-&quot;};</span>
+			}
+			else
+<span class="fc" id="L475">				return null;</span>
+		}
+		else 
+<span class="fc" id="L478">			argsStr = splitted[1];</span>
+		
+		Map&lt;String, String&gt; optionsMap;
+<span class="pc bpc" id="L481" title="7 of 19 branches missed.">		switch(commandType) {</span>
+			case &quot;wc&quot;:
+<span class="fc" id="L483">				return getMultipleOptionsAndFilesArgs(argsStr, &quot;-(help|m|w|l)&quot;, null, true, 4, 1, -1);</span>
+			
+			case &quot;sort&quot;:
+<span class="fc" id="L486">				return getMultipleOptionsAndFilesArgs(argsStr, &quot;-(help|c)&quot;, null, false, 2, 1, -1);</span>
+				
+			case &quot;comm&quot;:
+<span class="fc" id="L489">				String[] args = getMultipleOptionsAndFilesArgs(argsStr, &quot;-(help|c|d)&quot;, null, false, 2, 2, 2);</span>
+<span class="fc" id="L490">				boolean hasOpt = false;</span>
+<span class="fc bfc" id="L491" title="All 2 branches covered.">				if (args != null) {</span>
+					// check that -c and -d cannot be used together
+<span class="fc bfc" id="L493" title="All 2 branches covered.">					for (String arg : args) {</span>
+<span class="fc bfc" id="L494" title="All 4 branches covered.">						if (arg.equals(&quot;-c&quot;) || arg.equals(&quot;-d&quot;)) {</span>
+<span class="fc bfc" id="L495" title="All 2 branches covered.">							if (hasOpt)</span>
+<span class="fc" id="L496">								return null;</span>
+							else
+<span class="fc" id="L498">								hasOpt = true;</span>
+						}
+					}
+				}
+<span class="fc" id="L502">				return args;</span>
+				
+			case &quot;paste&quot;:
+<span class="fc" id="L505">				optionsMap = new HashMap&lt;String, String&gt;();</span>
+<span class="fc" id="L506">				optionsMap.put(&quot;-d&quot;, &quot;DELIM OPTIONAL&quot;);</span>
+<span class="fc" id="L507">				return getMultipleOptionsAndFilesArgs(argsStr, &quot;-(help|s|d)&quot;, optionsMap, true, 3, 1, -1);</span>
+				
+			case &quot;cut&quot;:
+<span class="fc" id="L510">				return getCutArgs(argsStr);</span>
+				
+			case &quot;uniq&quot;:
+<span class="fc" id="L513">				optionsMap = new HashMap&lt;String, String&gt;();</span>
+<span class="fc" id="L514">				optionsMap.put(&quot;-f&quot;, &quot;NUM&quot;);</span>
+<span class="fc" id="L515">				return getMultipleOptionsAndFilesArgs(argsStr, &quot;-(help|i|f)&quot;, optionsMap, true, 3, 1, -1);</span>
+				
+			default:
+<span class="nc" id="L518">				return null;</span>
+		}
+	}
+	
+	/**
+	 * Split a string of arguments according to options first followed by file names 
+	 * or standard input (if allowed). Also checks if the number of options is less or 
+	 * equal to the stated maximum number of options and the number of files is within 
+	 * the range of the stated minimum and maximum number of files.
+	 * 
+	 * @param argsStr		the string of arguments to be splitted
+	 * @param optionsRegex	the regular expression of the options allowed
+	 * @param optionsMap	the extra part to the option such as a number or characters after specified option
+	 * @param allowStdin	true if standard input is allowed, else false
+	 * @param maxOptions	the maximum number of options allowed (-1 if there is no limit)
+	 * @param minFiles		the minimum number of file names allowed (minimum value allowed is 0)
+	 * @param maxFiles		the maximum number of file names allowed (-1 if there is no limit)
+	 * @return				the array of arguments if they are all valid. Else return null.
+	 */
+	private String[] getMultipleOptionsAndFilesArgs(String argsStr, String optionsRegex, Map&lt;String, String&gt; optionsMap,
+													boolean allowStdin, int maxOptions, int minFiles, int maxFiles) {
+<span class="fc" id="L539">		Vector&lt;String&gt; argsVect = new Vector&lt;String&gt;();</span>
+<span class="fc" id="L540">		boolean hasHelpOption = false;</span>
+<span class="fc" id="L541">		int numOfOptions = 0, numOfFiles = 0;</span>
+		
+		// get options
+		String option;
+<span class="fc bfc" id="L545" title="All 2 branches covered.">		while ((option = findMatch(optionsRegex, argsStr)) != null) {</span>
+			
+<span class="fc" id="L547">			argsStr = reduceString(option, argsStr);</span>
+<span class="fc" id="L548">			argsVect.add(option);</span>
+<span class="fc" id="L549">			numOfOptions ++;</span>
+			
+<span class="fc bfc" id="L551" title="All 2 branches covered.">			if (option.equals(&quot;-help&quot;))</span>
+<span class="fc" id="L552">				hasHelpOption = true;</span>
+			
+<span class="fc bfc" id="L554" title="All 2 branches covered.">			if (optionsMap != null) {</span>
+<span class="fc" id="L555">				String extraType = optionsMap.get(option);</span>
+<span class="fc bfc" id="L556" title="All 2 branches covered.">				if (extraType != null) {</span>
+<span class="pc bpc" id="L557" title="6 of 10 branches missed.">					switch (extraType) {</span>
+						case &quot;DELIM&quot;:
+						case &quot;DELIM OPTIONAL&quot;:
+<span class="fc" id="L560">							String delim = getPatternOrDelimiter(argsStr);</span>
+<span class="fc bfc" id="L561" title="All 2 branches covered.">							if (delim == null) {</span>
+<span class="pc bpc" id="L562" title="1 of 2 branches missed.">								if (extraType.equals(&quot;DELIM&quot;))</span>
+<span class="nc" id="L563">									return null;</span>
+							}
+							else {
+<span class="fc" id="L566">								argsVect.add(delim);</span>
+<span class="fc" id="L567">								argsStr = reduceString(delim, argsStr);</span>
+							}
+<span class="fc" id="L569">							break;</span>
+						
+						case &quot;NUM&quot;:
+<span class="fc" id="L572">							String numStr = getNum(argsStr);</span>
+<span class="fc bfc" id="L573" title="All 2 branches covered.">							if (numStr == null)</span>
+<span class="fc" id="L574">								return null;</span>
+							else {
+<span class="fc" id="L576">								argsVect.add(numStr);</span>
+<span class="fc" id="L577">								argsStr = reduceString(numStr, argsStr);</span>
+							}
+<span class="fc" id="L579">							break;</span>
+							
+						default:
+<span class="nc" id="L582">							return null;</span>
+					}
+				}
+			}
+		}
+		
+<span class="pc bpc" id="L588" title="2 of 4 branches missed.">		if (maxOptions != -1 &amp;&amp; numOfOptions &gt; maxOptions)</span>
+<span class="nc" id="L589">			return null;</span>
+		
+<span class="fc bfc" id="L591" title="All 2 branches covered.">		if (argsStr.isEmpty()) {</span>
+<span class="fc bfc" id="L592" title="All 2 branches covered.">			if (allowStdin) {</span>
+<span class="fc" id="L593">				argsVect.add(&quot;-&quot;);</span>
+<span class="fc" id="L594">				stdinRequired = true;</span>
+<span class="fc" id="L595">			}</span>
+<span class="fc bfc" id="L596" title="All 2 branches covered.">			else if (hasHelpOption)</span>
+<span class="fc" id="L597">				return cleanUpArguments(argsVect);</span>
+			else
+<span class="fc" id="L599">				return null;</span>
+		}
+		
+<span class="fc bfc" id="L602" title="All 4 branches covered.">		else if (argsStr.equals(&quot;-&quot;) &amp;&amp; allowStdin) {</span>
+<span class="fc" id="L603">			argsVect.add(&quot;-&quot;);</span>
+<span class="fc" id="L604">			stdinRequired = true;</span>
+<span class="fc" id="L605">		}</span>
+		
+		else {
+			String fileName;
+			// get file names
+<span class="fc bfc" id="L610" title="All 2 branches covered.">			while ((fileName = findDirFile(argsStr, false)) != null){</span>
+<span class="fc" id="L611">				argsStr = reduceString(fileName, argsStr);</span>
+<span class="fc" id="L612">				argsVect.add(fileName);</span>
+<span class="fc" id="L613">				numOfFiles ++;</span>
+			}
+<span class="pc bpc" id="L615" title="1 of 8 branches missed.">			if (!argsStr.isEmpty() || numOfFiles &lt; minFiles || (maxFiles != -1 &amp;&amp; numOfFiles &gt; maxFiles))</span>
+<span class="fc" id="L616">				return null;</span>
+		}
+		
+<span class="fc" id="L619">		return cleanUpArguments(argsVect);</span>
+	}
+	
+	/**
+	 * Get arguments for cut command
+	 * @param argsStr	string of arguments in a &quot;cut&quot; command
+	 * @return			an array of valid arguments
+	 */
+	private String[] getCutArgs (String argsStr) {
+<span class="fc" id="L628">		Vector&lt;String&gt; argsVect = new Vector&lt;String&gt;();</span>
+<span class="fc" id="L629">		boolean hasFOption = false, hasDOption = false, hasOption = false;</span>
+		
+		// get options if any
+<span class="fc" id="L632">		String option, delim = null;</span>
+<span class="fc" id="L633">		int delimIndex = -1;</span>
+<span class="fc bfc" id="L634" title="All 2 branches covered.">		while ((option = findMatch(&quot;-(help|c|d|f)&quot;, argsStr)) != null) {</span>
+<span class="fc" id="L635">			hasOption = true;</span>
+<span class="fc" id="L636">			argsStr = reduceString(option, argsStr);</span>
+<span class="fc" id="L637">			argsVect.add(option);</span>
+			
+<span class="fc bfc" id="L639" title="All 2 branches covered.">			if (option.equals(&quot;-f&quot;)) {</span>
+<span class="fc" id="L640">				hasFOption = true;</span>
+<span class="fc" id="L641">			}</span>
+<span class="fc bfc" id="L642" title="All 2 branches covered.">			else if (option.equals(&quot;-d&quot;)) {</span>
+<span class="fc" id="L643">				hasDOption = true;</span>
+				// check for delimeter
+<span class="fc" id="L645">				delim = getPatternOrDelimiter(argsStr);</span>
+<span class="pc bpc" id="L646" title="1 of 2 branches missed.">				if (delim == null)</span>
+<span class="nc" id="L647">					return null;</span>
+				else {
+<span class="fc" id="L649">					delimIndex = argsVect.size();</span>
+<span class="fc" id="L650">					argsVect.add(delim);</span>
+<span class="fc" id="L651">					argsStr = reduceString(delim, argsStr);</span>
+				}	
+			}
+			
+<span class="fc bfc" id="L655" title="All 2 branches covered.">			if (option.matches(&quot;(-c|-f)&quot;)) {</span>
+<span class="fc" id="L656">				String numList = getNumList(argsStr);</span>
+<span class="fc bfc" id="L657" title="All 2 branches covered.">				if (numList == null)</span>
+<span class="fc" id="L658">					return null;</span>
+				else {
+<span class="fc" id="L660">					argsVect.add(numList);</span>
+<span class="fc" id="L661">					argsStr = reduceString(numList, argsStr);</span>
+				}
+			}
+		}
+		
+<span class="fc bfc" id="L666" title="All 6 branches covered.">		if (!hasOption || (hasDOption &amp;&amp; !hasFOption))</span>
+<span class="fc" id="L667">			return null;</span>
+		
+<span class="fc bfc" id="L669" title="All 4 branches covered.">		else if (argsStr.isEmpty() || argsStr.equals(&quot;-&quot;)) {</span>
+<span class="fc" id="L670">			argsVect.add(&quot;-&quot;);</span>
+<span class="fc" id="L671">			stdinRequired = true;</span>
+<span class="fc" id="L672">		}</span>
+		
+		else {
+			String fileName;
+			// get file names
+<span class="fc bfc" id="L677" title="All 2 branches covered.">			while ((fileName = findDirFile(argsStr, false)) != null){</span>
+<span class="fc" id="L678">				argsStr = reduceString(fileName, argsStr);</span>
+<span class="fc" id="L679">				argsVect.add(fileName);</span>
+			}
+<span class="pc bpc" id="L681" title="1 of 2 branches missed.">			if (!argsStr.isEmpty())</span>
+<span class="nc" id="L682">				return null;</span>
+		}
+		
+<span class="fc" id="L685">		String[] args = cleanUpArguments(argsVect);</span>
+		// preserve quotes for -d delim
+<span class="pc bpc" id="L687" title="1 of 6 branches missed.">		if (delim != null &amp;&amp; delim.startsWith(&quot;\&quot;&quot;) &amp;&amp; delim.endsWith(&quot;\&quot;&quot;))</span>
+<span class="fc" id="L688">			args[delimIndex] = delim;</span>
+		
+<span class="fc" id="L690">		return args;</span>
+		
+	}
+	
+	/**
+	 * Get the pattern/delimiter at the start of a string
+	 * @param str	The string to search the pattern/delimiter from.
+	 * 				If the pattern/delimiter has quotes, then spaces are allowed within the quote.
+	 * @return		the pattern/delimiter from the beginning of the given string
+	 * 				If &quot;str&quot; is an empty string or there is no pattern/delimiter at the beginning, 
+	 * 				then return null
+	 */
+	private String getPatternOrDelimiter (String str) {
+<span class="fc" id="L703">		String delim = &quot;&quot;;</span>
+		
+<span class="fc bfc" id="L705" title="All 2 branches covered.">		if (str.isEmpty())</span>
+<span class="fc" id="L706">			return null;</span>
+		
+<span class="fc bfc" id="L708" title="All 2 branches covered.">		if (str.startsWith(&quot;\&quot;&quot;)) {</span>
+<span class="fc" id="L709">			boolean isEndIndex = false;</span>
+<span class="fc" id="L710">			int endIndex = 0;</span>
+<span class="fc bfc" id="L711" title="All 2 branches covered.">			while (!isEndIndex) {</span>
+<span class="fc" id="L712">				endIndex = str.indexOf(&quot;\&quot;&quot;, endIndex+1);</span>
+<span class="pc bpc" id="L713" title="1 of 2 branches missed.">				if (endIndex == -1)</span>
+<span class="nc" id="L714">					return null;</span>
+				// ensure it is not quotes that is part of the pattern (\&quot;)
+<span class="fc bfc" id="L716" title="All 2 branches covered.">				else if (str.charAt(endIndex-1) != '\\')</span>
+<span class="fc" id="L717">					isEndIndex = true;</span>
+			}
+<span class="fc" id="L719">			delim = str.substring(0, endIndex+1);</span>
+<span class="fc" id="L720">		}</span>
+		else {
+<span class="fc" id="L722">			delim = str.split(&quot;\\s+&quot;)[0];</span>
+<span class="pc bpc" id="L723" title="1 of 2 branches missed.">			if (delim == null)</span>
+<span class="nc" id="L724">				return null;</span>
+		}
+		
+<span class="pc bpc" id="L727" title="1 of 2 branches missed.">		if (delim.isEmpty())</span>
+<span class="nc" id="L728">			return null;</span>
+		else
+<span class="fc" id="L730">			return delim;</span>
+	}
+	
+	/**
+	 * Get the number at the start of a string.
+	 * @param str	the string to search the number from
+	 * @return		the number at the beginning of the string. 
+	 * 				If it is an empty string or there is no number at the beginning, 
+	 * 				then return null
+	 */
+	private String getNum (String str) {
+<span class="fc" id="L741">		String numStr = &quot;&quot;;</span>
+<span class="fc bfc" id="L742" title="All 2 branches covered.">		if (str.isEmpty())</span>
+<span class="fc" id="L743">			return null;</span>
+		else {
+<span class="fc bfc" id="L745" title="All 2 branches covered.">			for (int i=0; i&lt;str.length(); ++i) {</span>
+<span class="fc" id="L746">				char ch = str.charAt(i);</span>
+<span class="fc bfc" id="L747" title="All 2 branches covered.">				if (Character.isDigit(ch))</span>
+<span class="fc" id="L748">					numStr += ch;</span>
+				else
+					break;
+			}
+<span class="fc bfc" id="L752" title="All 2 branches covered.">			if (numStr.isEmpty())</span>
+<span class="fc" id="L753">				return null;</span>
+		}
+		
+<span class="fc" id="L756">		return numStr;</span>
+	}
+	
+	/**
+	 * Get the number at the start of a string.
+	 * @param str	The string to search the list of numbers from.
+	 * 				It can be of the form num, num-num, num-, -num
+	 * @return		The list of numbers at the beginning of the string. 
+	 * 				If it is an empty string or there is no number at the beginning, 
+	 * 				then return null
+	 */
+	private String getNumList (String str) {
+<span class="fc" id="L768">		final String regexNum = &quot;(\\d+)&quot;;</span>
+<span class="fc" id="L769">		final String regexRange = &quot;(\\d+\\s*-\\s*\\d+)&quot;;</span>
+<span class="fc" id="L770">		final String regexRangeStart = &quot;(\\d+\\s*-)&quot;;</span>
+<span class="fc" id="L771">		final String regexRangeEnd = &quot;(-\\s*\\d+)&quot;;</span>
+<span class="fc" id="L772">		final String regexNumList = &quot;((&quot;+regexNum+&quot;|&quot;+regexRange+&quot;|&quot;+regexRangeStart+&quot;|&quot;+regexRangeEnd+&quot;)\\s*,\\s*)*&quot;</span>
+									+ &quot;(&quot;+regexNum+&quot;|&quot;+regexRange+&quot;|&quot;+regexRangeStart+&quot;|&quot;+regexRangeEnd+&quot;)&quot;;
+		
+		
+<span class="fc" id="L776">		String numList = findMatch (regexNumList, str); </span>
+		
+<span class="fc bfc" id="L778" title="All 2 branches covered.">		if (numList == null)</span>
+<span class="fc" id="L779">			return null;</span>
+			
+		// matching of regular expression may not care about the &quot;-&quot; in &quot;num-&quot;
+		// to ensure that the next character in the string is a space and not part of the list of numbers
+<span class="fc" id="L783">		str = str.substring(numList.length());</span>
+<span class="fc bfc" id="L784" title="All 2 branches covered.">		while (!str.isEmpty()) {</span>
+<span class="fc" id="L785">			char ch = str.charAt(0);</span>
+<span class="fc bfc" id="L786" title="All 2 branches covered.">			if (!Character.isWhitespace(ch)) {</span>
+<span class="fc" id="L787">				numList += ch;</span>
+<span class="fc" id="L788">				str = str.substring(1);</span>
+			}
+			else
+				break;
+		}
+<span class="fc" id="L793">		return numList;</span>
+	}
+	
+	/**
+	 * Gets the first directory/file name found at the start of the given string 
+	 * @param str		the string to search the directory or file from
+	 * @param dirOnly	if true, only search for directory name else search for
+	 * 					directory or file name
+	 * @return			the directory/file name if it is valid at the start of the given string
+	 * 					else return null
+	 */
+	private String findDirFile (String str, boolean dirOnly) {
+		
+		String matchedStr;
+<span class="fc bfc" id="L807" title="All 2 branches covered.">		if (dirOnly)</span>
+<span class="fc" id="L808">			matchedStr = findMatch(DIR_REGEX, str);</span>
+		
+		else
+<span class="fc" id="L811">			matchedStr = findMatch(DIR_FILE_REGEX, str);</span>
+		
+		// matcher does not match last &quot; if there is a / in the beginning
+		// i.e &quot;/dir1/dir2&quot; will get &quot;/dir/dir instead
+		// check if matched string has &quot; in front but &quot; at the back
+<span class="fc bfc" id="L816" title="All 6 branches covered.">		if (matchedStr != null &amp;&amp; matchedStr.charAt(0) == '\&quot;' &amp;&amp; matchedStr.charAt(matchedStr.length()-1) != '\&quot;') {</span>
+<span class="fc" id="L817">			matchedStr += &quot;\&quot;&quot;;</span>
+		}
+		
+<span class="fc" id="L820">		return matchedStr;</span>
+		
+	}
+	
+	/**
+	 * Get a string that matches the regular expression for a specified string, starting from the beginning of the string.
+	 * @param regex		the regular expression
+	 * @param str		the string to check on
+	 * @return			if there is a match, then the string that matched the regular expression. Else return null.
+	 */
+	private String findMatch (String regex, String str) {
+<span class="fc" id="L831">		String matchedStr = null;</span>
+<span class="fc" id="L832">		String strTrim = str.trim();</span>
+<span class="fc" id="L833">		Matcher matcher = Pattern.compile(&quot;^&quot;+regex).matcher(strTrim);</span>
+<span class="fc bfc" id="L834" title="All 2 branches covered.">		if (matcher.find())</span>
+<span class="fc" id="L835">			matchedStr = matcher.group().trim();</span>
+<span class="fc" id="L836">		return matchedStr;</span>
+	}
+	
+	/**
+	 * Clean up arguments by removing front and back quotes in arguments if any
+	 * @param args		Vector of arguments
+	 * @return			An array of arguments without front and back quotes
+	 */
+	private String[] cleanUpArguments(Vector&lt;String&gt; args) {
+<span class="fc" id="L845">		String[] argsArray = new String[args.size()];</span>
+		
+<span class="fc bfc" id="L847" title="All 2 branches covered.">		for (int i=0; i&lt;args.size(); ++i) {</span>
+<span class="fc" id="L848">			String argument = args.get(i);</span>
+<span class="pc bpc" id="L849" title="1 of 4 branches missed.">			if (argument.startsWith(&quot;\&quot;&quot;) &amp;&amp; argument.endsWith(&quot;\&quot;&quot;))</span>
+<span class="fc" id="L850">				argument = argument.substring(1,argument.length()-1);</span>
+<span class="fc" id="L851">			argsArray[i] = argument;</span>
+		}
+		
+<span class="fc" id="L854">		return argsArray;</span>
+	}
+	
+	/**
+	 * Checks if a string has a particular content at the front of its string and removes it 
+	 * 
+	 * @param content				content to remove from the front of the string 'strToReduce'
+	 * @param strToReduce			the string to be reduced
+	 * @return						the reduced string if the content specified is found in front of the string, else return null
+	 */
+	private String reduceString(String content, String strToReduce) {
+<span class="pc bpc" id="L865" title="2 of 4 branches missed.">		if (content == null || strToReduce == null)</span>
+<span class="nc" id="L866">			return null;</span>
+		
+<span class="fc" id="L868">		String reducedStrTrim = null;</span>
+<span class="fc" id="L869">		String reducedStr = strToReduce.trim();</span>
+		
+<span class="fc" id="L871">		int index = reducedStr.indexOf(content);</span>
+<span class="pc bpc" id="L872" title="1 of 2 branches missed.">		if (index != 0)</span>
+<span class="nc" id="L873">			return null;</span>
+		else {
+<span class="fc" id="L875">			reducedStrTrim = reducedStr.substring(index+content.length()).trim();</span>
+		}
+		
+<span class="fc" id="L878">		return reducedStrTrim;</span>
+	}
+
+	@Override
+	public Runnable execute(ITool tool) {
+<span class="fc" id="L883">		return new ToolRunnable(tool, stdIn);</span>
+	}
+
+	@Override
+	public void stop(Runnable toolExecution) {
+		//TODO Implement
+<span class="nc" id="L889">	}</span>
+
+	
+	/**
+	 * Do Forever
+     * 1. Wait for a user input
+     * 2. Parse the user input. Separate the command and its arguments
+     * 3. Create a new thread to execute the command
+     * 4. Execute the command and its arguments on the newly created thread. Exit with the status code of the executed command
+     * 5. In the shell, wait for the thread to complete execution
+     * 6. Report the exit status of the command to the user
+	 */
+	public static void main(String[] args){
+<span class="nc" id="L902">		Shell shell = new Shell();</span>
+<span class="nc" id="L903">		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));</span>
+<span class="nc" id="L904">		ExecutorService executorSvc = Executors.newSingleThreadExecutor();</span>
+<span class="nc" id="L905">		Future&lt;?&gt; taskThread = null;</span>
+		
+		try {
+<span class="nc" id="L908">			while(true) {</span>
+				
+<span class="nc bnc" id="L910" title="All 4 branches missed.">				if (taskThread == null || taskThread.isDone())</span>
+<span class="nc" id="L911">					System.out.print(System.getProperty(&quot;user.dir&quot;) + &quot; &gt;&gt; &quot;);</span>
+				
+<span class="nc" id="L913">				String input = br.readLine();</span>
+				
+<span class="nc bnc" id="L915" title="All 2 branches missed.">				if (input == null)</span>
+<span class="nc" id="L916">					continue;</span>
+				
+<span class="nc" id="L918">				input = input.trim();</span>
+<span class="nc bnc" id="L919" title="All 2 branches missed.">				if(input.isEmpty())</span>
+<span class="nc" id="L920">					continue;</span>
+				
+<span class="nc bnc" id="L922" title="All 2 branches missed.">				if (input.equals(&quot;Ctrl-Z&quot;)) {</span>
+<span class="nc bnc" id="L923" title="All 4 branches missed.">					if (taskThread != null &amp;&amp; !taskThread.isDone()) {</span>
+<span class="nc" id="L924">						taskThread.cancel(true);</span>
+<span class="nc" id="L925">						taskThread = null;</span>
+<span class="nc" id="L926">						System.out.println(&quot;Task Interrupted&quot;);</span>
+					}
+<span class="nc" id="L928">				}</span>
+				
+				else {
+<span class="nc bnc" id="L931" title="All 4 branches missed.">					if (taskThread == null || taskThread.isDone()) {</span>
+<span class="nc" id="L932">						ITool tool = shell.parse(input);</span>
+<span class="nc" id="L933">						boolean toExecuteTool = true;</span>
+<span class="nc bnc" id="L934" title="All 2 branches missed.">						if (tool != null) {</span>
+							
+							// get standard input if needed
+<span class="nc bnc" id="L937" title="All 2 branches missed.">							if (stdinRequired) {</span>
+<span class="nc" id="L938">								stdIn = &quot;&quot;;</span>
+<span class="nc bnc" id="L939" title="All 2 branches missed.">								while ((input = br.readLine()) != null) {</span>
+									// do not execute task
+<span class="nc bnc" id="L941" title="All 2 branches missed.">									if (input.equals(&quot;Ctrl-Z&quot;)) {</span>
+<span class="nc" id="L942">										toExecuteTool = false;</span>
+<span class="nc" id="L943">										System.out.println(&quot;Task Interrupted&quot;);</span>
+<span class="nc" id="L944">										break;</span>
+									}
+<span class="nc" id="L946">									stdIn += input + System.lineSeparator();</span>
+								}
+							}
+							
+<span class="nc bnc" id="L950" title="All 2 branches missed.">							if (toExecuteTool) {</span>
+<span class="nc" id="L951">								Runnable runnable = shell.execute(tool);</span>
+<span class="nc" id="L952">								taskThread = executorSvc.submit(runnable);</span>
+							}
+<span class="nc" id="L954">						}</span>
+						else {
+<span class="nc" id="L956">							System.err.println(&quot;Invalid Command : &quot; + input);</span>
+						}
+					}
+				}
+			}
+<span class="nc" id="L961">		} catch(IOException e) {</span>
+<span class="nc" id="L962">			System.err.println(&quot;Error: invalid input - &quot; + e.getMessage());</span>
+		}
+		
+<span class="nc" id="L965">	}</span>
+	
+	/**
+	 * This method is only used for testing
+	 * @param commandlines	commands to be executed sequentially
+	 * @return 				The 1st element is the result string.
+	 * 		   				The 2nd element onwards are the resulting 
+	 * 						status code from the execution of each of the commands given
+	 * 						If the commandline is invalid, the result string will be &quot;Invalid Command&quot;
+	 * 						and the status code will be 1
+	 */
+	public static Vector&lt;String&gt; shellTestExecution(String ... commandlines) {
+<span class="fc" id="L977">		underTest = true;</span>
+		
+<span class="fc" id="L979">		Shell shell = new Shell();</span>
+<span class="fc" id="L980">		ExecutorService executorSvc = Executors.newSingleThreadExecutor();</span>
+<span class="fc" id="L981">		Vector&lt;String&gt; resultArray = new Vector&lt;String&gt; (commandlines.length + 1);</span>
+		
+<span class="fc bfc" id="L983" title="All 2 branches covered.">		for (int i = 0; i &lt; commandlines.length; ++i) {</span>
+<span class="fc" id="L984">			ITool tool = shell.parse(commandlines[i]);</span>
+<span class="pc bpc" id="L985" title="1 of 2 branches missed.">			if (tool == null) {</span>
+<span class="nc" id="L986">				resultArray.add(&quot;Invalid Command&quot;);</span>
+<span class="nc" id="L987">				return resultArray;</span>
+			}
+<span class="fc" id="L989">			Runnable runnable = shell.execute(tool);</span>
+<span class="fc" id="L990">			Future&lt;?&gt; taskThread = executorSvc.submit(runnable);</span>
+<span class="fc bfc" id="L991" title="All 2 branches covered.">			while (!taskThread.isDone()) {}</span>
+<span class="fc" id="L992">			resultArray.add(Integer.toString(tool.getStatusCode()));</span>
+		}
+<span class="fc" id="L994">		resultArray.add(0,result);</span>
+		
+<span class="fc" id="L996">		underTest = false;</span>
+<span class="fc" id="L997">		return resultArray;</span>
+	}
+}
+
+class ToolRunnable implements Runnable {
+	
+	private ITool tool;
+	private String stdIn;
+	
+<span class="fc" id="L1006">	ToolRunnable(ITool tool, String stdIn) {</span>
+<span class="fc" id="L1007">		this.tool = tool;</span>
+<span class="fc" id="L1008">		this.stdIn = stdIn;</span>
+<span class="fc" id="L1009">	}</span>
+	
+	@Override
+	public void run() {
+
+<span class="fc" id="L1014">		File workingDir = new File (System.getProperty(&quot;user.dir&quot;));</span>
+<span class="fc" id="L1015">		String result = tool.execute(workingDir, stdIn);</span>
+<span class="fc bfc" id="L1016" title="All 2 branches covered.">		if (!result.isEmpty()) {</span>
+<span class="pc bpc" id="L1017" title="1 of 2 branches missed.">			if (!Shell.underTest)</span>
+<span class="nc" id="L1018">				System.out.println(result);</span>
+<span class="fc" id="L1019">			Shell.result = result;</span>
+<span class="fc" id="L1020">		}</span>
+		else
+<span class="fc" id="L1022">			Shell.result = &quot;&quot;;</span>
+<span class="pc bpc" id="L1023" title="1 of 2 branches missed.">		if (!Shell.underTest)</span>
+<span class="nc" id="L1024">			System.out.print(System.getProperty(&quot;user.dir&quot;) + &quot; &gt;&gt; &quot;);</span>
+	
+<span class="fc" id="L1026">	}</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

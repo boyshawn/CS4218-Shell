@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>WcToolIntegrationTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.integrationtest.extended2</a> &gt; <span class="el_source">WcToolIntegrationTest.java</span></div><h1>WcToolIntegrationTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.integrationtest.extended2;
+
+import static org.junit.Assert.assertEquals;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.ITool;
+import sg.edu.nus.comp.cs4218.impl.extended1.GrepTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.WcTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.CatTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.EchoTool;
+
+<span class="fc" id="L19">public class WcToolIntegrationTest {</span>
+	
+	private File file1, file2, dir;
+	private String userDir;
+
+	@Before
+	public void setUp() throws Exception {
+		// create files with content
+<span class="fc" id="L27">		createFile1();</span>
+<span class="fc" id="L28">		createFile2();</span>
+		
+		// create directory
+<span class="fc" id="L31">		dir = new File(&quot;dir&quot;);</span>
+<span class="fc" id="L32">		dir.mkdir();</span>
+		
+<span class="fc" id="L34">		userDir = System.getProperty(&quot;user.dir&quot;);</span>
+<span class="fc" id="L35">	}</span>
+
+	private void createFile1() throws Exception {
+		BufferedWriter bw;
+		String content;
+		
+<span class="fc" id="L41">		file1 = new File(&quot;file1&quot;);</span>
+<span class="fc" id="L42">		file1.createNewFile();</span>
+	
+<span class="fc" id="L44">		content = &quot;this is file1 used for testing&quot;+System.lineSeparator();</span>
+<span class="fc" id="L45">		content += &quot;there are 5 lines in this file&quot; + System.lineSeparator();</span>
+<span class="fc" id="L46">		content += &quot;this is the 3rd line&quot; + System.lineSeparator();</span>
+<span class="fc" id="L47">		content += &quot;this is the 4th line&quot; + System.lineSeparator();</span>
+<span class="fc" id="L48">		content += &quot;this is the 5th line&quot;;</span>
+		
+<span class="fc" id="L50">		bw = new BufferedWriter(new FileWriter(file1));</span>
+<span class="fc" id="L51">		bw.write(content);</span>
+<span class="fc" id="L52">		bw.close();</span>
+<span class="fc" id="L53">	}</span>
+	
+	private void createFile2() throws Exception {
+		BufferedWriter bw;
+		String content;
+		
+<span class="fc" id="L59">		file2 = new File(&quot;file2&quot;);</span>
+<span class="fc" id="L60">		file2.createNewFile();</span>
+<span class="fc" id="L61">		content = &quot;this is file2 used for testing&quot;+System.lineSeparator();</span>
+<span class="fc" id="L62">		content += &quot;testing testing 1 2 3&quot;+System.lineSeparator();</span>
+<span class="fc" id="L63">		content += &quot;	???	&quot;+System.lineSeparator()+System.lineSeparator();</span>
+		
+<span class="fc" id="L65">		bw = new BufferedWriter(new FileWriter(file2));</span>
+<span class="fc" id="L66">		bw.write(content);</span>
+<span class="fc" id="L67">		bw.close();</span>
+<span class="fc" id="L68">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L72">		file1.delete();</span>
+<span class="fc" id="L73">		file2.delete();</span>
+<span class="fc" id="L74">		dir.delete();</span>
+<span class="fc" id="L75">	}</span>
+
+	@Test
+	public void structuralIntegration_GrepWc_GetStatusCode0 () {
+		
+<span class="fc" id="L80">		String [] grepArgs = new String[]{&quot;-A&quot;, &quot;2&quot;, &quot;testing&quot;, &quot;file1&quot;};</span>
+<span class="fc" id="L81">		ITool grepTool = new GrepTool(grepArgs);</span>
+<span class="fc" id="L82">		String[] wcArgs = new String[]{&quot;-l&quot;, &quot;-&quot;};</span>
+<span class="fc" id="L83">		ITool wcTool = new WcTool(wcArgs);</span>
+		
+<span class="fc" id="L85">		String result = grepTool.execute(new File(userDir), null);</span>
+<span class="fc" id="L86">		result = wcTool.execute(new File(userDir), result);</span>
+<span class="fc" id="L87">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L88">		assertEquals(0, wcTool.getStatusCode());</span>
+<span class="fc" id="L89">		assertEquals(&quot;\t3&quot;, result);</span>
+<span class="fc" id="L90">	}</span>
+	
+	@Test
+	public void structuralIntegration_WcCat_GetStatusCode0 () {
+<span class="fc" id="L94">		String[] wcArgs = new String[]{&quot;-m&quot;, &quot;-&quot;};</span>
+<span class="fc" id="L95">		ITool wcTool = new WcTool(wcArgs);</span>
+<span class="fc" id="L96">		String [] catArgs = new String[]{&quot;-&quot;};</span>
+<span class="fc" id="L97">		ITool catTool = new CatTool(catArgs);</span>
+		
+<span class="fc" id="L99">		String result = wcTool.execute(new File(userDir), &quot;this is a standard input&quot;);</span>
+<span class="fc" id="L100">		result = catTool.execute(new File(userDir), result);</span>
+<span class="fc" id="L101">		assertEquals(0, wcTool.getStatusCode());</span>
+<span class="fc" id="L102">		assertEquals(0, catTool.getStatusCode());</span>
+<span class="fc" id="L103">		assertEquals(&quot;\t24&quot;, result);</span>
+<span class="fc" id="L104">	}</span>
+	
+	@Test
+	public void structuralIntegration_EchoWc_GetStatusCode0 () {
+<span class="fc" id="L108">		String [] echoArgs = new String[]{&quot;testing wc and echo together&quot;};</span>
+<span class="fc" id="L109">		ITool echoTool = new EchoTool(echoArgs);</span>
+<span class="fc" id="L110">		String[] wcArgs = new String[]{&quot;-w&quot;, &quot;-&quot;};</span>
+<span class="fc" id="L111">		ITool wcTool = new WcTool(wcArgs);</span>
+		
+<span class="fc" id="L113">		String result = echoTool.execute(new File(userDir), &quot;no stdin&quot;);</span>
+<span class="fc" id="L114">		result = wcTool.execute(new File(userDir), result);</span>
+<span class="fc" id="L115">		assertEquals(0, echoTool.getStatusCode());</span>
+<span class="fc" id="L116">		assertEquals(0, wcTool.getStatusCode());</span>
+<span class="fc" id="L117">		assertEquals(&quot;\t5&quot;, result);</span>
+<span class="fc" id="L118">	}</span>
+	
+	@Test
+	public void structuralIntegration_WcGrepError_GetStatusCodeNot0 () {
+		// wc no standard input when it is expected
+		
+<span class="fc" id="L124">		String [] wcArgs = new String[]{&quot;-m&quot;, &quot;-&quot;};</span>
+<span class="fc" id="L125">		ITool wcTool = new WcTool(wcArgs);</span>
+<span class="fc" id="L126">		String[] grepArgs = new String[]{&quot;-A&quot;, &quot;2&quot;, &quot;this&quot;, &quot;-&quot;};</span>
+<span class="fc" id="L127">		ITool grepTool = new GrepTool(grepArgs);</span>
+		
+<span class="fc" id="L129">		String result = wcTool.execute(new File(userDir), null);</span>
+<span class="fc" id="L130">		assertEquals(WcTool.STATUS_CODE_STDIN_EXPECTED, wcTool.getStatusCode());</span>
+		
+<span class="fc" id="L132">		result = grepTool.execute(new File(userDir), result);</span>
+<span class="fc" id="L133">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L134">	}</span>
+	
+	@Test
+	public void structuralIntegration_CatWcError_GetStatusCodeNot0 () {
+		// cat file does not exist
+		
+<span class="fc" id="L140">		String[] catArgs = new String[]{&quot;fileNotExist&quot;};</span>
+<span class="fc" id="L141">		ITool catTool = new CatTool(catArgs);</span>
+<span class="fc" id="L142">		String [] wcArgs = new String[]{&quot;-l&quot;, &quot;-&quot;};</span>
+<span class="fc" id="L143">		ITool wcTool = new WcTool(wcArgs);</span>
+		
+<span class="fc" id="L145">		String result = catTool.execute(new File(userDir), null);</span>
+<span class="fc" id="L146">		assertEquals(CatTool.ERR_CODE_FILE_NOT_FOUND, catTool.getStatusCode());</span>
+		
+		// error message from cat passed to wc
+<span class="fc" id="L149">		result = wcTool.execute(new File(userDir), result);</span>
+<span class="fc" id="L150">		assertEquals(0, wcTool.getStatusCode());</span>
+<span class="fc" id="L151">	}</span>
+	
+	@Test
+	public void structuralIntegration_WcEchoError_GetStatusCodeNot0 () {
+		// wc no standard input when it is expected
+		
+<span class="fc" id="L157">		String [] wcArgs = new String[]{&quot;-m&quot;, &quot;-&quot;};</span>
+<span class="fc" id="L158">		ITool wcTool = new WcTool(wcArgs);</span>
+<span class="fc" id="L159">		String[] echoArgs = null;</span>
+<span class="fc" id="L160">		ITool echoTool = new EchoTool(echoArgs);</span>
+		
+<span class="fc" id="L162">		String result = wcTool.execute(new File(userDir), null);</span>
+<span class="fc" id="L163">		assertEquals(WcTool.STATUS_CODE_STDIN_EXPECTED, wcTool.getStatusCode());</span>
+		
+<span class="fc" id="L165">		result = echoTool.execute(new File(userDir), result);</span>
+<span class="fc" id="L166">		assertEquals(0, echoTool.getStatusCode());</span>
+		
+<span class="fc" id="L168">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

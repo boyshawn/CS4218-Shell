@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>LsTool.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">src</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.fileutils</a> &gt; <span class="el_source">LsTool.java</span></div><h1>LsTool.java</h1><pre class="source lang-java linenums">/**
+ * 
+ */
+package sg.edu.nus.comp.cs4218.impl.fileutils;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import sg.edu.nus.comp.cs4218.fileutils.ILsTool;
+import sg.edu.nus.comp.cs4218.impl.ATool;
+
+/**
+ *
+ */
+public class LsTool extends ATool implements ILsTool {
+	public final static int DIRECTORY_ERROR_CODE = 2;
+	public final static String DIRECTORY_ERROR_MSG = &quot;No such file or directory&quot;;
+
+	/**
+	 * 
+	 * @param arguments
+	 *            arguments to passed in to execute the command. The type of
+	 *            arguments allow are file names and directory (both relative
+	 *            and absolute).
+	 */
+	public LsTool(final String[] arguments) {
+<span class="fc" id="L28">		super(arguments);</span>
+<span class="fc" id="L29">	}</span>
+
+	/**
+	 * Return the list of file in the specified directory if the directory is
+	 * valid, &lt;i&gt;null&lt;/i&gt; otherwise
+	 * 
+	 * @param directory
+	 *            the file directory the list of file will be retrieved
+	 * 
+	 * @return the list of file in the specified directory if the directory is
+	 *         valid, &lt;i&gt;null&lt;/i&gt; otherwise
+	 */
+	@Override
+	public List&lt;File&gt; getFiles(final File directory) {
+<span class="fc" id="L43">		ArrayList&lt;File&gt; fileList = new ArrayList&lt;File&gt;();</span>
+
+		//Error checking
+		/*
+		 * Error 1: Empty directory
+		 * Error 2: Non-existing directory
+		 */
+<span class="fc bfc" id="L50" title="All 2 branches covered.">		if( directory == null ||</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">				!directory.exists()){			//Invalid file/ directory path</span>
+<span class="fc" id="L52">			fileList = null;</span>
+<span class="fc" id="L53">		}</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">		else if (directory.isDirectory()){	//Directory</span>
+<span class="fc" id="L55">			final File[] files = directory.listFiles();</span>
+
+<span class="fc bfc" id="L57" title="All 2 branches covered.">			for(int i = 0; i &lt; files.length; i++){</span>
+<span class="fc" id="L58">				fileList.add(files[i]);</span>
+			}
+<span class="fc" id="L60">		}</span>
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">		else if(directory.isFile()){		//File</span>
+<span class="fc" id="L62">			fileList.add(directory);</span>
+		}
+
+<span class="fc" id="L65">		return fileList;</span>
+	}
+
+	/**
+	 * Return the list of file and folder specified by list (including the
+	 * hidden files), the list is separated by the single character '|'
+	 * 
+	 * @param files
+	 *            the list of file which the file and folder name to be
+	 *            extracted
+	 * 
+	 * @return the list of file and folder specified by list (including the
+	 *         hidden files), the list is separated by the line separator
+	 */
+	@Override
+	public String getStringForFiles(final List&lt;File&gt; files) {
+<span class="fc" id="L81">		StringBuilder fileList = new StringBuilder();</span>
+
+		//Error: Null files object
+<span class="fc bfc" id="L84" title="All 2 branches covered.">		if(files != null){</span>
+			File file;
+
+<span class="fc bfc" id="L87" title="All 2 branches covered.">			for(int i = 0; i &lt; files.size(); i++){</span>
+<span class="fc" id="L88">				file = files.get(i);</span>
+
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">				if(file.exists()){</span>
+<span class="fc" id="L91">					fileList.append(files.get(i).getName());</span>
+<span class="fc" id="L92">					fileList.append(System.lineSeparator());</span>
+				}
+			}
+		}
+<span class="fc bfc" id="L96" title="All 2 branches covered.">		if(fileList.length() &gt; 0){</span>
+<span class="fc" id="L97">			fileList.setLength(fileList.lastIndexOf(System.lineSeparator()));</span>
+		}
+<span class="fc" id="L99">		return fileList.toString();</span>
+	}
+
+	/**
+	 * Executes the ls tool with arguments provided in the constructor, the tool
+	 * will list the file and folder in the current directory in a one file/
+	 * folder per row format
+	 * 
+	 * @param workingDir
+	 *            the current working directory path
+	 * 
+	 * @param stdin
+	 *            the additional input from the stdin
+	 * 
+	 * @return the list of file and folder in the current directory
+	 */
+	@Override
+	public String execute(final File workingDir, String stdin) {
+<span class="fc" id="L117">		String output = null; </span>
+
+<span class="fc bfc" id="L119" title="All 2 branches covered.">		if(this.args == null){</span>
+<span class="fc" id="L120">			setStatusCode(DIRECTORY_ERROR_CODE);</span>
+<span class="fc" id="L121">			output = DIRECTORY_ERROR_MSG;</span>
+<span class="fc" id="L122">		}</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">		else if(&quot;&quot;.equals(this.args[0])){			//List file for present working directory</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">			if(	 workingDir == null || </span>
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">					!workingDir.exists() || </span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">					!workingDir.isDirectory()){</span>
+<span class="fc" id="L127">				setStatusCode(DIRECTORY_ERROR_CODE);</span>
+<span class="fc" id="L128">				output = DIRECTORY_ERROR_MSG;</span>
+<span class="fc" id="L129">			}</span>
+			else{
+<span class="fc" id="L131">				output = listDirectory(workingDir);</span>
+			}
+<span class="fc" id="L133">		}</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">		else if(this.args.length == 1) {	//Only one file/ directory</span>
+<span class="fc" id="L135">			final File directory = new File (this.args[0]);</span>
+<span class="fc" id="L136">			output = listDirectory(directory);</span>
+<span class="fc" id="L137">		}</span>
+		else{								//At least two or more file/ directory
+			File directory;
+<span class="fc" id="L140">			output = &quot;&quot;;</span>
+
+<span class="fc bfc" id="L142" title="All 2 branches covered.">			for(int i =0; i &lt; this.args.length; i++){	</span>
+<span class="fc" id="L143">				directory = new File (this.args[i]);</span>
+
+<span class="fc" id="L145">				final String prefixStr = this.args[i].concat(&quot;:&quot;+ System.lineSeparator()); </span>
+<span class="fc" id="L146">				final String result = listDirectory(directory);</span>
+
+<span class="fc bfc" id="L148" title="All 2 branches covered.">				if (!&quot;&quot;.equals(output)) {</span>
+<span class="fc" id="L149">					output = output + System.lineSeparator()</span>
+<span class="fc" id="L150">							+ System.lineSeparator();</span>
+				}
+<span class="fc bfc" id="L152" title="All 2 branches covered.">				if(result.equals(DIRECTORY_ERROR_MSG)){	//Error in listing directory</span>
+					/*
+					 * FIXME: to fix the behaviour that the order of the error
+					 * message needed to be preserved
+					 */
+<span class="fc" id="L157">					output = prefixStr + DIRECTORY_ERROR_MSG + output;</span>
+<span class="fc" id="L158">				}</span>
+				else {	//No error in listing directory
+<span class="fc" id="L160">					output = output + prefixStr + result;</span>
+				}
+			}
+		}
+<span class="fc" id="L164">		return output;</span>
+	}
+
+	private String listDirectory(File directory){
+		String directoryListing;
+<span class="fc" id="L169">		final List&lt;File&gt; filesList = getFiles(directory);</span>
+
+<span class="fc bfc" id="L171" title="All 2 branches covered.">		if(filesList == null){</span>
+<span class="fc" id="L172">			setStatusCode(DIRECTORY_ERROR_CODE);</span>
+<span class="fc" id="L173">			directoryListing = DIRECTORY_ERROR_MSG;</span>
+<span class="fc" id="L174">		}</span>
+		else{
+<span class="fc" id="L176">			directoryListing = getStringForFiles(filesList);</span>
+		}
+<span class="fc" id="L178">		return directoryListing;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

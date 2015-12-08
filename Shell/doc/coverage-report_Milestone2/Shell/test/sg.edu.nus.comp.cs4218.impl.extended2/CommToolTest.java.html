@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>CommToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.extended2</a> &gt; <span class="el_source">CommToolTest.java</span></div><h1>CommToolTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.extended2;
+
+import static org.junit.Assert.*;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.extended2.ICommTool;
+
+<span class="fc" id="L18">public class CommToolTest {</span>
+
+	private static ICommTool commTool;
+<span class="fc" id="L21">	private final String COMM_HELP_MESSAGE = &quot;comm : Compares two sorted files &quot;</span>
+			+ &quot;line by line. With no options, produce three-column &quot;
+			+ &quot;output. Column one contains lines unique to FILE1, &quot;
+			+ &quot;column two contains lines unique to FILE2, and column &quot;
+			+ &quot;three contains lines common to both files.&quot;
+<span class="fc" id="L26">			+ System.lineSeparator()</span>
+<span class="fc" id="L27">			+ &quot;Command Format - comm [OPTIONS] FILE1 FILE2&quot;</span>
+<span class="fc" id="L28">			+ System.lineSeparator()</span>
+<span class="fc" id="L29">			+ &quot;FILE1 - Name of the file 1&quot;</span>
+<span class="fc" id="L30">			+ System.lineSeparator()</span>
+<span class="fc" id="L31">			+ &quot;FILE2 - Name of the file 2&quot;</span>
+<span class="fc" id="L32">			+ System.lineSeparator()</span>
+<span class="fc" id="L33">			+ &quot;-c : check that the input is correctly sorted, even if &quot;</span>
+<span class="fc" id="L34">			+ &quot;all input lines are pairable&quot;</span>
+<span class="fc" id="L35">			+ System.lineSeparator()</span>
+<span class="fc" id="L36">			+ &quot;-d : do not check that the input is correctly sorted&quot;</span>
+<span class="fc" id="L37">			+ System.lineSeparator()</span>
+<span class="fc" id="L38">			+ &quot;-help : Brief information about supported options&quot;;</span>
+
+	public static void writeFile(String fileName, String s) throws IOException {
+<span class="fc" id="L41">		BufferedWriter out = new BufferedWriter(new FileWriter(fileName));</span>
+<span class="fc" id="L42">		out.write(s);</span>
+<span class="fc" id="L43">		out.close();</span>
+<span class="fc" id="L44">	}</span>
+
+	@BeforeClass
+	public static void initialize() throws IOException {
+
+		// creating testFile 1 &amp; 2 in sorted order
+<span class="fc" id="L50">		File myFile1 = new File(&quot;testFile1.txt&quot;);</span>
+<span class="fc" id="L51">		myFile1.createNewFile();</span>
+<span class="fc" id="L52">		writeFile(&quot;testFile1.txt&quot;, &quot;aaa&quot; + System.lineSeparator() + &quot;bbb&quot;</span>
+<span class="fc" id="L53">				+ System.lineSeparator() + &quot;ccc&quot; + System.lineSeparator()</span>
+<span class="fc" id="L54">				+ &quot;ddd&quot;);</span>
+
+<span class="fc" id="L56">		File myFile2 = new File(&quot;testFile2.txt&quot;);</span>
+<span class="fc" id="L57">		myFile2.createNewFile();</span>
+<span class="fc" id="L58">		writeFile(&quot;testFile2.txt&quot;, &quot;aaf&quot; + System.lineSeparator() + &quot;abb&quot;</span>
+<span class="fc" id="L59">				+ System.lineSeparator() + &quot;ccc&quot; + System.lineSeparator()</span>
+<span class="fc" id="L60">				+ &quot;fff&quot;);</span>
+
+		// testFile 3 will be the file in unsorted order
+<span class="fc" id="L63">		File myFile3 = new File(&quot;testFile3.txt&quot;);</span>
+<span class="fc" id="L64">		myFile3.createNewFile();</span>
+<span class="fc" id="L65">		writeFile(&quot;testFile3.txt&quot;, &quot;zzz&quot; + System.lineSeparator() + &quot;ccc&quot;</span>
+<span class="fc" id="L66">				+ System.lineSeparator() + &quot;aaa&quot; + System.lineSeparator()</span>
+<span class="fc" id="L67">				+ &quot;bbb&quot;);</span>
+
+		// testFile 4 &amp; 5 will be empty file
+<span class="fc" id="L70">		File myFile4 = new File(&quot;testFile4.txt&quot;);</span>
+<span class="fc" id="L71">		myFile4.createNewFile();</span>
+<span class="fc" id="L72">		writeFile(&quot;testFile4.txt&quot;, &quot;&quot;);</span>
+
+<span class="fc" id="L74">		File myFile5 = new File(&quot;testFile5.txt&quot;);</span>
+<span class="fc" id="L75">		myFile5.createNewFile();</span>
+<span class="fc" id="L76">		writeFile(&quot;testFile5.txt&quot;, &quot;&quot;);</span>
+<span class="fc" id="L77">	}</span>
+
+	@AfterClass
+	public static void deInitialize() {
+
+		// creating testFile 1 &amp; 2 in sorted order
+<span class="fc" id="L83">		File myFile1 = new File(&quot;testFile1.txt&quot;);</span>
+<span class="fc" id="L84">		myFile1.delete();</span>
+
+<span class="fc" id="L86">		File myFile2 = new File(&quot;testFile2.txt&quot;);</span>
+<span class="fc" id="L87">		myFile2.delete();</span>
+		// testFile 3 will be the file in unsorted order
+<span class="fc" id="L89">		File myFile3 = new File(&quot;testFile3.txt&quot;);</span>
+<span class="fc" id="L90">		myFile3.delete();</span>
+		// testFile 4 &amp; 5 will be empty file
+<span class="fc" id="L92">		File myFile4 = new File(&quot;testFile4.txt&quot;);</span>
+<span class="fc" id="L93">		myFile4.delete();</span>
+
+<span class="fc" id="L95">		File myFile5 = new File(&quot;testFile5.txt&quot;);</span>
+<span class="fc" id="L96">		myFile5.delete();</span>
+<span class="fc" id="L97">	}</span>
+
+	@Before
+	public void before() throws IOException {
+<span class="fc" id="L101">		commTool = new CommTool(null);</span>
+<span class="fc" id="L102">	}</span>
+
+	@After
+	public void after() {
+<span class="fc" id="L106">		commTool = null;</span>
+<span class="fc" id="L107">	}</span>
+
+	/*
+	 * ========================================================================
+	 * The Following test method verify for the correctness of the core function
+	 * of the class
+	 * ========================================================================
+	 */
+
+	// test for comm File1 File2; both files are in sorted order
+	@Corrected
+	// Swap result and expected, change to line separator
+	@Test
+	public void compareFilesSortedFile() {
+<span class="fc" id="L121">		String result = commTool.compareFiles(&quot;testFile1.txt&quot;, &quot;testFile2.txt&quot;);</span>
+<span class="fc" id="L122">		assertEquals(</span>
+<span class="fc" id="L123">				&quot;aaa&quot; + System.lineSeparator() + &quot;\taaf&quot;</span>
+<span class="fc" id="L124">						+ System.lineSeparator() + &quot;\tabb&quot;</span>
+<span class="fc" id="L125">						+ System.lineSeparator() + &quot;bbb&quot;</span>
+<span class="fc" id="L126">						+ System.lineSeparator() + &quot;\t\tccc&quot;</span>
+<span class="fc" id="L127">						+ System.lineSeparator() + &quot;ddd&quot;</span>
+<span class="fc" id="L128">						+ System.lineSeparator() + &quot;\tfff&quot;</span>
+<span class="fc" id="L129">						+ System.lineSeparator() + &quot;&quot;, result);</span>
+<span class="fc" id="L130">	}</span>
+
+	// test for comm File1 File2; both files are not in sorted order
+	@Corrected
+	// Swap result and expected
+	@Test
+	public void compareFilesNotSortedFile() {
+<span class="fc" id="L137">		String result = commTool.compareFiles(&quot;testFile1.txt&quot;, &quot;testFile3.txt&quot;);</span>
+<span class="fc" id="L138">		assertEquals(</span>
+<span class="fc" id="L139">				&quot;aaa&quot; + System.lineSeparator() + &quot;bbb&quot; + System.lineSeparator()</span>
+<span class="fc" id="L140">						+ &quot;ccc&quot; + System.lineSeparator() + &quot;ddd&quot;</span>
+<span class="fc" id="L141">						+ System.lineSeparator() + &quot;\tzzz&quot;</span>
+<span class="fc" id="L142">						+ System.lineSeparator() + &quot;&quot;</span>
+<span class="fc" id="L143">						+ &quot;comm: file 2 is not in sorted order&quot;</span>
+<span class="fc" id="L144">						+ System.lineSeparator() + &quot;\tccc&quot;</span>
+<span class="fc" id="L145">						+ System.lineSeparator() + &quot;\taaa&quot;</span>
+<span class="fc" id="L146">						+ System.lineSeparator() + &quot;\tbbb&quot;</span>
+<span class="fc" id="L147">						+ System.lineSeparator() + &quot;&quot;, result);</span>
+<span class="fc" id="L148">	}</span>
+
+	// with options -d and File is sorted order
+	@Corrected
+	// Swap result and expected
+	@Test
+	public void compareFilesDoNotCheckSortStatusSortedFile() throws IOException {
+<span class="fc" id="L155">		String result = commTool.compareFilesDoNotCheckSortStatus(</span>
+<span class="fc" id="L156">				&quot;testFile1.txt&quot;, &quot;testFile2.txt&quot;);</span>
+<span class="fc" id="L157">		assertEquals(</span>
+<span class="fc" id="L158">				&quot;aaa&quot; + System.lineSeparator() + &quot;\taaf&quot;</span>
+<span class="fc" id="L159">						+ System.lineSeparator() + &quot;\tabb&quot;</span>
+<span class="fc" id="L160">						+ System.lineSeparator() + &quot;bbb&quot;</span>
+<span class="fc" id="L161">						+ System.lineSeparator() + &quot;\t\tccc&quot;</span>
+<span class="fc" id="L162">						+ System.lineSeparator() + &quot;ddd&quot;</span>
+<span class="fc" id="L163">						+ System.lineSeparator() + &quot;\tfff&quot;</span>
+<span class="fc" id="L164">						+ System.lineSeparator() + &quot;&quot;, result);</span>
+<span class="fc" id="L165">	}</span>
+
+	// when options is -d but file is not sorted in order
+	@Corrected
+	// Swap result and expected
+	@Test
+	public void compareFilesDoNotCheckSortStatusNotSortedFile()
+			throws IOException {
+<span class="fc" id="L173">		String result = commTool.compareFilesDoNotCheckSortStatus(</span>
+<span class="fc" id="L174">				&quot;testFile1.txt&quot;, &quot;testFile3.txt&quot;);</span>
+<span class="fc" id="L175">		assertEquals(</span>
+<span class="fc" id="L176">				&quot;aaa&quot; + System.lineSeparator() + &quot;bbb&quot; + System.lineSeparator()</span>
+<span class="fc" id="L177">						+ &quot;ccc&quot; + System.lineSeparator() + &quot;ddd&quot;</span>
+<span class="fc" id="L178">						+ System.lineSeparator() + &quot;\tzzz&quot;</span>
+<span class="fc" id="L179">						+ System.lineSeparator() + &quot;\tccc&quot;</span>
+<span class="fc" id="L180">						+ System.lineSeparator() + &quot;\taaa&quot;</span>
+<span class="fc" id="L181">						+ System.lineSeparator() + &quot;\tbbb&quot;</span>
+<span class="fc" id="L182">						+ System.lineSeparator() + &quot;&quot;, result);</span>
+
+<span class="fc" id="L184">	}</span>
+
+	// with options -c and file is sorted order
+	@Corrected
+	// Swap result and expected
+	@Test
+	public void compareFilesCheckSortStatusSortedFile() throws IOException {
+
+<span class="fc" id="L192">		String result = commTool.compareFilesCheckSortStatus(&quot;testFile1.txt&quot;,</span>
+<span class="fc" id="L193">				&quot;testFile2.txt&quot;);</span>
+<span class="fc" id="L194">		assertEquals(</span>
+<span class="fc" id="L195">				&quot;aaa&quot; + System.lineSeparator() + &quot;\taaf&quot;</span>
+<span class="fc" id="L196">						+ System.lineSeparator() + &quot;\tabb&quot;</span>
+<span class="fc" id="L197">						+ System.lineSeparator() + &quot;bbb&quot;</span>
+<span class="fc" id="L198">						+ System.lineSeparator() + &quot;\t\tccc&quot;</span>
+<span class="fc" id="L199">						+ System.lineSeparator() + &quot;ddd&quot;</span>
+<span class="fc" id="L200">						+ System.lineSeparator() + &quot;\tfff&quot;</span>
+<span class="fc" id="L201">						+ System.lineSeparator() + &quot;&quot;, result);</span>
+<span class="fc" id="L202">	}</span>
+
+	// when options is -c but file is not sorted in order
+	@Corrected
+	// Swap result and expected
+	@Test
+	public void compareFilesCheckSortStatusNotSortedFile() throws IOException {
+<span class="fc" id="L209">		String result = commTool.compareFilesCheckSortStatus(&quot;testFile1.txt&quot;,</span>
+<span class="fc" id="L210">				&quot;testFile3.txt&quot;);</span>
+<span class="fc" id="L211">		assertEquals(</span>
+<span class="fc" id="L212">				&quot;aaa&quot; + System.lineSeparator() + &quot;bbb&quot; + System.lineSeparator()</span>
+<span class="fc" id="L213">						+ &quot;ccc&quot; + System.lineSeparator() + &quot;ddd&quot;</span>
+<span class="fc" id="L214">						+ System.lineSeparator() + &quot;\tzzz&quot;</span>
+<span class="fc" id="L215">						+ System.lineSeparator() + &quot;&quot;</span>
+<span class="fc" id="L216">						+ &quot;comm: file 2 is not in sorted order&quot;</span>
+<span class="fc" id="L217">						+ System.lineSeparator() + &quot;&quot;, result);</span>
+<span class="fc" id="L218">	}</span>
+
+	// Empty File Test
+	@Corrected
+	// Wrong behavior from previous TDD test case, result should be empty string
+	// and not next line.
+	@Test
+	// FIXME: Bug: method should not have returned null.
+	public void compareFile() throws IOException {
+<span class="fc" id="L227">		String result = commTool.compareFilesDoNotCheckSortStatus(</span>
+<span class="fc" id="L228">				&quot;testFile4.txt&quot;, &quot;testFile5.txt&quot;);</span>
+<span class="fc" id="L229">		assertEquals(new String(), result);</span>
+<span class="fc" id="L230">	}</span>
+
+	@Corrected
+	// Swap result and expected, change the output of the help message
+	@Test
+	public void getHelp() throws IOException {
+<span class="fc" id="L236">		assertEquals(COMM_HELP_MESSAGE, commTool.getHelp());</span>
+<span class="fc" id="L237">	}</span>
+
+	/*
+	 * ==========================================================================
+	 * ========================== The Following test method verify for the error
+	 * check of the arguments/file not exist etc ...
+	 * ============================
+	 * ========================================================================
+	 */
+
+	@Corrected
+	// No new line after error message
+	// Swap result and expected
+	@Test
+	public void withoutOptionsfileNotExist() throws IOException {
+<span class="fc" id="L252">		String[] argument2 = { &quot;notExist.txt&quot;, &quot;testFile2.txt&quot; };</span>
+<span class="fc" id="L253">		commTool = new CommTool(argument2);</span>
+<span class="fc" id="L254">		File myFile = new File(&quot;user.dir&quot;);</span>
+<span class="fc" id="L255">		String result2 = commTool.execute(myFile, null);</span>
+<span class="fc" id="L256">		assertEquals(&quot;comm: notExist.txt: No such file or directory&quot;, result2);</span>
+<span class="fc" id="L257">	}</span>
+
+	@Corrected
+	// Split test case into individual testing
+	@Test
+	public void execute_WithoutOptionsSecondfileNotExist_FileNotExistError()
+			throws IOException {
+<span class="fc" id="L264">		String[] argument = { &quot;testFile1.txt&quot;, &quot;notExist.txt&quot; };</span>
+<span class="fc" id="L265">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L266">		File myFile = new File(&quot;user.dir&quot;);</span>
+<span class="fc" id="L267">		String result = commTool.execute(myFile, null);</span>
+<span class="fc" id="L268">		assertEquals(&quot;comm: notExist.txt: No such file or directory&quot;, result);</span>
+<span class="fc" id="L269">	}</span>
+
+	// Though it seem repetitive as compared to the above test getHelp(), it
+	// re-affirm the argument that is being entered to execute the getHelp
+	// function
+	// Example, &quot;comm help&quot; won't works ; &quot;comm -help&quot; works
+	@Corrected
+	// Swap result and expected
+	@Test
+	public void printHelp() throws IOException {
+<span class="fc" id="L279">		String[] argument = { &quot;-help&quot; };</span>
+<span class="fc" id="L280">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L281">		File myFile = new File(&quot;user.dir&quot;);</span>
+<span class="fc" id="L282">		String result = commTool.execute(myFile, null);</span>
+<span class="fc" id="L283">		assertEquals(commTool.getHelp(), result);</span>
+<span class="fc" id="L284">	}</span>
+
+	@Corrected
+	// Swap result and expected
+	// Split the test case into smaller individual testing
+	@Test
+	public void withCorrectOptionsFileNotExist() throws IOException {
+
+<span class="fc" id="L292">		String[] argument = { &quot;-c&quot;, &quot;testFile1.txt&quot;, &quot;notExist.txt&quot; };</span>
+
+<span class="fc" id="L294">		commTool = new CommTool(argument);</span>
+
+<span class="fc" id="L296">		File myFile = new File(&quot;user.dir&quot;);</span>
+<span class="fc" id="L297">		String result = commTool.execute(myFile, null);</span>
+<span class="fc" id="L298">		assertEquals(&quot;comm: notExist.txt: No such file or directory&quot;, result);</span>
+
+<span class="fc" id="L300">		String[] argument4 = { &quot;-d&quot;, &quot;testFile1.txt&quot;, &quot;notExist.txt&quot; };</span>
+
+<span class="fc" id="L302">		commTool = new CommTool(argument4);</span>
+<span class="fc" id="L303">		String result4 = commTool.execute(new File(&quot;user.dir&quot;), null);</span>
+<span class="fc" id="L304">		assertEquals(&quot;comm: notExist.txt: No such file or directory&quot;, result4);</span>
+<span class="fc" id="L305">	}</span>
+
+	@Corrected
+	// Swap result and expected
+	// Split test case into individual test case
+	@Test
+	public void optionsErrorFileExisted() throws IOException {
+
+<span class="fc" id="L313">		String[] argument = { &quot;unreadable&quot;, &quot;testFile1.txt&quot;, &quot;testFile2.txt&quot; };</span>
+<span class="fc" id="L314">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L315">		String result = commTool.execute(new File(&quot;user.dir&quot;), null);</span>
+<span class="fc" id="L316">		assertEquals(&quot;comm: extra operand '&quot; + &quot;testFile2.txt&quot; + &quot;'&quot; + &quot;&quot;</span>
+<span class="fc" id="L317">				+ System.lineSeparator() + &quot;&quot;</span>
+<span class="fc" id="L318">				+ &quot;Try comm '-help' for more information&quot;, result);</span>
+<span class="fc" id="L319">	}</span>
+
+	@Corrected
+	// Swap result and expected
+	@Test
+	public void optionsErrorFileNotExist() throws IOException {
+
+<span class="fc" id="L326">		String[] argument = { &quot;unreadable&quot;, &quot;notExist.txt&quot;, &quot;notExist.txt&quot; };</span>
+
+<span class="fc" id="L328">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L329">		String result = commTool.execute(new File(&quot;user.dir&quot;), null);</span>
+<span class="fc" id="L330">		assertEquals(&quot;comm: extra operand '&quot; + &quot;notExist.txt&quot; + &quot;'&quot; + &quot;&quot;</span>
+<span class="fc" id="L331">				+ System.lineSeparator() + &quot;&quot;</span>
+<span class="fc" id="L332">				+ &quot;Try comm '-help' for more information&quot;, result);</span>
+
+<span class="fc" id="L334">	}</span>
+
+	@Corrected
+	// Swap result and expected
+	@Test
+	public void unknowOptionsFileNotExist() throws IOException {
+
+<span class="fc" id="L341">		String[] argument = { &quot;unreadable&quot;, &quot;notExist.txt&quot;, &quot;notExist.txt&quot; };</span>
+
+<span class="fc" id="L343">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L344">		String result = commTool.execute(new File(&quot;user.dir&quot;), null);</span>
+<span class="fc" id="L345">		assertEquals(&quot;comm: extra operand '&quot; + &quot;notExist.txt&quot; + &quot;'&quot; + &quot;&quot;</span>
+<span class="fc" id="L346">				+ System.lineSeparator() + &quot;&quot;</span>
+<span class="fc" id="L347">				+ &quot;Try comm '-help' for more information&quot;, result);</span>
+
+<span class="fc" id="L349">	}</span>
+
+	@Corrected
+	// No new line after error message
+	@Test
+	public void moreThanThreeArgument() throws IOException {
+
+<span class="fc" id="L356">		String[] argument = { &quot;notExist1.txt&quot;, &quot;notExist2.txt&quot;,</span>
+<span class="fc" id="L357">				&quot;notExist3.txt&quot;, &quot;notExist4.txt&quot; };</span>
+
+<span class="fc" id="L359">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L360">		String result = commTool.execute(new File(&quot;user.dir&quot;), null);</span>
+<span class="fc" id="L361">		assertEquals(&quot;comm: extra operand '&quot; + &quot;notExist3.txt&quot; + &quot;'&quot; + &quot;&quot;</span>
+<span class="fc" id="L362">				+ System.lineSeparator() + &quot;&quot;</span>
+<span class="fc" id="L363">				+ &quot;Try comm '-help' for more information&quot;, result);</span>
+
+<span class="fc" id="L365">	}</span>
+
+	@Corrected
+	// No new line after error message
+	@Test
+	public void noArgument() throws IOException {
+
+<span class="fc" id="L372">		String[] argument = {};</span>
+
+<span class="fc" id="L374">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L375">		String result = commTool.execute(new File(&quot;user.dir&quot;), null);</span>
+<span class="fc" id="L376">		assertEquals(&quot;comm: missing operand &quot; + System.lineSeparator() + &quot;&quot;</span>
+<span class="fc" id="L377">				+ &quot;Try comm '-help' for more information&quot;, result);</span>
+
+<span class="fc" id="L379">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

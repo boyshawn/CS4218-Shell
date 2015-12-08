@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>CutToolHelperMethodsTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.extended2</a> &gt; <span class="el_source">CutToolHelperMethodsTest.java</span></div><h1>CutToolHelperMethodsTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.extended2;
+
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+<span class="fc" id="L18">public class CutToolHelperMethodsTest {</span>
+	// Non-Static Variables
+	private CutTool cutTool;
+	private List&lt;String&gt; files;
+
+	// Static Variables
+	private static File workingDir;
+	private static File tempDir;
+	private static File inputNoDelimiter;
+	private static File inputNoDelimiterTwo;
+	private static File inputWithDelimiter;
+	private static File inputWithDelimiterTwo;
+	private static String inputNoDelimiterStr;
+	private static String inputNoDelimiterTwoStr;
+	private static String inputWithDelimiterStr;
+	private static String inputWithDelimiterTwoStr;
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+<span class="fc" id="L37">		File temp = new File(&quot;tempDir&quot;);</span>
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">		if (temp.exists()) {</span>
+<span class="nc" id="L39">			deleteFolder(temp);</span>
+		}
+		
+<span class="fc" id="L42">		workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+
+		/* Creation of directories and files for testing purposes */
+<span class="fc" id="L45">		tempDir = new File(Files.createDirectory(</span>
+<span class="fc" id="L46">				new File(workingDir.toString() + &quot;\\tempDir&quot;).toPath())</span>
+<span class="fc" id="L47">				.toString());</span>
+<span class="fc" id="L48">		inputNoDelimiter = new File(tempDir.toString() + &quot;/inputNoDelimiter&quot;);</span>
+<span class="fc" id="L49">		inputNoDelimiter.createNewFile();</span>
+
+<span class="fc" id="L51">		inputNoDelimiterTwo = new File(tempDir.toString()</span>
+<span class="fc" id="L52">				+ &quot;/inputNoDelimiterTwo&quot;);</span>
+<span class="fc" id="L53">		inputNoDelimiterTwo.createNewFile();</span>
+
+<span class="fc" id="L55">		inputWithDelimiter = new File(tempDir.toString()</span>
+<span class="fc" id="L56">				+ &quot;/inputWithDelimiter&quot;);</span>
+<span class="fc" id="L57">		inputWithDelimiter.createNewFile();</span>
+
+<span class="fc" id="L59">		inputWithDelimiterTwo = new File(tempDir.toString()</span>
+<span class="fc" id="L60">				+ &quot;/inputWithDelimiterTwo&quot;);</span>
+<span class="fc" id="L61">		inputWithDelimiterTwo.createNewFile();</span>
+
+		/* Writing of content into files */
+<span class="fc" id="L64">		inputNoDelimiterStr = &quot;012345678901234567890&quot; + System.lineSeparator()</span>
+<span class="fc" id="L65">				+ &quot;123456789 0123456789&quot;;</span>
+
+<span class="fc" id="L67">		inputNoDelimiterTwoStr = &quot;123456789 0123456789&quot;</span>
+<span class="fc" id="L68">				+ System.lineSeparator() + &quot;012345678901234567890&quot;;</span>
+
+<span class="fc" id="L70">		inputWithDelimiterStr = &quot;0123456789;0123456789;0123456789&quot;</span>
+<span class="fc" id="L71">				+ System.lineSeparator() + &quot;0123456789;0123456789;0123456789&quot;</span>
+<span class="fc" id="L72">				+ System.lineSeparator() + &quot;0123456789 0123456789;0123456789&quot;;</span>
+
+<span class="fc" id="L74">		inputWithDelimiterTwoStr = &quot;9876543210;9876543210;9876543210&quot;</span>
+<span class="fc" id="L75">				+ System.lineSeparator() + &quot;9876543210;9876543210;9876543210&quot;</span>
+<span class="fc" id="L76">				+ System.lineSeparator() + &quot;9876543210;9876543210;9876543210&quot;;</span>
+
+<span class="fc" id="L78">		Files.write(inputNoDelimiter.toPath(), inputNoDelimiterStr.getBytes(),</span>
+<span class="fc" id="L79">				StandardOpenOption.APPEND);</span>
+<span class="fc" id="L80">		Files.write(inputNoDelimiterTwo.toPath(),</span>
+<span class="fc" id="L81">				inputNoDelimiterTwoStr.getBytes(), StandardOpenOption.APPEND);</span>
+<span class="fc" id="L82">		Files.write(inputWithDelimiter.toPath(),</span>
+<span class="fc" id="L83">				inputWithDelimiterStr.getBytes(), StandardOpenOption.APPEND);</span>
+<span class="fc" id="L84">		Files.write(inputWithDelimiterTwo.toPath(),</span>
+<span class="fc" id="L85">				inputWithDelimiterTwoStr.getBytes(), StandardOpenOption.APPEND);</span>
+
+<span class="fc" id="L87">	}</span>
+
+	@Before
+	public void setUp() {
+<span class="fc" id="L91">		cutTool = new CutTool(null);</span>
+<span class="fc" id="L92">		files = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L93">	}</span>
+
+	@After
+	public void tearDown() {
+<span class="fc" id="L97">		cutTool = null;</span>
+<span class="fc" id="L98">		files.clear();</span>
+<span class="fc" id="L99">		files = null;</span>
+<span class="fc" id="L100">	}</span>
+
+	@AfterClass
+	public static void tearDownAfterClass() throws IOException {
+		/* Delete all temporary testing files */
+<span class="fc" id="L105">		Files.delete(inputNoDelimiter.toPath());</span>
+<span class="fc" id="L106">		Files.delete(inputWithDelimiter.toPath());</span>
+<span class="fc" id="L107">		Files.delete(inputNoDelimiterTwo.toPath());</span>
+<span class="fc" id="L108">		Files.delete(inputWithDelimiterTwo.toPath());</span>
+<span class="fc" id="L109">		Files.delete(tempDir.toPath());</span>
+
+		/* Setting all file objects to null */
+<span class="fc" id="L112">		workingDir = null;</span>
+<span class="fc" id="L113">		tempDir = null;</span>
+<span class="fc" id="L114">		inputNoDelimiter = null;</span>
+<span class="fc" id="L115">		inputNoDelimiterTwo = null;</span>
+<span class="fc" id="L116">		inputWithDelimiter = null;</span>
+<span class="fc" id="L117">		inputWithDelimiterTwo = null;</span>
+
+		/* Setting all file object Strings to null */
+<span class="fc" id="L120">		inputNoDelimiterStr = null;</span>
+<span class="fc" id="L121">		inputNoDelimiterTwoStr = null;</span>
+<span class="fc" id="L122">		inputWithDelimiterStr = null;</span>
+<span class="fc" id="L123">		inputWithDelimiterTwoStr = null;</span>
+<span class="fc" id="L124">	}</span>
+
+	// Black Box Positive Testing
+
+	@Test
+	public void cutFromFiles_SingleFile_CharactersReturned() throws IOException {
+
+<span class="fc" id="L131">		final String list = &quot;1-2&quot;;</span>
+<span class="fc" id="L132">		files.add(inputNoDelimiter.toString());</span>
+
+<span class="fc" id="L134">		final String expectedMessage = &quot;01&quot; + System.lineSeparator() + &quot;12&quot;;</span>
+<span class="fc" id="L135">		final String returnMessage = cutTool.cutFromFiles(list, files,</span>
+<span class="fc" id="L136">				workingDir, null);</span>
+
+<span class="fc" id="L138">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L139">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L141">	}</span>
+
+	@Test
+	public void cutFromFiles_MultipleFiles_CharactersReturned()
+			throws IOException {
+
+<span class="fc" id="L147">		final String list = &quot;1-2&quot;;</span>
+<span class="fc" id="L148">		files.add(inputNoDelimiter.toString());</span>
+<span class="fc" id="L149">		files.add(inputNoDelimiterTwo.toString());</span>
+
+<span class="fc" id="L151">		final String expectedMessage = &quot;01&quot; + System.lineSeparator() + &quot;12&quot;</span>
+<span class="fc" id="L152">				+ System.lineSeparator() + &quot;12&quot; + System.lineSeparator() + &quot;01&quot;;</span>
+
+<span class="fc" id="L154">		final String returnMessage = cutTool.cutFromFiles(list, files,</span>
+<span class="fc" id="L155">				workingDir, null);</span>
+
+<span class="fc" id="L157">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L158">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L160">	}</span>
+
+	@Test
+	public void cutFromFiles_SingleFileWithStdin_CharactersReturned()
+			throws IOException {
+
+<span class="fc" id="L166">		final String list = &quot;1-2&quot;;</span>
+<span class="fc" id="L167">		final String expectedMessage = &quot;01&quot; + System.lineSeparator() + &quot;12&quot;;</span>
+<span class="fc" id="L168">		final String returnMessage = cutTool.cutFromFiles(list, files,</span>
+<span class="fc" id="L169">				workingDir, inputNoDelimiterStr);</span>
+
+<span class="fc" id="L171">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L172">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L174">	}</span>
+
+	@Test
+	public void cutFromFilesWithDelimiter_SingleFile_CharactersReturned()
+			throws IOException {
+
+<span class="fc" id="L180">		final String fields = &quot;1&quot;;</span>
+<span class="fc" id="L181">		final String delim = &quot;;&quot;;</span>
+<span class="fc" id="L182">		files.add(inputWithDelimiter.toString());</span>
+
+<span class="fc" id="L184">		final String expectedMessage = &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L185">				+ &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L186">				+ &quot;0123456789 0123456789&quot;;</span>
+
+<span class="fc" id="L188">		final String returnMessage = cutTool.cutFromFilesWithDelimiter(fields,</span>
+<span class="fc" id="L189">				delim, files, workingDir, null);</span>
+
+<span class="fc" id="L191">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L192">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L194">	}</span>
+
+	@Test
+	public void cutFromFilesWithDelimiter_MultipleFiles_CharactersReturned()
+			throws IOException {
+
+<span class="fc" id="L200">		final String fields = &quot;1&quot;;</span>
+<span class="fc" id="L201">		final String delim = &quot;;&quot;;</span>
+<span class="fc" id="L202">		files.add(inputWithDelimiter.toString());</span>
+<span class="fc" id="L203">		files.add(inputWithDelimiterTwo.toString());</span>
+
+<span class="fc" id="L205">		final String expectedMessage = &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L206">				+ &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L207">				+ &quot;0123456789 0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L208">				+ &quot;9876543210&quot; + System.lineSeparator() + &quot;9876543210&quot;</span>
+<span class="fc" id="L209">				+ System.lineSeparator() + &quot;9876543210&quot;;</span>
+
+<span class="fc" id="L211">		final String returnMessage = cutTool.cutFromFilesWithDelimiter(fields,</span>
+<span class="fc" id="L212">				delim, files, workingDir, null);</span>
+
+<span class="fc" id="L214">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L215">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L217">	}</span>
+
+	@Test
+	public void cutFromFilesWithDelimiter_SingleFileWithStdin_CharactersReturned()
+			throws IOException {
+
+<span class="fc" id="L223">		final String fields = &quot;1&quot;;</span>
+<span class="fc" id="L224">		final String delim = &quot;;&quot;;</span>
+
+<span class="fc" id="L226">		final String expectedMessage = &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L227">				+ &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L228">				+ &quot;0123456789 0123456789&quot;;</span>
+
+<span class="fc" id="L230">		final String returnMessage = cutTool.cutFromFilesWithDelimiter(fields,</span>
+<span class="fc" id="L231">				delim, files, workingDir, inputWithDelimiterStr);</span>
+
+<span class="fc" id="L233">		assertEquals(expectedMessage, returnMessage);</span>
+<span class="fc" id="L234">		assertEquals(0, cutTool.getStatusCode());</span>
+
+<span class="fc" id="L236">	}</span>
+
+	// Black Box Negative Testing
+
+	@Test
+	public void cutFromFiles_SingleFileDoNotExist_ErrorMessageReturned()
+			throws IOException {
+
+<span class="fc" id="L244">		final String list = &quot;1-2&quot;;</span>
+<span class="fc" id="L245">		files.add(&quot;filesDoesNotExist&quot;);</span>
+
+<span class="fc" id="L247">		final String expectedMessage = &quot;cut: filesDoesNotExist: No such file or directory&quot;;</span>
+<span class="fc" id="L248">		final String returnMessage = cutTool.cutFromFiles(list, files,</span>
+<span class="fc" id="L249">				workingDir, null);</span>
+
+<span class="fc" id="L251">		assertEquals(expectedMessage, returnMessage); </span>
+
+<span class="fc" id="L253">	}</span>
+
+	@Test
+	public void cutFromFiles_MultipleFilesDoNotExist_ErrorMessageReturned()
+			throws IOException {
+
+<span class="fc" id="L259">		final String list = &quot;1-2&quot;;</span>
+<span class="fc" id="L260">		files.add(inputNoDelimiter.toString());</span>
+<span class="fc" id="L261">		files.add(&quot;fileDoesNotExist&quot;);</span>
+<span class="fc" id="L262">		files.add(inputNoDelimiterTwo.toString());</span>
+
+<span class="fc" id="L264">		final String expectedMessage = &quot;01&quot; + System.lineSeparator() + &quot;12&quot;</span>
+<span class="fc" id="L265">				+ System.lineSeparator()</span>
+<span class="fc" id="L266">				+ &quot;cut: fileDoesNotExist: No such file or directory&quot;</span>
+<span class="fc" id="L267">				+ System.lineSeparator() + &quot;12&quot; + System.lineSeparator() + &quot;01&quot;;</span>
+
+<span class="fc" id="L269">		final String returnMessage = cutTool.cutFromFiles(list, files,</span>
+<span class="fc" id="L270">				workingDir, null);</span>
+
+<span class="fc" id="L272">		assertEquals(expectedMessage, returnMessage);</span>
+
+<span class="fc" id="L274">	}</span>
+
+	@Test
+	public void cutFromFilesWithDelimiter_SingleFileDoNotExist_ErrorMessageReturned()
+			throws IOException {
+
+<span class="fc" id="L280">		final String fields = &quot;1&quot;;</span>
+<span class="fc" id="L281">		final String delim = &quot;;&quot;;</span>
+<span class="fc" id="L282">		files.add(&quot;fileDoesNotExist&quot;);</span>
+
+<span class="fc" id="L284">		final String expectedMessage = &quot;cut: fileDoesNotExist: No such file or directory&quot;;</span>
+<span class="fc" id="L285">		final String returnMessage = cutTool.cutFromFilesWithDelimiter(fields,</span>
+<span class="fc" id="L286">				delim, files, workingDir, null);</span>
+
+<span class="fc" id="L288">		assertEquals(expectedMessage, returnMessage);</span>
+
+<span class="fc" id="L290">	}</span>
+
+	@Test
+	public void cutFromFilesWithDelimiter_MultipleFilesDoNotExist_ErrorMessageReturned()
+			throws IOException {
+
+<span class="fc" id="L296">		final String fields = &quot;1&quot;;</span>
+<span class="fc" id="L297">		final String delim = &quot;;&quot;;</span>
+<span class="fc" id="L298">		files.add(inputWithDelimiter.toString());</span>
+<span class="fc" id="L299">		files.add(&quot;fileDoesNotExist&quot;);</span>
+<span class="fc" id="L300">		files.add(inputWithDelimiterTwo.toString());</span>
+
+<span class="fc" id="L302">		final String expectedMessage = &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L303">				+ &quot;0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L304">				+ &quot;0123456789 0123456789&quot; + System.lineSeparator()</span>
+<span class="fc" id="L305">				+ &quot;cut: fileDoesNotExist: No such file or directory&quot;</span>
+<span class="fc" id="L306">				+ System.lineSeparator() + &quot;9876543210&quot;</span>
+<span class="fc" id="L307">				+ System.lineSeparator() + &quot;9876543210&quot;</span>
+<span class="fc" id="L308">				+ System.lineSeparator() + &quot;9876543210&quot;;</span>
+
+<span class="fc" id="L310">		final String returnMessage = cutTool.cutFromFilesWithDelimiter(fields,</span>
+<span class="fc" id="L311">				delim, files, workingDir, null);</span>
+
+<span class="fc" id="L313">		assertEquals(expectedMessage, returnMessage);</span>
+
+<span class="fc" id="L315">	}</span>
+	
+	public static void deleteFolder(File folder) {
+<span class="nc" id="L318">		File[] files = folder.listFiles();</span>
+<span class="nc bnc" id="L319" title="All 2 branches missed.">		if (files != null) { // some JVMs return null for empty dirs</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">			for (File f : files) {</span>
+<span class="nc bnc" id="L321" title="All 2 branches missed.">				if (f.isDirectory()) {</span>
+<span class="nc" id="L322">					deleteFolder(f);</span>
+<span class="nc" id="L323">				} else {</span>
+<span class="nc" id="L324">					f.delete();</span>
+				}
+			}
+		}
+<span class="nc" id="L328">		folder.delete();</span>
+<span class="nc" id="L329">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

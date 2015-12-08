@@ -1,0 +1,1220 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>ShellHelperMethodsTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl</a> &gt; <span class="el_source">ShellHelperMethodsTest.java</span></div><h1>ShellHelperMethodsTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.util.Vector;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.ITool;
+import sg.edu.nus.comp.cs4218.impl.extended1.GrepTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.CatTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.CdTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.EchoTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.LsTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.PWDTool;
+
+<span class="fc" id="L22">public class ShellHelperMethodsTest {</span>
+	Shell shell;
+<span class="fc" id="L24">	String sep = File.separator; // to make testing OS independent</span>
+	String[] results;
+	Vector&lt;ITool&gt; tools;
+	
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L30">		shell = new Shell();</span>
+<span class="fc" id="L31">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L35">		shell = null;</span>
+<span class="fc" id="L36">		results = null;</span>
+<span class="fc" id="L37">		tools = null;</span>
+<span class="fc" id="L38">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_PwdNoArgument_ReturnNull() {
+<span class="fc" id="L42">		results = shell.getBasicCommandArgs(&quot;pwd&quot;, &quot; pwd &quot;);</span>
+<span class="fc" id="L43">		assertNull(results);</span>
+<span class="fc" id="L44">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_PwdWithArgument_ReturnNull() {
+<span class="fc" id="L48">		results = shell.getBasicCommandArgs(&quot;pwd&quot;, &quot; pwd abcdef&quot;);</span>
+<span class="fc" id="L49">		assertNull(results);</span>
+<span class="fc" id="L50">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_CdNoArgument_Return1EmptyArgument() {
+		// cd
+<span class="fc" id="L55">		results = shell.getBasicCommandArgs(&quot;cd&quot;, &quot;cd 	&quot;);</span>
+<span class="fc" id="L56">		assertEquals(1, results.length);</span>
+<span class="fc" id="L57">		assertEquals(&quot;&quot;, results[0]);</span>
+<span class="fc" id="L58">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_CdDirectoryWindows_ReturnDirectoryArgument() {
+		// cd directory in Windows OS format
+<span class="fc" id="L63">		results = shell.getBasicCommandArgs(&quot;cd&quot;, &quot;cd \&quot;D:\\Dropbox\\NUS\\Year 3\\Semester 2\\CS4218 - Software Testing &amp; Debugging\\Project\\CS4218\\Shell\\tempDir\\input\&quot;&quot;);</span>
+<span class="fc" id="L64">		assertEquals(1, results.length);</span>
+<span class="fc" id="L65">		assertEquals(&quot;D:\\Dropbox\\NUS\\Year 3\\Semester 2\\CS4218 - Software Testing &amp; Debugging\\Project\\CS4218\\Shell\\tempDir\\input&quot;, results[0]);</span>
+<span class="fc" id="L66">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_CdDirectory_ReturnDirectoryArgument() {
+		// cd directory
+<span class="fc" id="L71">		results = shell.getBasicCommandArgs(&quot;cd&quot;, &quot;cd \&quot;/Users\&quot;&quot;);</span>
+<span class="fc" id="L72">		assertEquals(1, results.length);</span>
+<span class="fc" id="L73">		assertEquals(&quot;/Users&quot;, results[0]);</span>
+<span class="fc" id="L74">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_CdDash_ReturnDashArgument() {
+		// cd  -
+<span class="fc" id="L79">		results = shell.getBasicCommandArgs(&quot;cd&quot;, &quot;cd - &quot;);</span>
+<span class="fc" id="L80">		assertEquals(1, results.length);</span>
+<span class="fc" id="L81">		assertEquals(&quot;-&quot;, results[0]);</span>
+<span class="fc" id="L82">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_CdDoubleDots_ReturnDashArgument() {
+		// cd  -
+<span class="fc" id="L87">		results = shell.getBasicCommandArgs(&quot;cd&quot;, &quot;cd .. &quot;);</span>
+<span class="fc" id="L88">		assertEquals(1, results.length);</span>
+<span class="fc" id="L89">		assertEquals(&quot;..&quot;, results[0]);</span>
+<span class="fc" id="L90">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_CdDirectoryDirectory_ReturnNull() {
+		// cd directory directory (invalid)
+<span class="fc" id="L95">		results = shell.getBasicCommandArgs(&quot;cd&quot;, &quot;cd .&quot;+sep+&quot;dir 1		dir2&quot;);</span>
+<span class="fc" id="L96">		assertNull(results);</span>
+<span class="fc" id="L97">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_CdFileDirectory_ReturnNull() {
+		// cd file directory (invalid)
+<span class="fc" id="L102">		results = shell.getBasicCommandArgs(&quot;cd&quot;, &quot;cd dir1&quot;+sep+&quot;file1.txt  \&quot;dir2&quot;+sep+&quot;dir  3\&quot;&quot;);</span>
+<span class="fc" id="L103">		assertNull(results);</span>
+<span class="fc" id="L104">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_CdDirectoryFile_ReturnNull() {
+		// cd directory file (invalid)
+<span class="fc" id="L109">		results = shell.getBasicCommandArgs(&quot;cd&quot;, &quot;cd	\&quot;dir 2\&quot;  .&quot;+sep+&quot;dir1&quot;+sep+&quot;file1.txt&quot;);</span>
+<span class="fc" id="L110">		assertNull(results);</span>
+<span class="fc" id="L111">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_CopyFileFile_ReturnArguments() {
+		// copy file1 file2
+<span class="fc" id="L116">		results = shell.getBasicCommandArgs(&quot;copy&quot;, &quot;copy 	&quot;+sep+&quot;dir&quot;+sep+&quot;dir2&quot;+sep+&quot;dir3&quot;+sep+&quot;file.txt		dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt&quot;);</span>
+<span class="fc" id="L117">		assertEquals(2, results.length);</span>
+<span class="fc" id="L118">		assertEquals(sep+&quot;dir&quot;+sep+&quot;dir2&quot;+sep+&quot;dir3&quot;+sep+&quot;file.txt&quot;, results[0]);</span>
+<span class="fc" id="L119">		assertEquals(&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt&quot;, results[1]);</span>
+<span class="fc" id="L120">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_CopyDirectoryDirectory_ReturnArguments() {
+		// copy directory1 directory2
+<span class="fc" id="L125">		results = shell.getBasicCommandArgs(&quot;copy&quot;, &quot;copy 	&quot;+sep+&quot;dir&quot;+sep+&quot;dir2&quot;+sep+&quot;dir3&quot;+sep+&quot;		dir4&quot;+sep+&quot;dir5&quot;+sep);</span>
+<span class="fc" id="L126">		assertEquals(2, results.length);</span>
+<span class="fc" id="L127">		assertEquals(sep+&quot;dir&quot;+sep+&quot;dir2&quot;+sep+&quot;dir3&quot;+sep, results[0]);</span>
+<span class="fc" id="L128">		assertEquals(&quot;dir4&quot;+sep+&quot;dir5&quot;+sep, results[1]);</span>
+<span class="fc" id="L129">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_CopyFileDirectory_ReturnArguments() {
+		// copy file directory
+<span class="fc" id="L134">		results = shell.getBasicCommandArgs(&quot;copy&quot;, &quot;copy 	\&quot;~&quot;+sep+&quot;dir&quot;+sep+&quot;file 1.txt\&quot;		\&quot;dir4&quot;+sep+&quot;dir 5&quot;+sep+&quot;\&quot;&quot;);</span>
+<span class="fc" id="L135">		assertEquals(2, results.length);</span>
+<span class="fc" id="L136">		assertEquals(&quot;~&quot;+sep+&quot;dir&quot;+sep+&quot;file 1.txt&quot;, results[0]);</span>
+<span class="fc" id="L137">		assertEquals(&quot;dir4&quot;+sep+&quot;dir 5&quot;+sep, results[1]);</span>
+<span class="fc" id="L138">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_CopyMultipleFilesDirectory_ReturnArguments() {
+		// copy file1 file2 file3 directory
+<span class="fc" id="L143">		results = shell.getBasicCommandArgs(&quot;copy&quot;, &quot;copy 	file.tar.gz		dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt  .&quot;+sep+&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file2.txt  ~&quot;+sep+&quot;dir1&quot;+sep+&quot;dir2&quot;+sep);</span>
+<span class="fc" id="L144">		assertEquals(4, results.length);</span>
+<span class="fc" id="L145">		assertEquals(&quot;file.tar.gz&quot;, results[0]);</span>
+<span class="fc" id="L146">		assertEquals(&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt&quot;, results[1]);</span>
+<span class="fc" id="L147">		assertEquals(&quot;.&quot;+sep+&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file2.txt&quot;, results[2]);</span>
+<span class="fc" id="L148">		assertEquals(&quot;~&quot;+sep+&quot;dir1&quot;+sep+&quot;dir2&quot;+sep, results[3]);</span>
+<span class="fc" id="L149">	}</span>
+	
+	/**
+	 * Assumption: Shell cannot distinguish a valid file name or directory name
+	 * since file names can be without extensions like .txt
+	 * Hence, this is left to the tool to check if it is an existing file or directory
+	 */
+	@Test
+	public void getBasicCommandArgs_CopyDirectoryFile_ReturnArguments() {
+		// copy directory file (assumptions made)
+<span class="fc" id="L159">		results = shell.getBasicCommandArgs(&quot;copy&quot;, &quot;copy \&quot;~&quot;+sep+&quot;dir 123\&quot;	file1.txt&quot;);</span>
+<span class="fc" id="L160">		assertEquals(2, results.length);</span>
+<span class="fc" id="L161">		assertEquals(&quot;~&quot;+sep+&quot;dir 123&quot;, results[0]);</span>
+<span class="fc" id="L162">		assertEquals(&quot;file1.txt&quot;, results[1]);</span>
+<span class="fc" id="L163">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_CopyMultipleFiles_ReturnCopyTool() {
+		// copy file1 file2 file3 (assumptions made)
+<span class="fc" id="L168">		results = shell.getBasicCommandArgs(&quot;copy&quot;, &quot;copy  file.tar.gz	dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt  .&quot;+sep+&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file2&quot;);</span>
+<span class="fc" id="L169">		assertEquals(3, results.length);</span>
+<span class="fc" id="L170">		assertEquals(&quot;file.tar.gz&quot;, results[0]);</span>
+<span class="fc" id="L171">		assertEquals(&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt&quot;, results[1]);</span>
+<span class="fc" id="L172">		assertEquals(&quot;.&quot;+sep+&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file2&quot;, results[2]);</span>
+<span class="fc" id="L173">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_CopyFile_ReturnNull() {
+		// copy file (invalid)
+<span class="fc" id="L178">		results = shell.getBasicCommandArgs(&quot;copy&quot;, &quot;copy dir&quot;+sep+&quot;file&quot;);</span>
+<span class="fc" id="L179">		assertNull(results);</span>
+<span class="fc" id="L180">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_CopyNoArguments_ReturnNull() {
+		// copy (invalid)
+<span class="fc" id="L185">		results = shell.getBasicCommandArgs(&quot;copy&quot;, &quot;copy&quot;);</span>
+<span class="fc" id="L186">		assertNull(results);</span>
+<span class="fc" id="L187">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_MoveFileFile_ReturnArguments() {
+		// move file1 file2
+<span class="fc" id="L192">		results = shell.getBasicCommandArgs(&quot;move&quot;, &quot;move 	&quot;+sep+&quot;dir&quot;+sep+&quot;dir2&quot;+sep+&quot;dir3&quot;+sep+&quot;file.txt		dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt&quot;);</span>
+<span class="fc" id="L193">		assertEquals(2, results.length);</span>
+<span class="fc" id="L194">		assertEquals(sep+&quot;dir&quot;+sep+&quot;dir2&quot;+sep+&quot;dir3&quot;+sep+&quot;file.txt&quot;, results[0]);</span>
+<span class="fc" id="L195">		assertEquals(&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt&quot;, results[1]);</span>
+<span class="fc" id="L196">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_MoveDirectoryDirectory_ReturnArguments() {
+		// move directory1 directory2
+<span class="fc" id="L201">		results = shell.getBasicCommandArgs(&quot;move&quot;, &quot;move 	&quot;+sep+&quot;dir&quot;+sep+&quot;dir2&quot;+sep+&quot;dir3&quot;+sep+&quot;		dir4&quot;+sep+&quot;dir5&quot;+sep);</span>
+<span class="fc" id="L202">		assertEquals(2, results.length);</span>
+<span class="fc" id="L203">		assertEquals(sep+&quot;dir&quot;+sep+&quot;dir2&quot;+sep+&quot;dir3&quot;+sep, results[0]);</span>
+<span class="fc" id="L204">		assertEquals(&quot;dir4&quot;+sep+&quot;dir5&quot;+sep, results[1]);</span>
+<span class="fc" id="L205">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_MoveFileDirectory_ReturnArguments() {
+		// move file directory
+<span class="fc" id="L210">		results = shell.getBasicCommandArgs(&quot;move&quot;, &quot;move 	\&quot;~&quot;+sep+&quot;dir&quot;+sep+&quot;file 1.txt\&quot;		\&quot;dir4&quot;+sep+&quot;dir 5&quot;+sep+&quot;\&quot;&quot;);</span>
+<span class="fc" id="L211">		assertEquals(2, results.length);</span>
+<span class="fc" id="L212">		assertEquals(&quot;~&quot;+sep+&quot;dir&quot;+sep+&quot;file 1.txt&quot;, results[0]);</span>
+<span class="fc" id="L213">		assertEquals(&quot;dir4&quot;+sep+&quot;dir 5&quot;+sep, results[1]);</span>
+<span class="fc" id="L214">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_MoveMultipleFilesDirectory_ReturnArguments() {
+		// move file1 file2 file3 directory
+<span class="fc" id="L219">		results = shell.getBasicCommandArgs(&quot;move&quot;, &quot;move 	file.tar.gz		dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt  .&quot;+sep+&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file2.txt  ~&quot;+sep+&quot;dir1&quot;+sep+&quot;dir2&quot;+sep);</span>
+<span class="fc" id="L220">		assertEquals(4, results.length);</span>
+<span class="fc" id="L221">		assertEquals(&quot;file.tar.gz&quot;, results[0]);</span>
+<span class="fc" id="L222">		assertEquals(&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt&quot;, results[1]);</span>
+<span class="fc" id="L223">		assertEquals(&quot;.&quot;+sep+&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file2.txt&quot;, results[2]);</span>
+<span class="fc" id="L224">		assertEquals(&quot;~&quot;+sep+&quot;dir1&quot;+sep+&quot;dir2&quot;+sep, results[3]);</span>
+<span class="fc" id="L225">	}</span>
+	
+	/**
+	 * Assumption: Shell cannot distinguish a valid file name or directory name
+	 * since file names can be without extensions like .txt
+	 * Hence, this is left to the tool to check if it is an existing file or directory
+	 */
+	@Test
+	public void getBasicCommandArgs_MoveDirectoryFile_ReturnNull() {
+		// move directory file (assumptions made)
+<span class="fc" id="L235">		results = shell.getBasicCommandArgs(&quot;move&quot;, &quot;move \&quot;~&quot;+sep+&quot;dir 123\&quot;	file1.txt&quot;);</span>
+<span class="fc" id="L236">		assertEquals(2, results.length);</span>
+<span class="fc" id="L237">		assertEquals(&quot;~&quot;+sep+&quot;dir 123&quot;, results[0]);</span>
+<span class="fc" id="L238">		assertEquals(&quot;file1.txt&quot;, results[1]);</span>
+<span class="fc" id="L239">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_MoveMultipleFiles_ReturnCopyTool() {
+		// move file1 file2 file3 (assumptions made)
+<span class="fc" id="L244">		results = shell.getBasicCommandArgs(&quot;move&quot;, &quot;move  file.tar.gz	dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt  .&quot;+sep+&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file2&quot;);</span>
+<span class="fc" id="L245">		assertEquals(3, results.length);</span>
+<span class="fc" id="L246">		assertEquals(&quot;file.tar.gz&quot;, results[0]);</span>
+<span class="fc" id="L247">		assertEquals(&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt&quot;, results[1]);</span>
+<span class="fc" id="L248">		assertEquals(&quot;.&quot;+sep+&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file2&quot;, results[2]);</span>
+<span class="fc" id="L249">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_MoveFile_ReturnNull() {
+		// move file (invalid)
+<span class="fc" id="L254">		results = shell.getBasicCommandArgs(&quot;move&quot;, &quot;move dir&quot;+sep+&quot;file&quot;);</span>
+<span class="fc" id="L255">		assertNull(results);</span>
+<span class="fc" id="L256">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_MoveNoArguments_ReturnNull() {
+		// move (invalid)
+<span class="fc" id="L261">		results = shell.getBasicCommandArgs(&quot;move&quot;, &quot;move&quot;);</span>
+<span class="fc" id="L262">		assertNull(results);</span>
+<span class="fc" id="L263">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_DeleteFile_ReturnArgument() {
+		// delete file
+<span class="fc" id="L268">		results = shell.getBasicCommandArgs(&quot;delete&quot;, &quot;delete dir1d&quot;+sep+&quot;dir2dd&quot;+sep+&quot;main_1.java&quot;);</span>
+<span class="fc" id="L269">		assertEquals(1, results.length);</span>
+<span class="fc" id="L270">		assertEquals(&quot;dir1d&quot;+sep+&quot;dir2dd&quot;+sep+&quot;main_1.java&quot;, results[0]);</span>
+<span class="fc" id="L271">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_DeleteDirectory_ReturnArgument() {
+		// delete directory
+<span class="fc" id="L276">		results = shell.getBasicCommandArgs(&quot;delete&quot;, &quot;delete abc&quot;+sep+&quot;def&quot;+sep);</span>
+<span class="fc" id="L277">		assertEquals(1, results.length);</span>
+<span class="fc" id="L278">		assertEquals(&quot;abc&quot;+sep+&quot;def&quot;+sep, results[0]);</span>
+<span class="fc" id="L279">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_DeleteFileDirectory_ReturnArguments() {
+		// delete file directory
+<span class="fc" id="L284">		results = shell.getBasicCommandArgs(&quot;delete&quot;, &quot;delete  test.java abc&quot;+sep+&quot;def&quot;+sep+&quot;&quot;);</span>
+<span class="fc" id="L285">		assertEquals(2, results.length);</span>
+<span class="fc" id="L286">		assertEquals(&quot;test.java&quot;, results[0]);</span>
+<span class="fc" id="L287">		assertEquals(&quot;abc&quot;+sep+&quot;def&quot;+sep, results[1]);</span>
+<span class="fc" id="L288">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_DeleteDirectoryFile_ReturnArguments() {
+		// delete directory file
+<span class="fc" id="L293">		results = shell.getBasicCommandArgs(&quot;delete&quot;, &quot;delete abc&quot;+sep+&quot;def&quot;+sep+&quot; test.java&quot;);</span>
+<span class="fc" id="L294">		assertEquals(2, results.length);</span>
+<span class="fc" id="L295">		assertEquals(&quot;abc&quot;+sep+&quot;def&quot;+sep, results[0]);</span>
+<span class="fc" id="L296">		assertEquals(&quot;test.java&quot;, results[1]);</span>
+<span class="fc" id="L297">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_DeleteNoArgument_ReturnNull() {
+		// delete (invalid)
+<span class="fc" id="L302">		results = shell.getBasicCommandArgs(&quot;delete&quot;, &quot;delete &quot;);</span>
+<span class="fc" id="L303">		assertNull(results);</span>
+<span class="fc" id="L304">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_Ls_Return1EmptyArgument() {
+		// ls
+<span class="fc" id="L309">		results = shell.getBasicCommandArgs(&quot;ls&quot;, &quot;ls   &quot;);</span>
+<span class="fc" id="L310">		assertEquals(1, results.length);</span>
+<span class="fc" id="L311">		assertEquals(&quot;&quot;, results[0]);</span>
+<span class="fc" id="L312">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_LsFile_ReturnArgument() {
+		// ls file
+<span class="fc" id="L317">		results = shell.getBasicCommandArgs(&quot;ls&quot;, &quot;ls ~&quot;+sep+&quot;d1&quot;+sep+&quot;d2&quot;+sep+&quot;main123.xml&quot;);</span>
+<span class="fc" id="L318">		assertEquals(1, results.length);</span>
+<span class="fc" id="L319">		assertEquals(&quot;~&quot;+sep+&quot;d1&quot;+sep+&quot;d2&quot;+sep+&quot;main123.xml&quot;, results[0]);</span>
+<span class="fc" id="L320">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_LsDirectory_ReturnArgument() {
+		// ls directory
+<span class="fc" id="L325">		results = shell.getBasicCommandArgs(&quot;ls&quot;, &quot;ls .&quot;+sep+&quot;abc&quot;+sep+&quot;def&quot;+sep);</span>
+<span class="fc" id="L326">		assertEquals(1, results.length);</span>
+<span class="fc" id="L327">		assertEquals(&quot;.&quot;+sep+&quot;abc&quot;+sep+&quot;def&quot;+sep, results[0]);</span>
+<span class="fc" id="L328">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_LsDash_ReturnNull() {
+		// ls - (invalid)
+<span class="fc" id="L333">		results = shell.getBasicCommandArgs(&quot;ls&quot;, &quot;ls -&quot;);</span>
+<span class="fc" id="L334">		assertNull(results);</span>
+<span class="fc" id="L335">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_CatFileFile_ReturnArgument() {
+		// cat file1 file2
+<span class="fc" id="L340">		results = shell.getBasicCommandArgs(&quot;cat&quot;, &quot;cat  	&quot;+sep+&quot;dir&quot;+sep+&quot;dir2&quot;+sep+sep+&quot;f_i_l_e.py  \&quot;dir1&quot;+sep+&quot;dir2&quot;+sep+&quot;my file.txt\&quot;&quot;);</span>
+<span class="fc" id="L341">		assertEquals(2, results.length);</span>
+<span class="fc" id="L342">		assertEquals(&quot;&quot;+sep+&quot;dir&quot;+sep+&quot;dir2&quot;+sep+sep+&quot;f_i_l_e.py&quot;, results[0]);</span>
+<span class="fc" id="L343">		assertEquals(&quot;dir1&quot;+sep+&quot;dir2&quot;+sep+&quot;my file.txt&quot;, results[1]);</span>
+<span class="fc" id="L344">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_CatDash_ReturnArgument() {
+		// cat -
+<span class="fc" id="L349">		results = shell.getBasicCommandArgs(&quot;cat&quot;, &quot;cat  -&quot;);</span>
+<span class="fc" id="L350">		assertEquals(1, results.length);</span>
+<span class="fc" id="L351">		assertEquals(&quot;-&quot;, results[0]);</span>
+<span class="fc" id="L352">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_CatDirectory_ReturnArgument() {
+		// cat directory
+<span class="fc" id="L357">		results = shell.getBasicCommandArgs(&quot;cat&quot;, &quot;cat	 directory&quot;);</span>
+<span class="fc" id="L358">		assertEquals(1, results.length);</span>
+<span class="fc" id="L359">		assertEquals(&quot;directory&quot;, results[0]);</span>
+<span class="fc" id="L360">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_CatMutipleFilesDirectories_ReturnArguments() {
+		// cat directory1 file1 directory2 file2
+<span class="fc" id="L365">		results = shell.getBasicCommandArgs(&quot;cat&quot;, &quot;cat	 directory1 file1.txt directory2 file2.txt&quot;);</span>
+<span class="fc" id="L366">		assertEquals(4, results.length);</span>
+<span class="fc" id="L367">		assertEquals(&quot;directory1&quot;, results[0]);</span>
+<span class="fc" id="L368">		assertEquals(&quot;file1.txt&quot;, results[1]);</span>
+<span class="fc" id="L369">		assertEquals(&quot;directory2&quot;, results[2]);</span>
+<span class="fc" id="L370">		assertEquals(&quot;file2.txt&quot;, results[3]);</span>
+<span class="fc" id="L371">	}</span>
+	
+	/**
+	 * Assumption: if there is no &quot;-&quot; or filename argument, 
+	 * it is by default treated as &quot;-&quot; (standard input)
+	 */
+	@Test
+	public void getBasicCommandArgs_CatNoArgument_ReturnArgument() {
+<span class="fc" id="L379">		results = shell.getBasicCommandArgs(&quot;cat&quot;, &quot;cat &quot;);</span>
+<span class="fc" id="L380">		assertEquals(1, results.length);</span>
+<span class="fc" id="L381">		assertEquals(&quot;-&quot;, results[0]);</span>
+<span class="fc" id="L382">	}</span>
+	
+	
+	@Test
+	public void getBasicCommandArgs_CatMultipleDashes_ReturnNull() {
+		// cat - file1 - file2 -
+<span class="fc" id="L388">		results = shell.getBasicCommandArgs(&quot;cat&quot;, &quot;cat  - \&quot;file1.txt\&quot; - file2.txt -&quot;);</span>
+<span class="fc" id="L389">		assertNull(results);</span>
+<span class="fc" id="L390">	}</span>
+		
+	@Test
+	public void getBasicCommandArgs_EchoString_ReturnArgument() {
+<span class="fc" id="L394">		results = shell.getBasicCommandArgs(&quot;echo&quot;, &quot;echo abc de34 [][] '''&quot;);</span>
+<span class="fc" id="L395">		assertEquals(1, results.length);</span>
+<span class="fc" id="L396">		assertEquals(&quot;abc de34 [][] '''&quot;, results[0]);</span>
+<span class="fc" id="L397">	}</span>
+	
+	@Test
+	public void getBasicCommandArgs_EchoNoArgument_Return1EmptyArgument() {
+<span class="fc" id="L401">		results = shell.getBasicCommandArgs(&quot;echo&quot;, &quot;echo &quot;);</span>
+<span class="fc" id="L402">		assertEquals(1, results.length);</span>
+<span class="fc" id="L403">		assertEquals(&quot;&quot;, results[0]);</span>
+<span class="fc" id="L404">	}</span>
+	
+	@Test
+	public void getGrepArgs_OptionPatternFile_ReturnArguments() {
+		// grep option pattern file
+<span class="fc" id="L409">		results = shell.getGrepArgs(&quot;grep -A 5 \&quot;testing 123\&quot; test.txt&quot;);</span>
+<span class="fc" id="L410">		assertEquals(4, results.length);</span>
+<span class="fc" id="L411">		assertEquals(&quot;-A&quot;, results[0]);</span>
+<span class="fc" id="L412">		assertEquals(&quot;5&quot;, results[1]);</span>
+<span class="fc" id="L413">		assertEquals(&quot;testing 123&quot;, results[2]);</span>
+<span class="fc" id="L414">		assertEquals(&quot;test.txt&quot;, results[3]);</span>
+<span class="fc" id="L415">	}</span>
+	
+	@Test
+	public void getGrepArgs_OptionPatternMultipleFiles_ReturnArguments() {
+		// grep option pattern file1 file2
+<span class="fc" id="L420">		results = shell.getGrepArgs(&quot;grep -A 5 \&quot;testing 123\&quot; test1.txt test2&quot;);</span>
+<span class="fc" id="L421">		assertEquals(5, results.length);</span>
+<span class="fc" id="L422">		assertEquals(&quot;-A&quot;, results[0]);</span>
+<span class="fc" id="L423">		assertEquals(&quot;5&quot;, results[1]);</span>
+<span class="fc" id="L424">		assertEquals(&quot;testing 123&quot;, results[2]);</span>
+<span class="fc" id="L425">		assertEquals(&quot;test1.txt&quot;, results[3]);</span>
+<span class="fc" id="L426">		assertEquals(&quot;test2&quot;, results[4]);</span>
+<span class="fc" id="L427">	}</span>
+	
+	@Test
+	public void getGrepArgs_PatternFile_ReturnArguments() {
+		// grep pattern file
+<span class="fc" id="L432">		results = shell.getGrepArgs(&quot;grep	\&quot; a?^\\\&quot;. \&quot;	\&quot;~&quot;+sep+&quot;dir 1&quot;+sep+&quot;dir 2&quot;+sep+&quot;test.txt\&quot;&quot;);</span>
+<span class="fc" id="L433">		assertEquals(2, results.length);</span>
+<span class="fc" id="L434">		assertEquals(&quot; a?^\\\&quot;. &quot;, results[0]);</span>
+<span class="fc" id="L435">		assertEquals(&quot;~&quot;+sep+&quot;dir 1&quot;+sep+&quot;dir 2&quot;+sep+&quot;test.txt&quot;, results[1]);</span>
+<span class="fc" id="L436">	}</span>
+	
+	@Test
+	public void getGrepArgs_PatternMultipleFiles_ReturnArguments() {
+		// grep pattern file1 file2
+<span class="fc" id="L441">		results = shell.getGrepArgs(&quot;grep pattern123 file1 file2.mp3&quot;);</span>
+<span class="fc" id="L442">		assertEquals(3, results.length);</span>
+<span class="fc" id="L443">		assertEquals(&quot;pattern123&quot;, results[0]);</span>
+<span class="fc" id="L444">		assertEquals(&quot;file1&quot;, results[1]);</span>
+<span class="fc" id="L445">		assertEquals(&quot;file2.mp3&quot;, results[2]);</span>
+<span class="fc" id="L446">	}</span>
+	
+	@Test
+	public void getGrepArgs_OptionPatternDash_ReturnArguments() {
+		// grep option pattern -
+<span class="fc" id="L451">		results = shell.getGrepArgs(&quot;grep   -o    \&quot;(*){4}\&quot;   -&quot;);</span>
+<span class="fc" id="L452">		assertEquals(3, results.length);</span>
+<span class="fc" id="L453">		assertEquals(&quot;-o&quot;, results[0]);</span>
+<span class="fc" id="L454">		assertEquals(&quot;(*){4}&quot;, results[1]);</span>
+<span class="fc" id="L455">		assertEquals(&quot;-&quot;, results[2]);</span>
+<span class="fc" id="L456">	}</span>
+	
+	@Test
+	public void getGrepArgs_OptionWithNumPatternFile_ReturnArguments() {
+		// grep option num pattern file
+<span class="fc" id="L461">		results = shell.getGrepArgs(&quot;grep -B 21 \&quot;pattern_*\&quot; file&quot;);</span>
+<span class="fc" id="L462">		assertEquals(4, results.length);</span>
+<span class="fc" id="L463">		assertEquals(&quot;-B&quot;, results[0]);</span>
+<span class="fc" id="L464">		assertEquals(&quot;21&quot;, results[1]);</span>
+<span class="fc" id="L465">		assertEquals(&quot;pattern_*&quot;, results[2]);</span>
+<span class="fc" id="L466">		assertEquals(&quot;file&quot;, results[3]);</span>
+<span class="fc" id="L467">	}</span>
+	
+	@Test
+	public void getGrepArgs_PatternDash_ReturnArguments() {
+		// grep pattern -
+<span class="fc" id="L472">		results = shell.getGrepArgs(&quot;grep \&quot;pattern xyz [a-zA-Z]?\&quot; -&quot;);</span>
+<span class="fc" id="L473">		assertEquals(2, results.length);</span>
+<span class="fc" id="L474">		assertEquals(&quot;pattern xyz [a-zA-Z]?&quot;, results[0]);</span>
+<span class="fc" id="L475">		assertEquals(&quot;-&quot;, results[1]);</span>
+<span class="fc" id="L476">	}</span>
+	
+	/**
+	 * Assumption: if there is no &quot;-&quot; or filename as last argument, 
+	 * it is by default treated as &quot;-&quot; (standard input)
+	 */
+	@Test
+	public void getGrepArgs_Pattern_ReturnArguments() {
+		// grep pattern
+<span class="fc" id="L485">		results = shell.getGrepArgs(&quot;grep	\&quot;pattern [0-9]* \\\&quot;\&quot;&quot;);</span>
+<span class="fc" id="L486">		assertEquals(2, results.length);</span>
+<span class="fc" id="L487">		assertEquals(&quot;pattern [0-9]* \\\&quot;&quot;, results[0]);</span>
+<span class="fc" id="L488">		assertEquals(&quot;-&quot;, results[1]);</span>
+<span class="fc" id="L489">	}</span>
+	
+	@Test
+	public void getGrepArgs_PatternNoQuotes_ReturnArguments() {
+		// grep pattern
+<span class="fc" id="L494">		results = shell.getGrepArgs(&quot;grep	pattern &quot;);</span>
+<span class="fc" id="L495">		assertEquals(2, results.length);</span>
+<span class="fc" id="L496">		assertEquals(&quot;pattern&quot;, results[0]);</span>
+<span class="fc" id="L497">		assertEquals(&quot;-&quot;, results[1]);</span>
+<span class="fc" id="L498">	}</span>
+	
+	
+	@Test
+	public void getGrepArgs_EmptyPattern_ReturnArguments() {
+		// grep pattern in quotes
+<span class="fc" id="L504">		results = shell.getGrepArgs(&quot;grep \&quot;\&quot;&quot;);</span>
+<span class="fc" id="L505">		assertEquals(2, results.length);</span>
+<span class="fc" id="L506">		assertEquals(&quot;&quot;, results[0]);</span>
+<span class="fc" id="L507">		assertEquals(&quot;-&quot;, results[1]);</span>
+<span class="fc" id="L508">	}</span>
+	
+	@Test
+	public void getGrepArgs_OptionHelp_ReturnArgument() {	
+		// grep -help
+<span class="fc" id="L513">		results = shell.getGrepArgs(&quot;grep	-help&quot;);</span>
+<span class="fc" id="L514">		assertEquals(1, results.length);</span>
+<span class="fc" id="L515">		assertEquals(&quot;-help&quot;, results[0]);</span>
+<span class="fc" id="L516">	}</span>
+	
+	/**
+	 * Assumption: Pattern does not need to be in quotes. So the file name is treated as a pattern 
+	 * and assumes a standard input is expected, which adds an additional &quot;-&quot; in its argument
+	 */
+	@Test
+	public void getGrepArgs_File_ReturnArgument() {	
+		// grep file (assumptions made)
+<span class="fc" id="L525">		results = shell.getGrepArgs(&quot;grep	.&quot;+sep+&quot;this&quot;+sep+&quot;is&quot;+sep+&quot;a&quot;+sep+&quot;test.txt&quot;);</span>
+<span class="fc" id="L526">		assertEquals(2, results.length);</span>
+<span class="fc" id="L527">		assertEquals(&quot;.&quot;+sep+&quot;this&quot;+sep+&quot;is&quot;+sep+&quot;a&quot;+sep+&quot;test.txt&quot;, results[0]);</span>
+<span class="fc" id="L528">		assertEquals(&quot;-&quot;, results[1]);</span>
+<span class="fc" id="L529">	}</span>
+	
+	@Test
+	public void getGrepArgs_Dash_ReturnArgument() {	
+		// grep - (assumptions made)
+<span class="fc" id="L534">		results = shell.getGrepArgs(&quot;grep -&quot;);</span>
+<span class="fc" id="L535">		assertEquals(2, results.length);</span>
+<span class="fc" id="L536">		assertEquals(&quot;-&quot;, results[0]);</span>
+<span class="fc" id="L537">		assertEquals(&quot;-&quot;, results[1]);</span>
+<span class="fc" id="L538">	}</span>
+	
+	/**
+	 * Assumption: pattern must always be declared in front of file 
+	 * but options can be anywhere in the command
+	 */
+	@Test
+	public void getGrepArgs_PatternFileOption_ReturnArguments() {
+		// grep pattern file option (assumptions made)
+<span class="fc" id="L547">		results = shell.getGrepArgs(&quot;grep	\&quot;pattern+\&quot; file.txt -v&quot;);</span>
+<span class="fc" id="L548">		assertEquals(3, results.length);</span>
+<span class="fc" id="L549">		assertEquals(&quot;-v&quot;, results[0]);</span>
+<span class="fc" id="L550">		assertEquals(&quot;pattern+&quot;, results[1]);</span>
+<span class="fc" id="L551">		assertEquals(&quot;file.txt&quot;, results[2]);</span>
+<span class="fc" id="L552">	}</span>
+	
+	@Test
+	public void getGrepArgs_PatternOption_ReturnArguments() {
+<span class="fc" id="L556">		results = shell.getGrepArgs(&quot;grep	\&quot;pattern+\&quot; -v&quot;);</span>
+<span class="fc" id="L557">		assertEquals(3, results.length);</span>
+<span class="fc" id="L558">		assertEquals(&quot;-v&quot;, results[0]);</span>
+<span class="fc" id="L559">		assertEquals(&quot;pattern+&quot;, results[1]);</span>
+<span class="fc" id="L560">		assertEquals(&quot;-&quot;, results[2]);</span>
+<span class="fc" id="L561">	}</span>
+	
+	@Test
+	public void getGrepArgs_MultipleOptionsPatternFile_ReturnNull() {
+		// grep option1 option2 option3 pattern file
+<span class="fc" id="L566">		results = shell.getGrepArgs(&quot;grep -c -o \&quot;testing 123\&quot; test.txt&quot;);</span>
+<span class="fc" id="L567">		assertNull(results);</span>
+<span class="fc" id="L568">	}</span>
+	
+	@Test
+	public void getGrepArgs_OptionNoNumPatternDash_ReturnNull() {
+		// grep option(no num) pattern - (invalid)
+<span class="fc" id="L573">		results = shell.getGrepArgs(&quot;grep -C \&quot;pattern 1 2 3\&quot; file&quot;);</span>
+<span class="fc" id="L574">		assertNull(results);</span>
+<span class="fc" id="L575">	}</span>
+	
+	@Test
+	public void getGrepArgs_Option_ReturnNull() {	
+		// grep option (invalid)
+<span class="fc" id="L580">		results = shell.getGrepArgs(&quot;grep	-A&quot;);</span>
+<span class="fc" id="L581">		assertNull(results);</span>
+<span class="fc" id="L582">	}</span>
+	
+	@Test
+	public void getGrepArgs_NoArguments_ReturnNull() {	
+		// grep (invalid)
+<span class="fc" id="L587">		results = shell.getGrepArgs(&quot;	grep &quot;);</span>
+<span class="fc" id="L588">		assertNull(results);</span>
+<span class="fc" id="L589">	}</span>
+	
+	@Test
+	public void getPipeTools_TwoCommands_ReturnTools() {
+		// cd | pwd
+<span class="fc" id="L594">		tools = shell.getPipeTools(&quot;cd \&quot;D:&quot;+sep+sep+&quot;dir 1&quot;+sep+&quot;dir 1 2 3\&quot;|pwd&quot;);</span>
+<span class="fc" id="L595">		assertEquals(2, tools.size());</span>
+<span class="fc" id="L596">		assertTrue(tools.get(0) instanceof CdTool);</span>
+<span class="fc" id="L597">		assertTrue(tools.get(1) instanceof PWDTool);</span>
+<span class="fc" id="L598">	}</span>
+	
+	@Test
+	public void getPipeTools_FourCommands_ReturnTools() {
+		// ls | cat | echo | grep
+<span class="fc" id="L603">		tools = shell.getPipeTools(&quot;ls \&quot;dir 1&quot;+sep+&quot;dir2\&quot;|cat \&quot;directory 1\&quot; | echo abcdefg| grep -c \&quot;(\\\\s)*\&quot;&quot;);</span>
+<span class="fc" id="L604">		assertEquals(4, tools.size());</span>
+<span class="fc" id="L605">		assertTrue(tools.get(0) instanceof LsTool);</span>
+<span class="fc" id="L606">		assertTrue(tools.get(1) instanceof CatTool);</span>
+<span class="fc" id="L607">		assertTrue(tools.get(2) instanceof EchoTool);</span>
+<span class="fc" id="L608">		assertTrue(tools.get(3) instanceof GrepTool);</span>
+		
+<span class="fc" id="L610">	}</span>
+	
+	@Test
+	public void getPipeTools_CommandsWithStdin_ReturnTools() {
+		// cat (with stdin) | grep (with stdin) | echo
+<span class="fc" id="L615">		tools = shell.getPipeTools(&quot;cat file.txt - | grep -c \&quot;abc\&quot; | echo testing 1 2 3 &quot;);</span>
+<span class="fc" id="L616">		assertEquals(3, tools.size());</span>
+<span class="fc" id="L617">		assertTrue(tools.get(0) instanceof CatTool);</span>
+<span class="fc" id="L618">		assertTrue(tools.get(1) instanceof GrepTool);</span>
+<span class="fc" id="L619">		assertTrue(tools.get(2) instanceof EchoTool);</span>
+<span class="fc" id="L620">	}</span>
+	
+	@Test
+	public void getPipeTools_PipeAtStartOfCommand_ReturnNull() {
+<span class="fc" id="L624">		tools = shell.getPipeTools(&quot;   | copy file1.a file2.a directory | ls &quot;);</span>
+<span class="fc" id="L625">		assertNull(tools);</span>
+<span class="fc" id="L626">	}</span>
+	
+	@Test
+	public void getPipeTools_PipeAtEndOfCommand_ReturnNull() {
+<span class="fc" id="L630">		tools = shell.getPipeTools(&quot;copy file1.a file2.a directory | ls | &quot;);</span>
+<span class="fc" id="L631">		assertNull(tools);</span>
+<span class="fc" id="L632">	}</span>
+	
+	@Test
+	public void getPipeTools_SingleCommand_ReturnNull() {
+<span class="fc" id="L636">		tools = shell.getPipeTools(&quot;delete \&quot;directory&quot;+sep+&quot;file 1.pl\&quot;&quot;);</span>
+<span class="fc" id="L637">		assertNull(tools);</span>
+<span class="fc" id="L638">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_WcNoArguments_ReturnArguments() {
+<span class="fc" id="L642">		results = shell.getTextUtilArgs(&quot;wc&quot;, &quot;wc&quot;);</span>
+<span class="fc" id="L643">		assertEquals(1, results.length);</span>
+<span class="fc" id="L644">		assertEquals(&quot;-&quot;, results[0]);</span>
+<span class="fc" id="L645">	}</span>
+	
+	/**
+	 * Assumption: if there is no &quot;-&quot; or filename as last argument, 
+	 * it is by default treated as &quot;-&quot; (standard input)
+	 */
+	@Test
+	public void getTextUtilArgs_WcOption_ReturnArguments() {
+<span class="fc" id="L653">		results = shell.getTextUtilArgs(&quot;wc&quot;, &quot;wc -m&quot;);</span>
+<span class="fc" id="L654">		assertEquals(2, results.length);</span>
+<span class="fc" id="L655">		assertEquals(&quot;-m&quot;, results[0]);</span>
+<span class="fc" id="L656">		assertEquals(&quot;-&quot;, results[1]);</span>
+<span class="fc" id="L657">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_WcMultipleOptions_ReturnArguments() {
+<span class="fc" id="L661">		results = shell.getTextUtilArgs(&quot;wc&quot;, &quot;wc -l -w&quot;);</span>
+<span class="fc" id="L662">		assertEquals(3, results.length);</span>
+<span class="fc" id="L663">		assertEquals(&quot;-l&quot;, results[0]);</span>
+<span class="fc" id="L664">		assertEquals(&quot;-w&quot;, results[1]);</span>
+<span class="fc" id="L665">		assertEquals(&quot;-&quot;, results[2]);</span>
+<span class="fc" id="L666">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_WcMultipleOptionsWithStdin_ReturnArguments() {
+<span class="fc" id="L670">		results = shell.getTextUtilArgs(&quot;wc&quot;, &quot;wc -w -help -&quot;);</span>
+<span class="fc" id="L671">		assertEquals(3, results.length);</span>
+<span class="fc" id="L672">		assertEquals(&quot;-w&quot;, results[0]);</span>
+<span class="fc" id="L673">		assertEquals(&quot;-help&quot;, results[1]);</span>
+<span class="fc" id="L674">		assertEquals(&quot;-&quot;, results[2]);</span>
+<span class="fc" id="L675">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_WcFile_ReturnArguments() {
+<span class="fc" id="L679">		results = shell.getTextUtilArgs(&quot;wc&quot;, &quot;wc file&quot;);</span>
+<span class="fc" id="L680">		assertEquals(1, results.length);</span>
+<span class="fc" id="L681">		assertEquals(&quot;file&quot;, results[0]);</span>
+<span class="fc" id="L682">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_WcMultipleFiles_ReturnArguments() {
+<span class="fc" id="L686">		results = shell.getTextUtilArgs(&quot;wc&quot;, &quot;wc file1.txt file2&quot;);</span>
+<span class="fc" id="L687">		assertEquals(2, results.length);</span>
+<span class="fc" id="L688">		assertEquals(&quot;file1.txt&quot;, results[0]);</span>
+<span class="fc" id="L689">		assertEquals(&quot;file2&quot;, results[1]);</span>
+<span class="fc" id="L690">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_WcMultipleOptionsAndFiles_ReturnArguments() {
+<span class="fc" id="L694">		results = shell.getTextUtilArgs(&quot;wc&quot;, &quot;wc -w -l file1.txt file2&quot;);</span>
+<span class="fc" id="L695">		assertEquals(4, results.length);</span>
+<span class="fc" id="L696">		assertEquals(&quot;-w&quot;, results[0]);</span>
+<span class="fc" id="L697">		assertEquals(&quot;-l&quot;, results[1]);</span>
+<span class="fc" id="L698">		assertEquals(&quot;file1.txt&quot;, results[2]);</span>
+<span class="fc" id="L699">		assertEquals(&quot;file2&quot;, results[3]);</span>
+<span class="fc" id="L700">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_WcInvalidOption_ReturnNull() {
+<span class="fc" id="L704">		results = shell.getTextUtilArgs(&quot;wc&quot;, &quot;wc -l -s&quot;);</span>
+<span class="fc" id="L705">		assertNull(results);</span>
+<span class="fc" id="L706">	}</span>
+	
+	/**
+	 * Assumption: options must always be declared before files or stdin (&quot;-&quot;)
+	 */
+	@Test
+	public void getTextUtilArgs_WcFilesOptions_ReturnNull() {
+<span class="fc" id="L713">		results = shell.getTextUtilArgs(&quot;wc&quot;, &quot;wc file1 file2 -l -w&quot;);</span>
+<span class="fc" id="L714">		assertNull(results);</span>
+<span class="fc" id="L715">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_WcEmptyCommandLine_ReturnNull() {
+<span class="fc" id="L719">		results = shell.getTextUtilArgs(&quot;wc&quot;, &quot;&quot;);</span>
+<span class="fc" id="L720">		assertNull(results);</span>
+<span class="fc" id="L721">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_SortOptionHelp_ReturnArgument() {
+<span class="fc" id="L725">		results = shell.getTextUtilArgs(&quot;sort&quot;, &quot;sort -help&quot;);</span>
+<span class="fc" id="L726">		assertEquals(1, results.length);</span>
+<span class="fc" id="L727">		assertEquals(&quot;-help&quot;, results[0]);</span>
+<span class="fc" id="L728">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_SortFile_ReturnArguments() {
+<span class="fc" id="L732">		results = shell.getTextUtilArgs(&quot;sort&quot;, &quot;sort file.txt&quot;);</span>
+<span class="fc" id="L733">		assertEquals(1, results.length);</span>
+<span class="fc" id="L734">		assertEquals(&quot;file.txt&quot;, results[0]);</span>
+<span class="fc" id="L735">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_SortMultipleFiles_ReturnArguments() {
+<span class="fc" id="L739">		results = shell.getTextUtilArgs(&quot;sort&quot;, &quot;sort file.txt file2&quot;);</span>
+<span class="fc" id="L740">		assertEquals(2, results.length);</span>
+<span class="fc" id="L741">		assertEquals(&quot;file.txt&quot;, results[0]);</span>
+<span class="fc" id="L742">		assertEquals(&quot;file2&quot;, results[1]);</span>
+<span class="fc" id="L743">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_SortOptionFile_ReturnArguments() {
+<span class="fc" id="L747">		results = shell.getTextUtilArgs(&quot;sort&quot;, &quot;sort -c file&quot;);</span>
+<span class="fc" id="L748">		assertEquals(2, results.length);</span>
+<span class="fc" id="L749">		assertEquals(&quot;-c&quot;, results[0]);</span>
+<span class="fc" id="L750">		assertEquals(&quot;file&quot;, results[1]);</span>
+<span class="fc" id="L751">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_SortOptionMultipleFiles_ReturnArguments() {
+<span class="fc" id="L755">		results = shell.getTextUtilArgs(&quot;sort&quot;, &quot;sort -c file.txt file2&quot;);</span>
+<span class="fc" id="L756">		assertEquals(3, results.length);</span>
+<span class="fc" id="L757">		assertEquals(&quot;-c&quot;, results[0]);</span>
+<span class="fc" id="L758">		assertEquals(&quot;file.txt&quot;, results[1]);</span>
+<span class="fc" id="L759">		assertEquals(&quot;file2&quot;, results[2]);</span>
+<span class="fc" id="L760">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_SortMultipleOptionsAndFiles_ReturnArguments() {
+<span class="fc" id="L764">		results = shell.getTextUtilArgs(&quot;sort&quot;, &quot;sort -c -help file1 file2&quot;);</span>
+<span class="fc" id="L765">		assertEquals(4, results.length);</span>
+<span class="fc" id="L766">		assertEquals(&quot;-c&quot;, results[0]);</span>
+<span class="fc" id="L767">		assertEquals(&quot;-help&quot;, results[1]);</span>
+<span class="fc" id="L768">		assertEquals(&quot;file1&quot;, results[2]);</span>
+<span class="fc" id="L769">		assertEquals(&quot;file2&quot;, results[3]);</span>
+<span class="fc" id="L770">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_SortNoArguments_ReturnNull() {
+<span class="fc" id="L774">		results = shell.getTextUtilArgs(&quot;sort&quot;, &quot;sort&quot;);</span>
+<span class="fc" id="L775">		assertNull(results);</span>
+<span class="fc" id="L776">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_SortStdin_ReturnNull() {
+<span class="fc" id="L780">		results = shell.getTextUtilArgs(&quot;sort&quot;, &quot;sort -&quot;);</span>
+<span class="fc" id="L781">		assertNull(results);</span>
+<span class="fc" id="L782">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_SortOption_ReturnNull() {
+<span class="fc" id="L786">		results = shell.getTextUtilArgs(&quot;sort&quot;, &quot;sort -c&quot;);</span>
+<span class="fc" id="L787">		assertNull(results);</span>
+<span class="fc" id="L788">	}</span>
+	
+	/**
+	 * Assumption: option must always be declared before files
+	 */
+	@Test
+	public void getTextUtilArgs_SortFileOption_ReturnNull() {
+<span class="fc" id="L795">		results = shell.getTextUtilArgs(&quot;sort&quot;, &quot;sort file.txt -c&quot;);</span>
+<span class="fc" id="L796">		assertNull(results);</span>
+<span class="fc" id="L797">	}</span>
+
+	@Test
+	public void getTextUtilArgs_SortInvalidOptionFile_ReturnNull() {
+<span class="fc" id="L801">		results = shell.getTextUtilArgs(&quot;sort&quot;, &quot;sort -d file.txt&quot;);</span>
+<span class="fc" id="L802">		assertNull(results);</span>
+<span class="fc" id="L803">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_CommNoOptionFiles_ReturnArguments() {
+<span class="fc" id="L807">		results = shell.getTextUtilArgs(&quot;comm&quot;, &quot;comm file.txt file2&quot;);</span>
+<span class="fc" id="L808">		assertEquals(2, results.length);</span>
+<span class="fc" id="L809">		assertEquals(&quot;file.txt&quot;, results[0]);</span>
+<span class="fc" id="L810">		assertEquals(&quot;file2&quot;, results[1]);</span>
+<span class="fc" id="L811">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_CommOptionCFiles_ReturnArguments() {
+<span class="fc" id="L815">		results = shell.getTextUtilArgs(&quot;comm&quot;, &quot;comm -c file.txt file2.txt&quot;);</span>
+<span class="fc" id="L816">		assertEquals(3, results.length);</span>
+<span class="fc" id="L817">		assertEquals(&quot;-c&quot;, results[0]);</span>
+<span class="fc" id="L818">		assertEquals(&quot;file.txt&quot;, results[1]);</span>
+<span class="fc" id="L819">		assertEquals(&quot;file2.txt&quot;, results[2]);</span>
+<span class="fc" id="L820">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_CommOptionDFiles_ReturnArguments() {
+<span class="fc" id="L824">		results = shell.getTextUtilArgs(&quot;comm&quot;, &quot;comm -d file.txt file2.txt&quot;);</span>
+<span class="fc" id="L825">		assertEquals(3, results.length);</span>
+<span class="fc" id="L826">		assertEquals(&quot;-d&quot;, results[0]);</span>
+<span class="fc" id="L827">		assertEquals(&quot;file.txt&quot;, results[1]);</span>
+<span class="fc" id="L828">		assertEquals(&quot;file2.txt&quot;, results[2]);</span>
+<span class="fc" id="L829">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_CommOptionHelpFiles_ReturnArguments() {
+<span class="fc" id="L833">		results = shell.getTextUtilArgs(&quot;comm&quot;, &quot;comm -help file.txt file2.txt&quot;);</span>
+<span class="fc" id="L834">		assertEquals(3, results.length);</span>
+<span class="fc" id="L835">		assertEquals(&quot;-help&quot;, results[0]);</span>
+<span class="fc" id="L836">		assertEquals(&quot;file.txt&quot;, results[1]);</span>
+<span class="fc" id="L837">		assertEquals(&quot;file2.txt&quot;, results[2]);</span>
+<span class="fc" id="L838">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_CommOptionHelp_ReturnArgument() {
+<span class="fc" id="L842">		results = shell.getTextUtilArgs(&quot;comm&quot;, &quot;comm -help&quot;);</span>
+<span class="fc" id="L843">		assertEquals(1, results.length);</span>
+<span class="fc" id="L844">		assertEquals(&quot;-help&quot;, results[0]);</span>
+<span class="fc" id="L845">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_CommOptionDHelpFiles_ReturnArguments() {
+<span class="fc" id="L849">		results = shell.getTextUtilArgs(&quot;comm&quot;, &quot;comm -d -help file.txt file2&quot;);</span>
+<span class="fc" id="L850">		assertEquals(4, results.length);</span>
+<span class="fc" id="L851">		assertEquals(&quot;-d&quot;, results[0]);</span>
+<span class="fc" id="L852">		assertEquals(&quot;-help&quot;, results[1]);</span>
+<span class="fc" id="L853">		assertEquals(&quot;file.txt&quot;, results[2]);</span>
+<span class="fc" id="L854">		assertEquals(&quot;file2&quot;, results[3]);</span>
+<span class="fc" id="L855">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_CommOptionCHelpNoFiles_ReturnArguments() {
+<span class="fc" id="L859">		results = shell.getTextUtilArgs(&quot;comm&quot;, &quot;comm -c -help&quot;);</span>
+<span class="fc" id="L860">		assertEquals(2, results.length);</span>
+<span class="fc" id="L861">		assertEquals(&quot;-c&quot;, results[0]);</span>
+<span class="fc" id="L862">		assertEquals(&quot;-help&quot;, results[1]);</span>
+<span class="fc" id="L863">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_CommOptionCDFiles_ReturnNull() {
+<span class="fc" id="L867">		results = shell.getTextUtilArgs(&quot;comm&quot;, &quot;comm -c -d file.txt file2&quot;);</span>
+<span class="fc" id="L868">		assertNull(results);</span>
+<span class="fc" id="L869">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_Comm1File_ReturnNull() {
+<span class="fc" id="L873">		results = shell.getTextUtilArgs(&quot;comm&quot;, &quot;comm file.txt&quot;);</span>
+<span class="fc" id="L874">		assertNull(results);</span>
+<span class="fc" id="L875">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_CommNoArguments_ReturnNull() {
+<span class="fc" id="L879">		results = shell.getTextUtilArgs(&quot;comm&quot;, &quot;comm&quot;);</span>
+<span class="fc" id="L880">		assertNull(results);</span>
+<span class="fc" id="L881">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_CommStdin_ReturnNull() {
+<span class="fc" id="L885">		results = shell.getTextUtilArgs(&quot;comm&quot;, &quot;comm -&quot;);</span>
+<span class="fc" id="L886">		assertNull(results);</span>
+<span class="fc" id="L887">	}</span>
+	
+	/**
+	 * Assumption: options must always be declared before files
+	 */
+	@Test
+	public void getTextUtilArgs_CommFilesOption_ReturnNull() {
+<span class="fc" id="L894">		results = shell.getTextUtilArgs(&quot;comm&quot;, &quot;comm file1 file2 -c&quot;);</span>
+<span class="fc" id="L895">		assertNull(results);</span>
+<span class="fc" id="L896">	}</span>
+	
+	/**
+	 * Assumption: if there is no &quot;-&quot; or filename as last argument, 
+	 * it is by default treated as &quot;-&quot; (standard input)
+	 */
+	@Test
+	public void getTextUtilArgs_PasteOption_ReturnArguments() {
+<span class="fc" id="L904">		results = shell.getTextUtilArgs(&quot;paste&quot;, &quot;paste -s&quot;);</span>
+<span class="fc" id="L905">		assertEquals(2, results.length);</span>
+<span class="fc" id="L906">		assertEquals(&quot;-s&quot;, results[0]);</span>
+<span class="fc" id="L907">		assertEquals(&quot;-&quot;, results[1]);</span>
+<span class="fc" id="L908">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_PasteStdin_ReturnArgument() {
+<span class="fc" id="L912">		results = shell.getTextUtilArgs(&quot;paste&quot;, &quot;paste -&quot;);</span>
+<span class="fc" id="L913">		assertEquals(1, results.length);</span>
+<span class="fc" id="L914">		assertEquals(&quot;-&quot;, results[0]);</span>
+<span class="fc" id="L915">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_PasteFile_ReturnArgument() {
+<span class="fc" id="L919">		results = shell.getTextUtilArgs(&quot;paste&quot;, &quot;paste file1&quot;);</span>
+<span class="fc" id="L920">		assertEquals(1, results.length);</span>
+<span class="fc" id="L921">		assertEquals(&quot;file1&quot;, results[0]);</span>
+<span class="fc" id="L922">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_PasteMultipleFiles_ReturnArguments() {
+<span class="fc" id="L926">		results = shell.getTextUtilArgs(&quot;paste&quot;, &quot;paste file1 file2&quot;);</span>
+<span class="fc" id="L927">		assertEquals(2, results.length);</span>
+<span class="fc" id="L928">		assertEquals(&quot;file1&quot;, results[0]);</span>
+<span class="fc" id="L929">		assertEquals(&quot;file2&quot;, results[1]);</span>
+<span class="fc" id="L930">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_PasteOptionHelp_ReturnArguments() {
+<span class="fc" id="L934">		results = shell.getTextUtilArgs(&quot;paste&quot;, &quot;paste -help&quot;);</span>
+<span class="fc" id="L935">		assertEquals(2, results.length);</span>
+<span class="fc" id="L936">		assertEquals(&quot;-help&quot;, results[0]);</span>
+<span class="fc" id="L937">		assertEquals(&quot;-&quot;, results[1]);</span>
+<span class="fc" id="L938">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_PasteOptionSHelpStdin_ReturnArguments() {
+<span class="fc" id="L942">		results = shell.getTextUtilArgs(&quot;paste&quot;, &quot;paste -s -help -&quot;);</span>
+<span class="fc" id="L943">		assertEquals(3, results.length);</span>
+<span class="fc" id="L944">		assertEquals(&quot;-s&quot;, results[0]);</span>
+<span class="fc" id="L945">		assertEquals(&quot;-help&quot;, results[1]);</span>
+<span class="fc" id="L946">		assertEquals(&quot;-&quot;, results[2]);</span>
+<span class="fc" id="L947">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_PasteOptionHelpFile_ReturnArguments() {
+<span class="fc" id="L951">		results = shell.getTextUtilArgs(&quot;paste&quot;, &quot;paste -help file&quot;);</span>
+<span class="fc" id="L952">		assertEquals(2, results.length);</span>
+<span class="fc" id="L953">		assertEquals(&quot;-help&quot;, results[0]);</span>
+<span class="fc" id="L954">		assertEquals(&quot;file&quot;, results[1]);</span>
+<span class="fc" id="L955">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_PasteOptionDNoDelim_ReturnArguments() {
+<span class="fc" id="L959">		results = shell.getTextUtilArgs(&quot;paste&quot;, &quot;paste -d&quot;);</span>
+<span class="fc" id="L960">		assertEquals(2, results.length);</span>
+<span class="fc" id="L961">		assertEquals(&quot;-d&quot;, results[0]);</span>
+<span class="fc" id="L962">		assertEquals(&quot;-&quot;, results[1]);</span>
+<span class="fc" id="L963">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_PasteOptionDDelimStdin_ReturnArguments() {
+<span class="fc" id="L967">		results = shell.getTextUtilArgs(&quot;paste&quot;, &quot;paste -d -abc- -&quot;);</span>
+<span class="fc" id="L968">		assertEquals(3, results.length);</span>
+<span class="fc" id="L969">		assertEquals(&quot;-d&quot;, results[0]);</span>
+<span class="fc" id="L970">		assertEquals(&quot;-abc-&quot;, results[1]);</span>
+<span class="fc" id="L971">		assertEquals(&quot;-&quot;, results[2]);</span>
+<span class="fc" id="L972">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_PasteOptionSFiles_ReturnArguments() {
+<span class="fc" id="L976">		results = shell.getTextUtilArgs(&quot;paste&quot;, &quot;paste -s file file2&quot;);</span>
+<span class="fc" id="L977">		assertEquals(3, results.length);</span>
+<span class="fc" id="L978">		assertEquals(&quot;-s&quot;, results[0]);</span>
+<span class="fc" id="L979">		assertEquals(&quot;file&quot;, results[1]);</span>
+<span class="fc" id="L980">		assertEquals(&quot;file2&quot;, results[2]);</span>
+<span class="fc" id="L981">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_PasteOptionSDFile_ReturnArguments() {
+<span class="fc" id="L985">		results = shell.getTextUtilArgs(&quot;paste&quot;, &quot;paste -s -d ( file.py&quot;);</span>
+<span class="fc" id="L986">		assertEquals(4, results.length);</span>
+<span class="fc" id="L987">		assertEquals(&quot;-s&quot;, results[0]);</span>
+<span class="fc" id="L988">		assertEquals(&quot;-d&quot;, results[1]);</span>
+<span class="fc" id="L989">		assertEquals(&quot;(&quot;, results[2]);</span>
+<span class="fc" id="L990">		assertEquals(&quot;file.py&quot;, results[3]);</span>
+<span class="fc" id="L991">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_PasteInvalidOption_ReturnNull() {
+<span class="fc" id="L995">		results = shell.getTextUtilArgs(&quot;paste&quot;, &quot;paste -c file&quot;);</span>
+<span class="fc" id="L996">		assertNull(results);</span>
+<span class="fc" id="L997">	}</span>
+	
+	
+	/**
+	 * Assumption: options must always be declared before files or stdin (&quot;-&quot;)
+	 */
+	@Test
+	public void getTextUtilArgs_PasteFileOption_ReturnNull() {
+<span class="fc" id="L1005">		results = shell.getTextUtilArgs(&quot;paste&quot;, &quot;paste file -s&quot;);</span>
+<span class="fc" id="L1006">		assertNull(results);</span>
+<span class="fc" id="L1007">	}</span>
+	
+	/**
+	 * Assumption: if there is no &quot;-&quot; or filename as last argument, 
+	 * it is by default treated as &quot;-&quot; (standard input)
+	 */
+	@Test
+	public void getTextUtilArgs_UniqOption_ReturnArguments() {
+<span class="fc" id="L1015">		results = shell.getTextUtilArgs(&quot;uniq&quot;, &quot;uniq -i&quot;);</span>
+<span class="fc" id="L1016">		assertEquals(2, results.length);</span>
+<span class="fc" id="L1017">		assertEquals(&quot;-i&quot;, results[0]);</span>
+<span class="fc" id="L1018">		assertEquals(&quot;-&quot;, results[1]);</span>
+<span class="fc" id="L1019">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_UniqNoArguments_ReturnArgument() {
+<span class="fc" id="L1023">		results = shell.getTextUtilArgs(&quot;uniq&quot;, &quot;uniq&quot;);</span>
+<span class="fc" id="L1024">		assertEquals(1, results.length);</span>
+<span class="fc" id="L1025">		assertEquals(&quot;-&quot;, results[0]);</span>
+<span class="fc" id="L1026">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_UniqStdin_ReturnArgument() {
+<span class="fc" id="L1030">		results = shell.getTextUtilArgs(&quot;uniq&quot;, &quot;uniq -&quot;);</span>
+<span class="fc" id="L1031">		assertEquals(1, results.length);</span>
+<span class="fc" id="L1032">		assertEquals(&quot;-&quot;, results[0]);</span>
+<span class="fc" id="L1033">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_UniqFile_ReturnArgument() {
+<span class="fc" id="L1037">		results = shell.getTextUtilArgs(&quot;uniq&quot;, &quot;uniq file&quot;);</span>
+<span class="fc" id="L1038">		assertEquals(1, results.length);</span>
+<span class="fc" id="L1039">		assertEquals(&quot;file&quot;, results[0]);</span>
+<span class="fc" id="L1040">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_UniqMultipleFiles_ReturnArguments() {
+<span class="fc" id="L1044">		results = shell.getTextUtilArgs(&quot;uniq&quot;, &quot;uniq file1 file2&quot;);</span>
+<span class="fc" id="L1045">		assertEquals(2, results.length);</span>
+<span class="fc" id="L1046">		assertEquals(&quot;file1&quot;, results[0]);</span>
+<span class="fc" id="L1047">		assertEquals(&quot;file2&quot;, results[1]);</span>
+<span class="fc" id="L1048">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_UniqOptionHelp_ReturnArguments() {
+<span class="fc" id="L1052">		results = shell.getTextUtilArgs(&quot;uniq&quot;, &quot;uniq -help&quot;);</span>
+<span class="fc" id="L1053">		assertEquals(2, results.length);</span>
+<span class="fc" id="L1054">		assertEquals(&quot;-help&quot;, results[0]);</span>
+<span class="fc" id="L1055">		assertEquals(&quot;-&quot;, results[1]);</span>
+<span class="fc" id="L1056">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_UniqOptionIHelpFile_ReturnArguments() {
+<span class="fc" id="L1060">		results = shell.getTextUtilArgs(&quot;uniq&quot;, &quot;uniq -i -help file&quot;);</span>
+<span class="fc" id="L1061">		assertEquals(3, results.length);</span>
+<span class="fc" id="L1062">		assertEquals(&quot;-i&quot;, results[0]);</span>
+<span class="fc" id="L1063">		assertEquals(&quot;-help&quot;, results[1]);</span>
+<span class="fc" id="L1064">		assertEquals(&quot;file&quot;, results[2]);</span>
+<span class="fc" id="L1065">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_UniqOptionIStdin_ReturnArguments() {
+<span class="fc" id="L1069">		results = shell.getTextUtilArgs(&quot;uniq&quot;, &quot;uniq -i -&quot;);</span>
+<span class="fc" id="L1070">		assertEquals(2, results.length);</span>
+<span class="fc" id="L1071">		assertEquals(&quot;-i&quot;, results[0]);</span>
+<span class="fc" id="L1072">		assertEquals(&quot;-&quot;, results[1]);</span>
+<span class="fc" id="L1073">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_UniqOptionFNum_ReturnArguments() {
+<span class="fc" id="L1077">		results = shell.getTextUtilArgs(&quot;uniq&quot;, &quot;uniq -f 100&quot;);</span>
+<span class="fc" id="L1078">		assertEquals(3, results.length);</span>
+<span class="fc" id="L1079">		assertEquals(&quot;-f&quot;, results[0]);</span>
+<span class="fc" id="L1080">		assertEquals(&quot;100&quot;, results[1]);</span>
+<span class="fc" id="L1081">		assertEquals(&quot;-&quot;, results[2]);</span>
+<span class="fc" id="L1082">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_UniqOptionFNumFile_ReturnArguments() {
+<span class="fc" id="L1086">		results = shell.getTextUtilArgs(&quot;uniq&quot;, &quot;uniq -f 100 file&quot;);</span>
+<span class="fc" id="L1087">		assertEquals(3, results.length);</span>
+<span class="fc" id="L1088">		assertEquals(&quot;-f&quot;, results[0]);</span>
+<span class="fc" id="L1089">		assertEquals(&quot;100&quot;, results[1]);</span>
+<span class="fc" id="L1090">		assertEquals(&quot;file&quot;, results[2]);</span>
+<span class="fc" id="L1091">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_UniqOptionFNoNumFile_ReturnNull() {
+<span class="fc" id="L1095">		results = shell.getTextUtilArgs(&quot;uniq&quot;, &quot;uniq -f file1&quot;);</span>
+<span class="fc" id="L1096">		assertNull(results);</span>
+<span class="fc" id="L1097">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_UniqOptionINum_ReturnNull() {
+<span class="fc" id="L1101">		results = shell.getTextUtilArgs(&quot;uniq&quot;, &quot;uniq -i 7&quot;);</span>
+<span class="fc" id="L1102">		assertNull(results);</span>
+<span class="fc" id="L1103">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_UniqInvalidOption_ReturnNull() {
+<span class="fc" id="L1107">		results = shell.getTextUtilArgs(&quot;uniq&quot;, &quot;uniq -d file&quot;);</span>
+<span class="fc" id="L1108">		assertNull(results);</span>
+<span class="fc" id="L1109">	}</span>
+	
+	/**
+	 * Assumption: options must always be declared before files or stdin (&quot;-&quot;)
+	 */
+	@Test
+	public void getTextUtilArgs_UniqFileOption_ReturnNull() {
+<span class="fc" id="L1116">		results = shell.getTextUtilArgs(&quot;uniq&quot;, &quot;uniq file -f 2-10,19&quot;);</span>
+<span class="fc" id="L1117">		assertNull(results);</span>
+<span class="fc" id="L1118">	}</span>
+	
+	/**
+	 * Assumption: if there is no &quot;-&quot; or filename as last argument, 
+	 * it is by default treated as &quot;-&quot; (standard input)
+	 */
+	@Test
+	public void getTextUtilArgs_CutOptionFList_ReturnArguments() {
+<span class="fc" id="L1126">		results = shell.getTextUtilArgs(&quot;cut&quot;, &quot;cut -f 1-3,6,-10&quot;);</span>
+<span class="fc" id="L1127">		assertEquals(3, results.length);</span>
+<span class="fc" id="L1128">		assertEquals(&quot;-f&quot;, results[0]);</span>
+<span class="fc" id="L1129">		assertEquals(&quot;1-3,6,-10&quot;, results[1]);</span>
+<span class="fc" id="L1130">		assertEquals(&quot;-&quot;, results[2]);</span>
+<span class="fc" id="L1131">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_CutOptionCStdin_ReturnArguments() {
+<span class="fc" id="L1135">		results = shell.getTextUtilArgs(&quot;cut&quot;, &quot;cut -c 8 -&quot;);</span>
+<span class="fc" id="L1136">		assertEquals(3, results.length);</span>
+<span class="fc" id="L1137">		assertEquals(&quot;-c&quot;, results[0]);</span>
+<span class="fc" id="L1138">		assertEquals(&quot;8&quot;, results[1]);</span>
+<span class="fc" id="L1139">		assertEquals(&quot;-&quot;, results[2]);</span>
+<span class="fc" id="L1140">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_CutOptionFDFile_ReturnArguments() {
+<span class="fc" id="L1144">		results = shell.getTextUtilArgs(&quot;cut&quot;, &quot;cut -f -10,3 - 7,20 -d \&quot;+  +\&quot; file&quot;);</span>
+<span class="fc" id="L1145">		assertEquals(5, results.length);</span>
+<span class="fc" id="L1146">		assertEquals(&quot;-f&quot;, results[0]);</span>
+<span class="fc" id="L1147">		assertEquals(&quot;-10,3 - 7,20&quot;, results[1]);</span>
+<span class="fc" id="L1148">		assertEquals(&quot;-d&quot;, results[2]);</span>
+<span class="fc" id="L1149">		assertEquals(&quot;\&quot;+  +\&quot;&quot;, results[3]);</span>
+<span class="fc" id="L1150">		assertEquals(&quot;file&quot;, results[4]);</span>
+<span class="fc" id="L1151">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_CutOptionCMultipleFiles_ReturnArguments() {
+<span class="fc" id="L1155">		results = shell.getTextUtilArgs(&quot;cut&quot;, &quot;cut -c 1-3, 2- file.txt file2&quot;);</span>
+<span class="fc" id="L1156">		assertEquals(4, results.length);</span>
+<span class="fc" id="L1157">		assertEquals(&quot;-c&quot;, results[0]);</span>
+<span class="fc" id="L1158">		assertEquals(&quot;1-3, 2-&quot;, results[1]);</span>
+<span class="fc" id="L1159">		assertEquals(&quot;file.txt&quot;, results[2]);</span>
+<span class="fc" id="L1160">		assertEquals(&quot;file2&quot;, results[3]);</span>
+<span class="fc" id="L1161">	}</span>
+	
+	/**
+	 * Assumption: the delimiter for -d can be any string of characters
+	 * In this test case, &quot;file&quot; is taken as the delimiter for -d thus a standard input is expected
+	 */
+	@Test
+	public void getTextUtilArgs_CutOptionFDWithoutDelim_ReturnArguments() {
+<span class="fc" id="L1169">		results = shell.getTextUtilArgs(&quot;cut&quot;, &quot;cut -f 2 -d file&quot;);</span>
+<span class="fc" id="L1170">		assertEquals(5, results.length);</span>
+<span class="fc" id="L1171">		assertEquals(&quot;-f&quot;, results[0]);</span>
+<span class="fc" id="L1172">		assertEquals(&quot;2&quot;, results[1]);</span>
+<span class="fc" id="L1173">		assertEquals(&quot;-d&quot;, results[2]);</span>
+<span class="fc" id="L1174">		assertEquals(&quot;file&quot;, results[3]);</span>
+<span class="fc" id="L1175">		assertEquals(&quot;-&quot;, results[4]);</span>
+<span class="fc" id="L1176">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_CutOptionCNoList_ReturnNull() {
+<span class="fc" id="L1180">		results = shell.getTextUtilArgs(&quot;cut&quot;, &quot;cut -c&quot;);</span>
+<span class="fc" id="L1181">		assertNull(results);</span>
+<span class="fc" id="L1182">	}</span>
+	
+	/**
+	 * Assumption: the cut command requires -f option if -d option is used
+	 */
+	@Test
+	public void getTextUtilArgs_CutOptionDWithoutOptionF_ReturnNull() {
+<span class="fc" id="L1189">		results = shell.getTextUtilArgs(&quot;cut&quot;, &quot;cut -d abc file&quot;);</span>
+<span class="fc" id="L1190">		assertNull(results);</span>
+<span class="fc" id="L1191">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_CutNoArguments_ReturnNull() {
+<span class="fc" id="L1195">		results = shell.getTextUtilArgs(&quot;cut&quot;, &quot;cut&quot;);</span>
+<span class="fc" id="L1196">		assertNull(results);</span>
+<span class="fc" id="L1197">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_CutNoOption_ReturnNull() {
+<span class="fc" id="L1201">		results = shell.getTextUtilArgs(&quot;cut&quot;, &quot;cut file&quot;);</span>
+<span class="fc" id="L1202">		assertNull(results);</span>
+<span class="fc" id="L1203">	}</span>
+	
+	@Test
+	public void getTextUtilArgs_CutInvalidOption_ReturnNull() {
+<span class="fc" id="L1207">		results = shell.getTextUtilArgs(&quot;cut&quot;, &quot;cut -a file&quot;);</span>
+<span class="fc" id="L1208">		assertNull(results);</span>
+<span class="fc" id="L1209">	}</span>
+	
+	/**
+	 * Assumption: options must always be declared before files or stdin (&quot;-&quot;)
+	 */
+	@Test
+	public void getTextUtilArgs_CutFileOption_ReturnNull() {
+<span class="fc" id="L1216">		results = shell.getTextUtilArgs(&quot;cut&quot;, &quot;cut file -c 1-10&quot;);</span>
+<span class="fc" id="L1217">		assertNull(results);</span>
+<span class="fc" id="L1218">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

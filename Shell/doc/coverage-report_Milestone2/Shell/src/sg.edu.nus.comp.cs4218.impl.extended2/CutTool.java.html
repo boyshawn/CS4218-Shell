@@ -1,0 +1,629 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>CutTool.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">src</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.extended2</a> &gt; <span class="el_source">CutTool.java</span></div><h1>CutTool.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.extended2;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import sg.edu.nus.comp.cs4218.extended2.ICutTool;
+import sg.edu.nus.comp.cs4218.impl.ATool;
+
+public class CutTool extends ATool implements ICutTool {
+	// Variables
+	private List&lt;Integer&gt; accessedIndices;
+
+	// Constants
+	private static final int CUT_SUCCESSFUL = 0;
+	private static final int INVALID_POSITION = -1;
+	private static final int FILE_NOT_EXISTS = -2;
+	private static final int INVALID_OPTION = -3;
+	private static final int NO_ARGUMENTS = -4;
+	private static final int INVALID_DELIMITER = -5;
+	private static final String OPTION_C = &quot;-c&quot;;
+	private static final String OPTION_D = &quot;-d&quot;;
+	private static final String OPTION_F = &quot;-f&quot;;
+	private static final String OPTION_HELP = &quot;-help&quot;;
+	private static final String DASH = &quot;-&quot;;
+	private static final String COMMA = &quot;,&quot;;
+
+	// Constructor
+	public CutTool(String[] arguments) {
+<span class="fc" id="L34">		super(arguments);</span>
+		// TODO Auto-generated constructor stub
+<span class="fc" id="L36">		accessedIndices = new ArrayList&lt;Integer&gt;();</span>
+<span class="fc" id="L37">	}</span>
+
+	/**
+	 * 
+	 * &lt;p&gt;
+	 * Cuts out specific characters defined by indices and displays them as a
+	 * &lt;b&gt;String&lt;/b&gt; value.
+	 * &lt;/p&gt;
+	 * 
+	 * @param list
+	 *            List of character indices represented as a &lt;b&gt;String&lt;/b&gt;
+	 *            value.
+	 * 
+	 * @param input
+	 *            Input text to extract characters from.
+	 * 
+	 * @return The characters specified by the indices returned as a
+	 *         &lt;b&gt;String&lt;/b&gt; value.
+	 * 
+	 */
+	@Override
+	public String cutSpecfiedCharacters(String list, String input) {
+		// TODO Auto-generated method stub
+
+<span class="fc" id="L61">		StringBuilder sb = new StringBuilder();</span>
+
+		try {
+<span class="fc" id="L64">			String[] listArr = list.split(COMMA);</span>
+<span class="fc" id="L65">			String[] inputs = input.split(System.lineSeparator());</span>
+
+<span class="fc" id="L67">			int startIdx = 0;</span>
+<span class="fc" id="L68">			int endIdx = 0;</span>
+
+<span class="fc bfc" id="L70" title="All 2 branches covered.">			for (String inputStr : inputs) {</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">				for (String listItem : listArr) {</span>
+<span class="fc" id="L72">					int dashIdx = listItem.lastIndexOf(DASH);</span>
+
+<span class="fc bfc" id="L74" title="All 2 branches covered.">					if (dashIdx != -1) {</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">						if (listItem.startsWith(DASH)) {</span>
+<span class="fc" id="L76">							startIdx = 1;</span>
+<span class="fc" id="L77">							endIdx = Integer.parseInt(listItem</span>
+<span class="fc" id="L78">									.substring(dashIdx + 1));</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">							if (endIdx == 0) {</span>
+<span class="fc" id="L80">								setStatusCode(INVALID_POSITION);</span>
+<span class="fc" id="L81">								return &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L82">										+ System.lineSeparator()</span>
+<span class="fc" id="L83">										+ &quot;Try 'cut -help' for more information.&quot;;</span>
+							}
+<span class="fc bfc" id="L85" title="All 2 branches covered.">						} else if (listItem.endsWith(DASH)) {</span>
+<span class="fc" id="L86">							startIdx = Integer.parseInt(listItem.substring(0,</span>
+<span class="fc" id="L87">									dashIdx));</span>
+
+<span class="fc bfc" id="L89" title="All 2 branches covered.">							if (startIdx == 0) {</span>
+<span class="fc" id="L90">								setStatusCode(INVALID_POSITION);</span>
+<span class="fc" id="L91">								return &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L92">										+ System.lineSeparator()</span>
+<span class="fc" id="L93">										+ &quot;Try 'cut -help' for more information.&quot;;</span>
+							} else {
+<span class="fc" id="L95">								endIdx = inputStr.length();</span>
+							}
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">						} else if (listItem.contains(DASH)) {</span>
+<span class="fc" id="L98">							startIdx = Integer.parseInt(listItem.substring(0,</span>
+<span class="fc" id="L99">									dashIdx));</span>
+<span class="fc" id="L100">							endIdx = Integer.parseInt(listItem</span>
+<span class="fc" id="L101">									.substring(dashIdx + 1));</span>
+
+<span class="fc bfc" id="L103" title="All 4 branches covered.">							if (startIdx == 0 || endIdx == 0) {</span>
+<span class="fc" id="L104">								setStatusCode(INVALID_POSITION);</span>
+<span class="fc" id="L105">								return &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L106">										+ System.lineSeparator()</span>
+<span class="fc" id="L107">										+ &quot;Try 'cut -help' for more information.&quot;;</span>
+							}
+						}
+					} else {
+<span class="fc" id="L111">						startIdx = Integer.parseInt(listItem);</span>
+
+<span class="fc bfc" id="L113" title="All 2 branches covered.">						if (startIdx == 0) {</span>
+<span class="fc" id="L114">							setStatusCode(INVALID_POSITION);</span>
+<span class="fc" id="L115">							return &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L116">									+ System.lineSeparator()</span>
+<span class="fc" id="L117">									+ &quot;Try 'cut -help' for more information.&quot;;</span>
+						} else {
+<span class="fc" id="L119">							endIdx = startIdx;</span>
+						}
+
+					}
+
+<span class="fc" id="L124">					addIndicesToList(startIdx, endIdx);</span>
+				}
+
+<span class="fc" id="L127">				Collections.sort(accessedIndices);</span>
+<span class="fc" id="L128">				appendChars(inputStr, sb);</span>
+<span class="fc" id="L129">				sb.append(System.lineSeparator());</span>
+			}
+<span class="fc" id="L131">			accessedIndices.clear();</span>
+<span class="fc" id="L132">			setStatusCode(CUT_SUCCESSFUL);</span>
+
+<span class="pc" id="L134">		} catch (IndexOutOfBoundsException idxOBE) {</span>
+
+		}
+
+<span class="fc" id="L138">		return sb.toString().trim();</span>
+	}
+
+	/**
+	 * 
+	 * &lt;p&gt;
+	 * Cuts out specific characters from an delimited input defined by indices
+	 * and displays them as a &lt;b&gt;String&lt;/b&gt; value.
+	 * &lt;/p&gt;
+	 * 
+	 * @param list
+	 *            List of character indices represented as a &lt;b&gt;String&lt;/b&gt;
+	 *            value.
+	 * 
+	 * @param delim
+	 *            Type of delimiter to look out for.
+	 * 
+	 * @param input
+	 *            Input text to extract characters from.
+	 * 
+	 * @return The characters specified by the indices returned as a
+	 *         &lt;b&gt;String&lt;/b&gt; value.
+	 * 
+	 */
+	@Override
+	public String cutSpecifiedCharactersUseDelimiter(String list, String delim,
+			String input) {
+		// TODO Auto-generated method stub
+
+<span class="fc" id="L167">		StringBuilder sb = new StringBuilder();</span>
+
+		try {
+<span class="fc bfc" id="L170" title="All 4 branches covered.">			if (!delim.equals(&quot;&quot;) &amp;&amp; input.contains(delim)) {</span>
+<span class="fc" id="L171">				String[] listArr = list.split(COMMA);</span>
+<span class="fc" id="L172">				String[] inputs = input.split(System.lineSeparator());</span>
+<span class="fc" id="L173">				int startIdx = 0;</span>
+<span class="fc" id="L174">				int endIdx = 0;</span>
+
+<span class="fc bfc" id="L176" title="All 2 branches covered.">				for (String inputStr : inputs) {</span>
+<span class="fc" id="L177">					String[] delimitedArr = inputStr.split(delim);</span>
+
+<span class="fc bfc" id="L179" title="All 2 branches covered.">					for (String listItem : listArr) {</span>
+<span class="fc" id="L180">						int dashIdx = listItem.lastIndexOf(DASH);</span>
+
+<span class="fc bfc" id="L182" title="All 2 branches covered.">						if (dashIdx != -1) {</span>
+<span class="fc bfc" id="L183" title="All 2 branches covered.">							if (listItem.startsWith(DASH)) {</span>
+<span class="fc" id="L184">								startIdx = 1;</span>
+<span class="fc" id="L185">								endIdx = Integer.parseInt(listItem</span>
+<span class="fc" id="L186">										.substring(dashIdx + 1));</span>
+
+<span class="fc bfc" id="L188" title="All 2 branches covered.">								if (endIdx == 0) {</span>
+<span class="fc" id="L189">									setStatusCode(INVALID_POSITION);</span>
+<span class="fc" id="L190">									return &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L191">											+ System.lineSeparator()</span>
+<span class="fc" id="L192">											+ &quot;Try 'cut -help' for more information.&quot;;</span>
+								}
+
+<span class="fc bfc" id="L195" title="All 2 branches covered.">							} else if (listItem.endsWith(DASH)) {</span>
+<span class="fc" id="L196">								startIdx = Integer.parseInt(listItem.substring(</span>
+<span class="fc" id="L197">										0, dashIdx));</span>
+
+<span class="fc bfc" id="L199" title="All 2 branches covered.">								if (startIdx == 0) {</span>
+<span class="fc" id="L200">									setStatusCode(INVALID_POSITION);</span>
+<span class="fc" id="L201">									return &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L202">											+ System.lineSeparator()</span>
+<span class="fc" id="L203">											+ &quot;Try 'cut -help' for more information.&quot;;</span>
+								} else {
+<span class="fc" id="L205">									endIdx = delimitedArr.length;</span>
+								}
+
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">							} else if (listItem.contains(DASH)) {</span>
+<span class="fc" id="L209">								startIdx = Integer.parseInt(listItem.substring(</span>
+<span class="fc" id="L210">										0, dashIdx));</span>
+<span class="fc" id="L211">								endIdx = Integer.parseInt(listItem</span>
+<span class="fc" id="L212">										.substring(dashIdx + 1));</span>
+
+<span class="fc bfc" id="L214" title="All 4 branches covered.">								if (startIdx == 0 || endIdx == 0) {</span>
+<span class="fc" id="L215">									setStatusCode(INVALID_POSITION);</span>
+<span class="fc" id="L216">									return &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L217">											+ System.lineSeparator()</span>
+<span class="fc" id="L218">											+ &quot;Try 'cut -help' for more information.&quot;;</span>
+								}
+							}
+						} else {
+<span class="fc" id="L222">							startIdx = Integer.parseInt(listItem);</span>
+
+<span class="fc bfc" id="L224" title="All 2 branches covered.">							if (startIdx == 0) {</span>
+<span class="fc" id="L225">								setStatusCode(INVALID_POSITION);</span>
+<span class="fc" id="L226">								return &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L227">										+ System.lineSeparator()</span>
+<span class="fc" id="L228">										+ &quot;Try 'cut -help' for more information.&quot;;</span>
+							} else {
+<span class="fc" id="L230">								endIdx = startIdx;</span>
+							}
+						}
+
+<span class="fc" id="L234">						addIndicesToList(startIdx, endIdx);</span>
+					}
+
+<span class="fc" id="L237">					Collections.sort(accessedIndices);</span>
+<span class="fc" id="L238">					appendChars(delimitedArr, sb, delim);</span>
+<span class="fc" id="L239">					sb.append(System.lineSeparator());</span>
+				}
+
+<span class="fc" id="L242">				accessedIndices.clear();</span>
+
+<span class="fc" id="L244">			} else {</span>
+<span class="fc" id="L245">				sb.append(input);</span>
+			}
+
+<span class="fc" id="L248">			setStatusCode(CUT_SUCCESSFUL);</span>
+
+<span class="fc" id="L250">		} catch (IndexOutOfBoundsException idxOBE) {</span>
+
+		}
+
+<span class="fc" id="L254">		return sb.toString().trim();</span>
+	}
+
+	/**
+	 * &lt;p&gt;
+	 * Displays the Help Information of the &lt;i&gt;cut&lt;/i&gt; command.
+	 * &lt;/p&gt;
+	 * 
+	 * @return Displays the help information of the &lt;i&gt;cut&lt;/i&gt; command
+	 * 
+	 */
+	@Override
+	public String getHelp() {
+		// TODO Auto-generated method stub
+
+<span class="fc" id="L269">		String helpStr = &quot;&quot;;</span>
+
+		try {
+<span class="fc" id="L272">			helpStr = new String(Files.readAllBytes(new File(</span>
+<span class="fc" id="L273">					&quot;help_files&quot; + File.separator + &quot;cut_help&quot;).toPath()));</span>
+<span class="pc" id="L274">		} catch (IOException iOE) {</span>
+
+		}
+
+<span class="fc" id="L278">		return helpStr;</span>
+	}
+
+	/**
+	 * &lt;p&gt;
+	 * Executes the &lt;i&gt;cut&lt;/i&gt; command with options specific to the type of
+	 * arguments.
+	 * &lt;/p&gt;
+	 * 
+	 * @param workingDir
+	 *            Current working directory Path
+	 * 
+	 * @param stdin
+	 *            The input taken from the command line's input stream when &quot;-&quot;
+	 *            is specified for the source (input) file.
+	 * 
+	 * @return Displays the result of the command and its corresponding option.
+	 * 
+	 */
+	@Override
+	public String execute(File workingDir, String stdin) {
+		// TODO Auto-generated method stub
+<span class="fc" id="L300">		String returnMessage = &quot;&quot;;</span>
+
+		try {
+<span class="fc" id="L303">			String list = &quot;&quot;;</span>
+
+<span class="fc" id="L305">			List&lt;String&gt; arguments = Arrays.asList(args);</span>
+<span class="fc bfc" id="L306" title="All 4 branches covered.">			if (arguments.size() == 0 || arguments.get(0).equals(DASH)) {</span>
+<span class="fc" id="L307">				setStatusCode(NO_ARGUMENTS);</span>
+<span class="fc" id="L308">				returnMessage = &quot;cut: you must specify a list of bytes, characters, or fields&quot;</span>
+<span class="fc" id="L309">						+ System.lineSeparator()</span>
+<span class="fc" id="L310">						+ &quot;Try 'cut -help' for more information.&quot;;</span>
+
+<span class="fc bfc" id="L312" title="All 2 branches covered.">			} else if (arguments.contains(OPTION_HELP)) {</span>
+<span class="fc" id="L313">				returnMessage = getHelp();</span>
+
+<span class="fc bfc" id="L315" title="All 2 branches covered.">			} else if (arguments.contains(OPTION_C)) {</span>
+
+<span class="fc bfc" id="L317" title="All 2 branches covered.">				if (arguments.size() == 1) {</span>
+<span class="fc" id="L318">					setStatusCode(NO_ARGUMENTS);</span>
+<span class="fc" id="L319">					returnMessage = &quot;cut: option requires an argument -- 'c'&quot;</span>
+<span class="fc" id="L320">							+ System.lineSeparator()</span>
+<span class="fc" id="L321">							+ &quot;Try 'cut -help' for more information.&quot;;</span>
+<span class="fc" id="L322">				} else {</span>
+<span class="fc bfc" id="L323" title="All 2 branches covered.">					if (arguments.get(1).endsWith(COMMA)</span>
+<span class="fc bfc" id="L324" title="All 2 branches covered.">							|| arguments.get(1).startsWith(COMMA)) {</span>
+<span class="fc" id="L325">						setStatusCode(INVALID_POSITION);</span>
+<span class="fc" id="L326">						returnMessage = &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L327">								+ System.lineSeparator()</span>
+<span class="fc" id="L328">								+ &quot;Try 'cut -help' for more information.&quot;;</span>
+
+<span class="fc" id="L330">					} else {</span>
+<span class="fc" id="L331">						list = arguments.get(1);</span>
+<span class="fc" id="L332">						returnMessage = cutFromFiles(list,</span>
+<span class="fc" id="L333">								arguments.subList(2, arguments.size()),</span>
+<span class="fc" id="L334">								workingDir, stdin);</span>
+					}
+				}
+
+<span class="fc bfc" id="L338" title="All 2 branches covered.">			} else if (arguments.contains(OPTION_F)) {</span>
+
+<span class="fc bfc" id="L340" title="All 2 branches covered.">				if (arguments.contains(OPTION_D)) {</span>
+<span class="fc bfc" id="L341" title="All 2 branches covered.">					int fieldsIdx = (arguments.get(2).equals(OPTION_F)) ? 3 : 1;</span>
+<span class="fc bfc" id="L342" title="All 2 branches covered.">					int delimIdx = (arguments.get(2).equals(OPTION_F)) ? 1 : 3;</span>
+
+<span class="fc" id="L344">					String delim = arguments.get(delimIdx);</span>
+
+<span class="fc bfc" id="L346" title="All 4 branches covered.">					if (delim.contains(&quot;'&quot;) || delim.contains(&quot;\&quot;&quot;)) {</span>
+<span class="fc bfc" id="L347" title="All 2 branches covered.">						if (delim.length() == 3) {</span>
+<span class="fc bfc" id="L348" title="All 2 branches covered.">							if (arguments.get(fieldsIdx).endsWith(COMMA)</span>
+<span class="fc" id="L349">									|| arguments.get(fieldsIdx).startsWith(</span>
+<span class="fc bfc" id="L350" title="All 2 branches covered.">											COMMA)) {</span>
+<span class="fc" id="L351">								setStatusCode(INVALID_POSITION);</span>
+<span class="fc" id="L352">								returnMessage = &quot;cut: fields and positions are numbered from 1&quot;</span>
+<span class="fc" id="L353">										+ System.lineSeparator()</span>
+<span class="fc" id="L354">										+ &quot;Try 'cut -help' for more information.&quot;;</span>
+
+<span class="fc" id="L356">							} else {</span>
+<span class="fc" id="L357">								returnMessage = cutFromFilesWithDelimiter(</span>
+<span class="fc" id="L358">										arguments.get(fieldsIdx),</span>
+<span class="fc" id="L359">										Character.toString(delim.charAt(1)),</span>
+<span class="fc" id="L360">										arguments.subList(4, arguments.size()),</span>
+<span class="fc" id="L361">										workingDir, stdin);</span>
+							}
+
+<span class="fc" id="L364">						} else {</span>
+<span class="fc" id="L365">							setStatusCode(INVALID_DELIMITER);</span>
+<span class="fc" id="L366">							returnMessage = &quot;cut: the delimiter must be a single character&quot;</span>
+<span class="fc" id="L367">									+ System.lineSeparator()</span>
+<span class="fc" id="L368">									+ &quot;Try 'cut -help' for more information.&quot;;</span>
+						}
+<span class="fc" id="L370">					} else {</span>
+<span class="fc" id="L371">						setStatusCode(NO_ARGUMENTS);</span>
+<span class="fc" id="L372">						returnMessage = &quot;cut: option requires an argument -- 'd'&quot;</span>
+<span class="fc" id="L373">								+ System.lineSeparator()</span>
+<span class="fc" id="L374">								+ &quot;Try 'cut -help' for more information.&quot;;</span>
+					}
+
+<span class="fc" id="L377">				} else {</span>
+<span class="fc" id="L378">					returnMessage = cutFromFilesWithDelimiter(&quot;&quot;, &quot;&quot;,</span>
+<span class="fc" id="L379">							arguments.subList(2, arguments.size()), workingDir,</span>
+<span class="fc" id="L380">							stdin);</span>
+				}
+
+<span class="fc" id="L383">			} else {</span>
+<span class="fc" id="L384">				setStatusCode(INVALID_OPTION);</span>
+<span class="fc" id="L385">				returnMessage = &quot;cut: invalid option -- '&quot;</span>
+<span class="fc" id="L386">						+ arguments.get(0).substring(1, 2) + &quot;'&quot;</span>
+<span class="fc" id="L387">						+ System.lineSeparator()</span>
+<span class="fc" id="L388">						+ &quot;Try 'cut -help' for more information.&quot;;</span>
+			}
+
+<span class="pc" id="L391">		} catch (IOException iOE) {</span>
+
+		}
+
+<span class="fc" id="L395">		return returnMessage.trim();</span>
+	}
+
+	// Helper Methods
+	/**
+	 * 
+	 * &lt;p&gt;
+	 * Adds a range of indices to the list, &lt;i&gt;accessedIndices&lt;/i&gt;.
+	 * &lt;/p&gt;
+	 * 
+	 * @param ints
+	 *            Range of indices.
+	 */
+	private void addIndicesToList(int... ints) {
+
+<span class="fc" id="L410">		int start = ints[0] - 1;</span>
+<span class="fc" id="L411">		int end = ints[1];</span>
+
+<span class="fc bfc" id="L413" title="All 2 branches covered.">		do {</span>
+<span class="fc bfc" id="L414" title="All 2 branches covered.">			if (!accessedIndices.contains(start)) {</span>
+<span class="fc" id="L415">				accessedIndices.add(start);</span>
+			}
+<span class="fc" id="L417">			start++;</span>
+<span class="fc" id="L418">		} while (start &lt; end);</span>
+
+<span class="fc" id="L420">	}</span>
+
+	/**
+	 * 
+	 * &lt;p&gt;
+	 * Appends the characters of an input using a &lt;b&gt;StringBuilder&lt;/b&gt; based on
+	 * the indices found within the list, &lt;i&gt;accessedIndices&lt;/i&gt;.
+	 * &lt;/p&gt;
+	 * 
+	 * @param inputStr
+	 *            Input to append characters from.
+	 * 
+	 * @param sb
+	 *            &lt;b&gt;StringBuilder&lt;/b&gt; Object.
+	 */
+	private void appendChars(String inputStr, StringBuilder sb) {
+<span class="fc bfc" id="L436" title="All 2 branches covered.">		for (int i : accessedIndices) {</span>
+<span class="fc bfc" id="L437" title="All 2 branches covered.">			if (i &lt; inputStr.length()) {</span>
+<span class="fc" id="L438">				sb.append(inputStr.charAt(i));</span>
+			}
+
+		}
+<span class="fc" id="L442">	}</span>
+
+	/**
+	 * 
+	 * &lt;p&gt;
+	 * Overloaded method that appends the entries found within an array using a
+	 * &lt;b&gt;StringBuilder&lt;/b&gt; based on the indices found within the list,
+	 * &lt;i&gt;accessedIndices&lt;/i&gt;.
+	 * &lt;/p&gt;
+	 * 
+	 * @param delimitedArr
+	 *            Input array that contains the entries to be appended.
+	 * 
+	 * @param sb
+	 *            &lt;b&gt;StringBuilder&lt;/b&gt; Object.
+	 * 
+	 * @param delim
+	 *            Delimiter that is used concatenated with each array entry.
+	 * 
+	 */
+	private void appendChars(String[] delimitedArr, StringBuilder sb,
+			String delim) {
+<span class="fc bfc" id="L464" title="All 2 branches covered.">		for (int i : accessedIndices) {</span>
+<span class="fc bfc" id="L465" title="All 2 branches covered.">			if (i &lt; delimitedArr.length) {</span>
+<span class="fc" id="L466">				sb.append(delimitedArr[i] + delim);</span>
+			}
+		}
+
+<span class="fc" id="L470">		sb.deleteCharAt(sb.lastIndexOf(delim));</span>
+<span class="fc" id="L471">	}</span>
+
+	/**
+	 * 
+	 * &lt;p&gt;
+	 * Cuts out the same range of characters from the specified files.
+	 * &lt;/p&gt;
+	 * 
+	 * @param list
+	 *            Range of indices to cut out the characters from the contents
+	 *            of each file.
+	 * 
+	 * @param files
+	 *            List of files to cut out characters from.
+	 * 
+	 * @param workingDir
+	 *            Current working directory.
+	 * 
+	 * @param stdin
+	 *            Standard Input from user.
+	 * 
+	 * @return A string of characters successfully cut out from the specified
+	 *         files.
+	 * 
+	 * @throws IOException
+	 * 
+	 */
+	public String cutFromFiles(String list, List&lt;String&gt; filesList,
+			File workingDir, String stdin) throws IOException {
+
+<span class="fc" id="L501">		StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L502">		String returnMessage = &quot;&quot;;</span>
+<span class="fc" id="L503">		File fileToRead = null;</span>
+<span class="fc" id="L504">		String fileContent = &quot;&quot;;</span>
+<span class="fc" id="L505">		int fileCount = 0;</span>
+<span class="fc" id="L506">		boolean isValid = true;</span>
+
+<span class="fc" id="L508">		ArrayList&lt;String&gt; files = new ArrayList&lt;&gt;(filesList);</span>
+<span class="fc bfc" id="L509" title="All 2 branches covered.">		if (files.isEmpty()) {</span>
+<span class="fc" id="L510">			files.add(&quot;-&quot;);</span>
+		}
+		
+<span class="fc bfc" id="L513" title="All 2 branches covered.">		while (isValid) {</span>
+<span class="fc bfc" id="L514" title="All 2 branches covered.">			if (files.get(0).equals(&quot;-&quot;)) {</span>
+<span class="fc" id="L515">				fileContent = stdin;</span>
+<span class="fc" id="L516">				isValid = false;</span>
+<span class="fc" id="L517">				returnMessage = cutSpecfiedCharacters(list, fileContent);</span>
+<span class="fc" id="L518">			} else {</span>
+<span class="fc" id="L519">				fileToRead = new File(files.get(fileCount));</span>
+				
+<span class="fc bfc" id="L521" title="All 2 branches covered.">				if(fileToRead.exists()) {</span>
+<span class="fc" id="L522">					fileContent = new String(</span>
+<span class="fc" id="L523">							Files.readAllBytes(fileToRead.toPath()));	</span>
+<span class="fc" id="L524">					returnMessage = cutSpecfiedCharacters(list, fileContent);</span>
+<span class="fc" id="L525">				} else {</span>
+<span class="fc" id="L526">					setStatusCode(FILE_NOT_EXISTS);</span>
+<span class="fc" id="L527">					returnMessage = &quot;cut: &quot; + fileToRead.getName()</span>
+<span class="fc" id="L528">							+ &quot;: No such file or directory&quot;;</span>
+				}
+			}
+			
+<span class="fc" id="L532">			sb.append(returnMessage + System.lineSeparator());</span>
+
+<span class="fc bfc" id="L534" title="All 2 branches covered.">			if (getStatusCode() == INVALID_POSITION) {</span>
+<span class="fc" id="L535">				break;</span>
+<span class="pc bpc" id="L536" title="1 of 2 branches missed.">			} else if (!files.isEmpty()) {</span>
+<span class="fc" id="L537">				fileCount++;</span>
+<span class="fc bfc" id="L538" title="All 2 branches covered.">				if (fileCount == files.size()) {</span>
+<span class="fc" id="L539">					isValid = false;</span>
+				}
+			}
+
+		}
+
+<span class="fc" id="L545">		return sb.toString().trim();</span>
+	}
+
+	/**
+	 * 
+	 * &lt;p&gt;
+	 * Cuts out the same range of characters (using a delimiter) from the
+	 * specified files.
+	 * &lt;/p&gt;
+	 * 
+	 * @param list
+	 *            Range of indices to cut out the characters from the contents
+	 *            of each file.
+	 * 
+	 * @param delim
+	 *            Delimiter that separates each field of the input.
+	 * 
+	 * @param fields
+	 *            List of fields to cut out characters from.
+	 * 
+	 * @param workingDir
+	 *            Current working directory.
+	 * 
+	 * @param stdin
+	 *            Standard Input from user.
+	 * 
+	 * @return A string of characters successfully cut out from the specified
+	 *         files.
+	 * @throws IOException
+	 * 
+	 */
+	public String cutFromFilesWithDelimiter(String fields, String delim,
+			List&lt;String&gt; filesList, File workingDir, String stdin)
+			throws IOException {
+
+<span class="fc" id="L580">		StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L581">		String returnMessage = &quot;&quot;;</span>
+<span class="fc" id="L582">		File fileToRead = null;</span>
+<span class="fc" id="L583">		String fileContent = &quot;&quot;;</span>
+<span class="fc" id="L584">		int fileCount = 0;</span>
+<span class="fc" id="L585">		boolean isValid = true;</span>
+
+		// If no file specified, read from stdin
+<span class="fc" id="L588">		ArrayList&lt;String&gt; files = new ArrayList&lt;&gt;(filesList);</span>
+<span class="fc bfc" id="L589" title="All 2 branches covered.">		if (files.isEmpty()) {</span>
+<span class="fc" id="L590">			files.add(&quot;-&quot;);</span>
+		}
+		
+<span class="fc bfc" id="L593" title="All 2 branches covered.">		while (isValid) {</span>
+<span class="fc bfc" id="L594" title="All 2 branches covered.">			if (files.get(0).equals(&quot;-&quot;)) {</span>
+<span class="fc" id="L595">				fileContent = stdin;</span>
+<span class="fc" id="L596">				isValid = false;</span>
+<span class="fc" id="L597">				returnMessage = cutSpecifiedCharactersUseDelimiter(fields, delim, fileContent);</span>
+<span class="fc" id="L598">			} else {</span>
+<span class="fc" id="L599">				fileToRead = new File(files.get(fileCount));</span>
+				
+<span class="fc bfc" id="L601" title="All 2 branches covered.">				if(fileToRead.exists()) {</span>
+<span class="fc" id="L602">					fileContent = new String(</span>
+<span class="fc" id="L603">							Files.readAllBytes(fileToRead.toPath()));	</span>
+<span class="fc" id="L604">					returnMessage = cutSpecifiedCharactersUseDelimiter(fields, delim, fileContent);</span>
+<span class="fc" id="L605">				} else {</span>
+<span class="fc" id="L606">					setStatusCode(FILE_NOT_EXISTS);</span>
+<span class="fc" id="L607">					returnMessage = &quot;cut: &quot; + fileToRead.getName()</span>
+<span class="fc" id="L608">							+ &quot;: No such file or directory&quot;;</span>
+				}
+			}
+			
+<span class="fc" id="L612">			sb.append(returnMessage + System.lineSeparator());</span>
+
+<span class="fc bfc" id="L614" title="All 2 branches covered.">			if (getStatusCode() == INVALID_POSITION) {</span>
+<span class="fc" id="L615">				break;</span>
+<span class="pc bpc" id="L616" title="1 of 2 branches missed.">			} else if (!files.isEmpty()) {</span>
+<span class="fc" id="L617">				fileCount++;</span>
+<span class="fc bfc" id="L618" title="All 2 branches covered.">				if (fileCount == files.size()) {</span>
+<span class="fc" id="L619">					isValid = false;</span>
+				}
+			}
+
+		}
+
+<span class="fc" id="L625">		return sb.toString().trim();</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

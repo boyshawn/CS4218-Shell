@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>CdToolStateChangeTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.integrationtest.statechange</a> &gt; <span class="el_source">CdToolStateChangeTest.java</span></div><h1>CdToolStateChangeTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.integrationtest.statechange;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Vector;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.impl.Shell;
+
+<span class="fc" id="L16">public class CdToolStateChangeTest {</span>
+	private static final String USER_DIRECTORY = &quot;user.dir&quot;;
+<span class="fc" id="L18">	private static File defaultWorkingDirectory = new File(</span>
+<span class="fc" id="L19">			System.getProperty(USER_DIRECTORY));</span>
+
+	@Before
+	public void setUp() throws IOException {
+<span class="fc" id="L23">	}</span>
+
+	@After
+	public void tearDown() throws IOException {
+<span class="fc" id="L27">		System.setProperty(USER_DIRECTORY,defaultWorkingDirectory.getAbsolutePath());</span>
+		try {
+<span class="fc" id="L29">			delete(new File(&quot;complexTest2&quot;));</span>
+<span class="pc" id="L30">		} catch (IOException e) {</span>
+<span class="nc" id="L31">			e.printStackTrace();</span>
+		}
+<span class="fc" id="L33">	}</span>
+
+	@Test
+	public void lsCdls_resultDiffer(){
+<span class="fc" id="L37">		String command = &quot;ls&quot;;</span>
+<span class="fc" id="L38">		Vector&lt;String&gt; controlResult = Shell.shellTestExecution(command);</span>
+
+<span class="fc" id="L40">		command = &quot;ls|cd src|ls&quot;;</span>
+<span class="fc" id="L41">		Vector&lt;String&gt; testResult = Shell.shellTestExecution(command); </span>
+<span class="fc" id="L42">		assertNotEquals(controlResult.get(0), testResult.get(0));</span>
+<span class="fc" id="L43">	}</span>
+
+	@Test
+	public void lsMovecd_errorMessage(){
+<span class="fc" id="L47">		File theDir = new File(&quot;complexTest&quot;);</span>
+
+		// if the directory does not exist, create it
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">		if (!theDir.exists()) {</span>
+<span class="fc" id="L51">			theDir.mkdir();  </span>
+		}
+
+<span class="fc" id="L54">		String command = &quot;move complexTest complexTest2| cd complexTest&quot;;</span>
+<span class="fc" id="L55">		Vector&lt;String&gt; testResult = Shell.shellTestExecution(command);</span>
+<span class="fc" id="L56">		assertEquals(&quot;cd: complexTest: No such file or directory&quot;, testResult.get(0));</span>
+		
+		try {
+<span class="fc" id="L59">			delete(new File(&quot;complexTest2&quot;));</span>
+<span class="pc" id="L60">		} catch (IOException e) {</span>
+<span class="nc" id="L61">			e.printStackTrace();</span>
+		}
+<span class="fc" id="L63">	}</span>
+
+	public static void delete(File file) throws IOException {
+<span class="fc bfc" id="L66" title="All 2 branches covered.">		if (file.isDirectory()) {</span>
+			// directory is empty, then delete it
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">			if (file.list().length == 0) {</span>
+<span class="fc" id="L69">				file.delete();</span>
+<span class="fc" id="L70">			} else {</span>
+				// list all the directory contents
+<span class="nc" id="L72">				String files[] = file.list();</span>
+
+<span class="nc bnc" id="L74" title="All 2 branches missed.">				for (String temp : files) {</span>
+					// construct the file structure
+<span class="nc" id="L76">					File fileDelete = new File(file, temp);</span>
+
+					// recursive delete
+<span class="nc" id="L79">					delete(fileDelete);</span>
+				}
+				// check the directory again, if empty then delete it
+<span class="nc bnc" id="L82" title="All 2 branches missed.">				if (file.list().length == 0) {</span>
+<span class="nc" id="L83">					file.delete();</span>
+				}
+			}
+<span class="nc" id="L86">		} else {</span>
+			// if file, then delete it
+<span class="fc" id="L88">			file.delete();</span>
+		}
+<span class="fc" id="L90">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>PipingTool.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">src</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.extended1</a> &gt; <span class="el_source">PipingTool.java</span></div><h1>PipingTool.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.extended1;
+
+import java.io.File;
+import java.util.Vector;
+
+import sg.edu.nus.comp.cs4218.ITool;
+import sg.edu.nus.comp.cs4218.extended1.IPipingTool;
+import sg.edu.nus.comp.cs4218.impl.ATool;
+
+/**
+ * PipingTool will execute each ITool generated from the piping command sequentially.
+ */
+public class PipingTool extends ATool implements IPipingTool {
+	Vector&lt;ITool&gt; tools;
+	
+	public static final int STATUS_CODE_NOT_EXECUTED = -1;
+	public static final int STATUS_CODE_NULL_TOOL 	 = -2;
+	public static final int STATUS_CODE_SUCCESSFUL	 = 0;
+	
+	/**
+	 * Constructor for PipingTool
+	 * @param tools		vector of ITools to execute sequentially
+	 */
+	public PipingTool(Vector&lt;ITool&gt; tools) {
+<span class="fc" id="L25">		super(null);</span>
+<span class="fc" id="L26">		this.tools = tools;</span>
+<span class="fc" id="L27">		setStatusCode(STATUS_CODE_NOT_EXECUTED);</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">		for (ITool tool : tools) {</span>
+<span class="fc bfc" id="L29" title="All 2 branches covered.">			if (tool == null)</span>
+<span class="fc" id="L30">				setStatusCode(STATUS_CODE_NULL_TOOL);</span>
+		}
+<span class="fc" id="L32">	}</span>
+	
+	@Override
+	public String execute(File workingDir, String stdin) {
+		
+<span class="fc" id="L37">		String result = &quot;&quot;;</span>
+		
+<span class="fc bfc" id="L39" title="All 2 branches covered.">		if (getStatusCode() == STATUS_CODE_NULL_TOOL)</span>
+<span class="fc" id="L40">			return &quot;Error: null value given as a tool to execute&quot;;</span>
+		
+<span class="fc bfc" id="L42" title="All 2 branches covered.">		if (tools.size() &lt; 2) {</span>
+<span class="fc" id="L43">			setStatusCode(1);</span>
+<span class="fc" id="L44">			return &quot;Error: invalid pipe command&quot;;</span>
+		}
+		
+		// for the first 2 ITools
+<span class="fc" id="L48">		ITool from = tools.get(0);</span>
+<span class="fc" id="L49">		ITool to = tools.get(1);</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">		if (stdin != null) {</span>
+<span class="fc" id="L51">			result = pipe(stdin, from);</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">			if (getStatusCode() == 0)</span>
+<span class="fc" id="L53">				result = pipe(result, to);</span>
+			else
+<span class="fc" id="L55">				return result;</span>
+		}
+		else
+<span class="fc" id="L58">			result = pipe(from, to);</span>
+		
+		// for the subsequent ITools
+<span class="fc bfc" id="L61" title="All 2 branches covered.">		if (getStatusCode() == 0) {</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">			for (int i=2; i&lt;tools.size(); i++) {</span>
+<span class="fc" id="L63">				to = tools.get(i);</span>
+<span class="fc" id="L64">				result = pipe(result, to);</span>
+				
+<span class="fc bfc" id="L66" title="All 2 branches covered.">				if (getStatusCode() != 0)</span>
+<span class="fc" id="L67">					break;</span>
+			}
+		}
+		
+<span class="fc" id="L71">		return result;</span>
+	}
+	
+	/**
+	 * Executes &quot;from&quot; ITool first followed by &quot;to&quot; ITool.
+	 * If &quot;from&quot; ITool did not execute successfully, the status code will be set to 1
+	 * and &quot;to&quot; ITool will not be executed.
+	 * @param from		the ITool to start executing first
+	 * @param to		the ITool to execute after from has successfully executed
+	 * @return			Output of &quot;to&quot; ITool
+	 */
+	@Override
+	public String pipe(ITool from, ITool to) {
+		// set status code as successful first
+		// if an error is encountered, it will be changed
+		//setStatusCode(STATUS_CODE_SUCCESSFUL);
+		
+<span class="fc" id="L88">		String result = from.execute(new File(System.getProperty(&quot;user.dir&quot;)), null);</span>
+	
+<span class="fc bfc" id="L90" title="All 2 branches covered.">		if (from.getStatusCode() != 0) {</span>
+<span class="fc" id="L91">			setStatusCode(1);</span>
+<span class="fc" id="L92">			return result;</span>
+		}
+		else
+<span class="fc" id="L95">			setStatusCode(STATUS_CODE_SUCCESSFUL);</span>
+		
+<span class="fc" id="L97">		return pipe(result, to);</span>
+	}
+	
+	/**
+	 * Executes &quot;to&quot; ITool with the standard output from the previous ITool executed.
+	 * If &quot;to&quot; ITool did not execute successfully, the status code will be set to 1.
+	 * @param to		the ITool to be executed
+	 * @param stdout	the standard output from the previous ITool's successful execution
+	 * @return			Output of &quot;to&quot; ITool
+	 */
+	@Override
+	public String pipe(String stdout, ITool to) {
+<span class="fc" id="L109">		String result = to.execute(new File(System.getProperty(&quot;user.dir&quot;)), stdout);</span>
+		
+<span class="fc bfc" id="L111" title="All 2 branches covered.">		if (to.getStatusCode() != 0)</span>
+<span class="fc" id="L112">			setStatusCode(1);</span>
+		else
+<span class="fc" id="L114">			setStatusCode(STATUS_CODE_SUCCESSFUL);</span>
+		
+<span class="fc" id="L116">		return result;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

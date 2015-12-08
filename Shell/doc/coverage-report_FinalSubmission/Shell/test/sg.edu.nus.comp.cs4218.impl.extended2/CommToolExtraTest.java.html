@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>CommToolExtraTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.extended2</a> &gt; <span class="el_source">CommToolExtraTest.java</span></div><h1>CommToolExtraTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.extended2;
+
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.extended2.ICommTool;
+
+<span class="fc" id="L18">public class CommToolExtraTest {</span>
+	private ICommTool commTool;
+
+	private static final String USER_DIRECTORY = &quot;user.dir&quot;;
+	private static File defaultWorkingDirectory;
+<span class="fc" id="L23">	private final String COMM_HELP_MESSAGE = </span>
+<span class="fc" id="L24">			&quot;comm : Compares two sorted files &quot;</span>
+			+ &quot;line by line. With no options, produce three-column &quot;
+			+ &quot;output. Column one contains lines unique to FILE1, &quot;
+			+ &quot;column two contains lines unique to FILE2, and column &quot;
+			+ &quot;three contains lines common to both files.&quot;
+<span class="fc" id="L29">			+ System.lineSeparator()</span>
+<span class="fc" id="L30">			+ &quot;Command Format - comm [OPTIONS] FILE1 FILE2&quot;</span>
+<span class="fc" id="L31">			+ System.lineSeparator()</span>
+<span class="fc" id="L32">			+ &quot;FILE1 - Name of the file 1&quot;</span>
+<span class="fc" id="L33">			+ System.lineSeparator()</span>
+<span class="fc" id="L34">			+ &quot;FILE2 - Name of the file 2&quot;</span>
+<span class="fc" id="L35">			+ System.lineSeparator()</span>
+<span class="fc" id="L36">			+ &quot;-c : check that the input is correctly sorted, even if &quot;</span>
+<span class="fc" id="L37">			+ &quot;all input lines are pairable&quot;</span>
+<span class="fc" id="L38">			+ System.lineSeparator()</span>
+<span class="fc" id="L39">			+ &quot;-d : do not check that the input is correctly sorted&quot;</span>
+<span class="fc" id="L40">			+ System.lineSeparator()</span>
+<span class="fc" id="L41">			+ &quot;-help : Brief information about supported options&quot;;</span>
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+<span class="fc" id="L45">		defaultWorkingDirectory = new File(System.getProperty(USER_DIRECTORY));</span>
+
+		// creating testFile 1 &amp; 2 in sorted order
+<span class="fc" id="L48">		File myFile1 = new File(&quot;testFile1.txt&quot;);</span>
+<span class="fc" id="L49">		myFile1.createNewFile();</span>
+<span class="fc" id="L50">		writeFile(&quot;testFile1.txt&quot;, </span>
+<span class="fc" id="L51">				&quot;aaa&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L52">				&quot;bbb&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L53">				&quot;ccc&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L54">				&quot;ddd&quot;);</span>
+
+<span class="fc" id="L56">		File myFile2 = new File(&quot;testFile2.txt&quot;);</span>
+<span class="fc" id="L57">		myFile2.createNewFile();</span>
+<span class="fc" id="L58">		writeFile(&quot;testFile2.txt&quot;, </span>
+<span class="fc" id="L59">				&quot;aaf&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L60">				&quot;abb&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L61">				&quot;ccc&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L62">				&quot;fff&quot;);</span>
+
+		//Empty file
+<span class="fc" id="L65">		File myFile3 = new File(&quot;testFile3.txt&quot;);</span>
+<span class="fc" id="L66">		myFile3.createNewFile();</span>
+
+		// testFile 4 &amp; 5 will be the file in unsorted order
+<span class="fc" id="L69">		File myFile4 = new File(&quot;testFile4.txt&quot;);</span>
+<span class="fc" id="L70">		myFile4.createNewFile();</span>
+<span class="fc" id="L71">		writeFile(&quot;testFile4.txt&quot;, </span>
+<span class="fc" id="L72">				&quot;zzz&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L73">				&quot;ccc&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L74">				&quot;aaa&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L75">				&quot;bbb&quot;);</span>
+
+
+<span class="fc" id="L78">		File myFile5 = new File(&quot;testFile5.txt&quot;);</span>
+<span class="fc" id="L79">		myFile5.createNewFile();</span>
+<span class="fc" id="L80">		writeFile(&quot;testFile5.txt&quot;, </span>
+<span class="fc" id="L81">				&quot;aaa&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L82">				&quot;ccc&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L83">				&quot;aab&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L84">				&quot;ccc&quot; + System.lineSeparator() + </span>
+<span class="fc" id="L85">				&quot;aaa&quot;);</span>
+<span class="fc" id="L86">	}</span>
+
+	@AfterClass
+	public static synchronized void tearDownAfterClass() throws Exception {
+		// creating testFile 1 &amp; 2 in sorted order
+<span class="fc" id="L91">		File myFile1 = new File(&quot;testFile1.txt&quot;);</span>
+<span class="fc" id="L92">		Files.delete(myFile1.toPath());</span>
+
+<span class="fc" id="L94">		File myFile2 = new File(&quot;testFile2.txt&quot;);</span>
+<span class="fc" id="L95">		Files.delete(myFile2.toPath());</span>
+
+<span class="fc" id="L97">		File myFile3 = new File(&quot;testFile3.txt&quot;);</span>
+<span class="fc" id="L98">		Files.delete(myFile3.toPath());</span>
+
+<span class="fc" id="L100">		File myFile4 = new File(&quot;testFile4.txt&quot;);</span>
+<span class="fc" id="L101">		Files.delete(myFile4.toPath());</span>
+
+<span class="fc" id="L103">		File myFile5 = new File(&quot;testFile5.txt&quot;);</span>
+<span class="fc" id="L104">		Files.delete(myFile5.toPath());</span>
+		
+<span class="fc" id="L106">		File emptyFolder1 = new File (&quot;EmptyFolder&quot;);</span>
+<span class="fc" id="L107">		emptyFolder1.delete();</span>
+<span class="fc" id="L108">	}</span>
+
+	@Before 
+	public void setUp() throws Exception {
+<span class="fc" id="L112">		commTool = new CommTool(null);</span>
+<span class="fc" id="L113">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L117">		commTool = null;</span>
+<span class="fc" id="L118">	}</span>
+
+	public static void writeFile(String fileName, String s) {
+		FileWriter out;
+		try {
+<span class="fc" id="L123">			out = new FileWriter(fileName);</span>
+<span class="fc" id="L124">			out.write(s);</span>
+<span class="fc" id="L125">			out.close();</span>
+<span class="pc" id="L126">		} catch (IOException e) {</span>
+<span class="nc" id="L127">			e.printStackTrace();</span>
+		}
+<span class="fc" id="L129">	}</span>
+
+	@Corrected
+	// Swap result and expected
+	@Test
+	public void compareFiles_BothFileNotSorted_2ErrorShownInCorrectOrder() {
+<span class="fc" id="L135">		String result = commTool.compareFiles(&quot;testFile4.txt&quot;, &quot;testFile5.txt&quot;);</span>
+<span class="fc" id="L136">		assertEquals(</span>
+<span class="fc" id="L137">				&quot;\taaa&quot; + System.lineSeparator() + &quot;\tccc&quot;</span>
+<span class="fc" id="L138">						+ System.lineSeparator()</span>
+<span class="fc" id="L139">						+ &quot;comm: file 2 is not in sorted order&quot;</span>
+<span class="fc" id="L140">						+ System.lineSeparator() + &quot;\taab&quot;</span>
+<span class="fc" id="L141">						+ System.lineSeparator() + &quot;\tccc&quot;</span>
+<span class="fc" id="L142">						+ System.lineSeparator() + &quot;\taaa&quot;</span>
+<span class="fc" id="L143">						+ System.lineSeparator() + &quot;zzz&quot;</span>
+<span class="fc" id="L144">						+ System.lineSeparator()</span>
+<span class="fc" id="L145">						+ &quot;comm: file 1 is not in sorted order&quot;</span>
+<span class="fc" id="L146">						+ System.lineSeparator() + &quot;ccc&quot;</span>
+<span class="fc" id="L147">						+ System.lineSeparator() + &quot;aaa&quot;</span>
+<span class="fc" id="L148">						+ System.lineSeparator() + &quot;bbb&quot;</span>
+<span class="fc" id="L149">						+ System.lineSeparator(), result);</span>
+<span class="fc" id="L150">	}</span>
+
+	@Test
+	public void execute_ShowHelpMessage_HelpShownOnOutput() {
+<span class="fc" id="L154">		String[] argument = { &quot;-help&quot; };</span>
+<span class="fc" id="L155">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L156">		File myFile = new File(&quot;user.dir&quot;);</span>
+<span class="fc" id="L157">		String result = commTool.execute(myFile, null);</span>
+<span class="fc" id="L158">		assertEquals(COMM_HELP_MESSAGE, result);</span>
+<span class="fc" id="L159">	}</span>
+
+	@Test
+	public void execute_MinusCCorrectOptionSecondFileNotExists_NotSuchFileError() {
+<span class="fc" id="L163">		String[] argument2 = { &quot;-c&quot;, &quot;testFile1.txt&quot;, &quot;notExist.txt&quot; };</span>
+<span class="fc" id="L164">		File myFile = new File(&quot;user.dir&quot;);</span>
+<span class="fc" id="L165">		commTool = new CommTool(argument2);</span>
+<span class="fc" id="L166">		String result2 = commTool.execute(myFile, null);</span>
+<span class="fc" id="L167">		assertEquals(&quot;comm: notExist.txt: No such file or directory&quot;, result2);</span>
+<span class="fc" id="L168">	}</span>
+
+	@Test
+	public void execute_MinusDCorrectOptionSecondFileNotExists_NotSuchFileError() {
+<span class="fc" id="L172">		String[] argument3 = { &quot;-d&quot;, &quot;testFile1.txt&quot;, &quot;notExist.txt&quot; };</span>
+<span class="fc" id="L173">		commTool = new CommTool(argument3);</span>
+<span class="fc" id="L174">		String result3 = commTool.execute(new File(&quot;user.dir&quot;), null);</span>
+<span class="fc" id="L175">		assertEquals(&quot;comm: notExist.txt: No such file or directory&quot;, result3);</span>
+<span class="fc" id="L176">	}</span>
+
+	@Test
+	public void execute_unknowOption_UnknownOptionError() {
+<span class="fc" id="L180">		String[] argument2 = { &quot;-unreadable&quot;, &quot;testFile1.txt&quot;, &quot;testFile2.txt&quot; };</span>
+
+<span class="fc" id="L182">		commTool = new CommTool(argument2);</span>
+<span class="fc" id="L183">		String result2 = commTool.execute(new File(&quot;user.dir&quot;), null);</span>
+<span class="fc" id="L184">		assertEquals(</span>
+<span class="fc" id="L185">				&quot;comm: unknown option -- unreadable&quot; + &quot;&quot;</span>
+<span class="fc" id="L186">						+ System.lineSeparator()</span>
+<span class="fc" id="L187">						+ &quot;Try comm '-help' for more information&quot;, result2);</span>
+<span class="fc" id="L188">	}</span>
+
+	@Test
+	public void execute_1stFileWrongMissing2ndFile_MissingOperand() {
+<span class="fc" id="L192">		String[] argument = { &quot;notExist.txt&quot; };</span>
+<span class="fc" id="L193">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L194">		assertEquals(</span>
+<span class="fc" id="L195">				&quot;comm: missing operand after 'notExist.txt'&quot;</span>
+<span class="fc" id="L196">						+ System.lineSeparator()</span>
+<span class="fc" id="L197">						+ &quot;Try comm '-help' for more information&quot;,</span>
+<span class="fc" id="L198">						commTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L199">	}</span>
+
+	@Test
+	public void execute_NoOptionPositive_Output() {
+<span class="fc" id="L203">		String[] argument = { &quot;testFile1.txt&quot;, &quot;testFile2.txt&quot; };</span>
+<span class="fc" id="L204">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L205">		assertEquals(</span>
+<span class="fc" id="L206">				&quot;aaa&quot; + System.lineSeparator() + &quot;\taaf&quot;</span>
+<span class="fc" id="L207">						+ System.lineSeparator() + &quot;\tabb&quot;</span>
+<span class="fc" id="L208">						+ System.lineSeparator() + &quot;bbb&quot;</span>
+<span class="fc" id="L209">						+ System.lineSeparator() + &quot;\t\tccc&quot;</span>
+<span class="fc" id="L210">						+ System.lineSeparator() + &quot;ddd&quot;</span>
+<span class="fc" id="L211">						+ System.lineSeparator() + &quot;\tfff&quot;</span>
+<span class="fc" id="L212">						+ System.lineSeparator(),</span>
+<span class="fc" id="L213">						commTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L214">	}</span>
+
+	@Test
+	public void execute_1Option1FileOnly_MissingOperand() {
+<span class="fc" id="L218">		String[] argument = { &quot;-c&quot;, &quot;testFile1.txt&quot; };</span>
+<span class="fc" id="L219">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L220">		assertEquals(</span>
+<span class="fc" id="L221">				&quot;comm: missing operand after 'testFile1.txt'&quot;</span>
+<span class="fc" id="L222">						+ System.lineSeparator()</span>
+<span class="fc" id="L223">						+ &quot;Try comm '-help' for more information&quot;,</span>
+<span class="fc" id="L224">						commTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L225">	}</span>
+
+	@Test
+	public void execute_1Option1stFileWrong_NoSuchFile() {
+<span class="fc" id="L229">		String[] argument = { &quot;-c&quot;, &quot;NotExist.txt&quot;, &quot;testFile1.txt&quot; };</span>
+<span class="fc" id="L230">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L231">		assertEquals(&quot;comm: NotExist.txt: No such file or directory&quot;,</span>
+<span class="fc" id="L232">				commTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L233">	}</span>
+
+	@Test
+	public void execute_HelpOption2CorrectFile_HelpMessage() {
+<span class="fc" id="L237">		String[] argument = { &quot;-help&quot;, &quot;testFile1.txt&quot;, &quot;testFile2.txt&quot; };</span>
+<span class="fc" id="L238">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L239">		assertEquals(COMM_HELP_MESSAGE,</span>
+<span class="fc" id="L240">				commTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L241">	}</span>
+
+	@Test
+	public void execute_3OptionFile1Only_MissingOperand() {
+<span class="fc" id="L245">		String[] argument = { &quot;-c&quot;, &quot;-d&quot;, &quot;-c&quot;, &quot;testFile1.txt&quot; };</span>
+<span class="fc" id="L246">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L247">		assertEquals(</span>
+<span class="fc" id="L248">				&quot;comm: missing operand after 'testFile1.txt'&quot;</span>
+<span class="fc" id="L249">						+ System.lineSeparator()</span>
+<span class="fc" id="L250">						+ &quot;Try comm '-help' for more information&quot;,</span>
+<span class="fc" id="L251">						commTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L252">	}</span>
+
+	@Test
+	public void execute_4Options1stFileInvalid_NoSuchFile() {
+<span class="fc" id="L256">		String[] argument = { &quot;-c&quot;, &quot;-c&quot;, &quot;-c&quot;, &quot;-c&quot;, &quot;NotExist.txt&quot;,</span>
+<span class="fc" id="L257">		&quot;testFile1.txt&quot; };</span>
+<span class="fc" id="L258">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L259">		assertEquals(&quot;comm: NotExist.txt: No such file or directory&quot;,</span>
+<span class="fc" id="L260">				commTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L261">	}</span>
+
+	@Test
+	public void execute_5Options2ndFileInvalid_NoSuchFile() {
+<span class="fc" id="L265">		String[] argument = { &quot;-c&quot;, &quot;-d&quot;, &quot;-c&quot;, &quot;-d&quot;, &quot;-c&quot;, &quot;testFile1.txt&quot;,</span>
+<span class="fc" id="L266">		&quot;NotExist.txt&quot; };</span>
+<span class="fc" id="L267">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L268">		assertEquals(&quot;comm: NotExist.txt: No such file or directory&quot;,</span>
+<span class="fc" id="L269">				commTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L270">	}</span>
+
+	@Test
+	public void execute_HelpWithOtherOption_InvalidOption() {
+<span class="fc" id="L274">		String[] argument = { &quot;-helpc&quot;, &quot;testFile1.txt&quot;, &quot;testFile2.txt&quot; };</span>
+<span class="fc" id="L275">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L276">		assertEquals(&quot;comm: unknown option -- helpc&quot; + System.lineSeparator()</span>
+<span class="fc" id="L277">				+ &quot;Try comm '-help' for more information&quot;,</span>
+<span class="fc" id="L278">				commTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L279">	}</span>
+
+	@Test
+	// TODO:Feature not implemented for now
+	public void execute_2SameFile_Output() {
+<span class="fc" id="L284">		String[] argument = { &quot;testFile1.txt&quot;, &quot;testFile1.txt&quot; };</span>
+<span class="fc" id="L285">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L286">		assertEquals(</span>
+<span class="fc" id="L287">				&quot;\t\taaa&quot; + System.lineSeparator() + &quot;\t\tbbb&quot;</span>
+<span class="fc" id="L288">						+ System.lineSeparator() + &quot;\t\tccc&quot;</span>
+<span class="fc" id="L289">						+ System.lineSeparator() + &quot;\t\tddd&quot;</span>
+<span class="fc" id="L290">						+ System.lineSeparator(),</span>
+<span class="fc" id="L291">						commTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L292">	}</span>
+
+	@Test
+	public void execute_1EmptyFile_Output() {
+<span class="fc" id="L296">		String[] argument = { &quot;testFile1.txt&quot;, &quot;testFile3.txt&quot; };</span>
+<span class="fc" id="L297">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L298">		assertEquals(</span>
+<span class="fc" id="L299">				&quot;aaa&quot; + System.lineSeparator() + &quot;bbb&quot;</span>
+<span class="fc" id="L300">						+ System.lineSeparator() + &quot;ccc&quot;</span>
+<span class="fc" id="L301">						+ System.lineSeparator() + &quot;ddd&quot;</span>
+<span class="fc" id="L302">						+ System.lineSeparator(),</span>
+<span class="fc" id="L303">						commTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L304">	}</span>
+
+	@Test
+	public void execute_MinusCPositiveTest_Output() {
+<span class="fc" id="L308">		String[] argument = { &quot;-c&quot;, &quot;testFile4.txt&quot;, &quot;testFile5.txt&quot; };</span>
+<span class="fc" id="L309">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L310">		assertEquals(</span>
+<span class="fc" id="L311">				&quot;\taaa&quot; + System.lineSeparator() + &quot;\tccc&quot;</span>
+<span class="fc" id="L312">						+ System.lineSeparator()</span>
+<span class="fc" id="L313">						+ &quot;comm: file 2 is not in sorted order&quot;</span>
+<span class="fc" id="L314">						+ System.lineSeparator(),</span>
+<span class="fc" id="L315">						commTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L316">	}</span>
+
+	@Test
+	public void execute_MinusDPositiveTest_Output() {
+<span class="fc" id="L320">		String[] argument = { &quot;-d&quot;, &quot;testFile5.txt&quot;, &quot;testFile4.txt&quot; };</span>
+<span class="fc" id="L321">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L322">		assertEquals(</span>
+<span class="fc" id="L323">				&quot;aaa&quot; + System.lineSeparator() + &quot;ccc&quot; + System.lineSeparator()</span>
+<span class="fc" id="L324">				+ &quot;aab&quot; + System.lineSeparator() + &quot;ccc&quot;</span>
+<span class="fc" id="L325">				+ System.lineSeparator() + &quot;aaa&quot;</span>
+<span class="fc" id="L326">				+ System.lineSeparator() + &quot;\tzzz&quot;</span>
+<span class="fc" id="L327">				+ System.lineSeparator() + &quot;\tccc&quot;</span>
+<span class="fc" id="L328">				+ System.lineSeparator() + &quot;\taaa&quot;</span>
+<span class="fc" id="L329">				+ System.lineSeparator() + &quot;\tbbb&quot;</span>
+<span class="fc" id="L330">				+ System.lineSeparator(),</span>
+<span class="fc" id="L331">				commTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L332">	}</span>
+
+	@Test
+	public void execute_2OptionsPositiveTest_Outout() {
+<span class="fc" id="L336">		String[] argument = { &quot;-c&quot;, &quot;-d&quot;, &quot;testFile5.txt&quot;, &quot;testFile4.txt&quot; };</span>
+<span class="fc" id="L337">		commTool = new CommTool(argument);</span>
+<span class="fc" id="L338">		assertEquals(</span>
+<span class="fc" id="L339">				&quot;aaa&quot; + System.lineSeparator() + &quot;ccc&quot; + System.lineSeparator()</span>
+<span class="fc" id="L340">				+ &quot;aab&quot; + System.lineSeparator() + &quot;ccc&quot;</span>
+<span class="fc" id="L341">				+ System.lineSeparator() + &quot;aaa&quot;</span>
+<span class="fc" id="L342">				+ System.lineSeparator() + &quot;\tzzz&quot;</span>
+<span class="fc" id="L343">				+ System.lineSeparator() + &quot;\tccc&quot;</span>
+<span class="fc" id="L344">				+ System.lineSeparator() + &quot;\taaa&quot;</span>
+<span class="fc" id="L345">				+ System.lineSeparator() + &quot;\tbbb&quot;</span>
+<span class="fc" id="L346">				+ System.lineSeparator(),</span>
+<span class="fc" id="L347">				commTool.execute(defaultWorkingDirectory, null));</span>
+<span class="fc" id="L348">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

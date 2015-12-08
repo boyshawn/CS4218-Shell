@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>PipingToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.extended1</a> &gt; <span class="el_source">PipingToolTest.java</span></div><h1>PipingToolTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.extended1;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
+import java.io.File;
+import java.util.Vector;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.ITool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.CatTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.CdTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.CopyTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.DeleteTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.EchoTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.LsTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.MoveTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.PWDTool;
+
+<span class="fc" id="L23">public class PipingToolTest {</span>
+	PipingTool pipingTool;
+	
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L28">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L32">		pipingTool = null;</span>
+<span class="fc" id="L33">	}</span>
+	
+	@Test
+	public void pipe_StdoutCat_GetStatusCode0() {
+<span class="fc" id="L37">		ITool to = new CatTool(new String[]{&quot;-&quot;});</span>
+<span class="fc" id="L38">		Vector&lt;ITool&gt; tools = new Vector&lt;ITool&gt;();</span>
+<span class="fc" id="L39">		tools.add(to);</span>
+		
+<span class="fc" id="L41">		pipingTool = new PipingTool(tools);</span>
+<span class="fc" id="L42">		pipingTool.pipe(&quot;test test test&quot;, to);</span>
+<span class="fc" id="L43">		assertEquals(0, pipingTool.getStatusCode());</span>
+<span class="fc" id="L44">	}</span>
+	
+	@Test
+	public void pipe_EmptyStdoutCd_GetStatusCode0() {
+<span class="fc" id="L48">		ITool to = new CdTool(new String[]{System.getProperty(&quot;user.dir&quot;)});</span>
+<span class="fc" id="L49">		Vector&lt;ITool&gt; tools = new Vector&lt;ITool&gt;();</span>
+<span class="fc" id="L50">		tools.add(to);</span>
+		
+<span class="fc" id="L52">		pipingTool = new PipingTool(tools);</span>
+<span class="fc" id="L53">		pipingTool.pipe(&quot;&quot;, to);</span>
+<span class="fc" id="L54">		assertEquals(0, pipingTool.getStatusCode());</span>
+<span class="fc" id="L55">	}</span>
+
+	@Test
+	public void pipe_StdoutGrepFail_GetStatusCode0() {
+<span class="fc" id="L59">		ITool to = new GrepTool(new String[]{&quot;-A&quot;, &quot;2&quot;, &quot;pattern&quot;, &quot;-&quot;});</span>
+<span class="fc" id="L60">		Vector&lt;ITool&gt; tools = new Vector&lt;ITool&gt;();</span>
+<span class="fc" id="L61">		tools.add(to);</span>
+		
+<span class="fc" id="L63">		pipingTool = new PipingTool(tools);</span>
+<span class="fc" id="L64">		pipingTool.pipe(&quot;test grep pattern stdin test&quot;, to);</span>
+<span class="fc" id="L65">		assertEquals(0, pipingTool.getStatusCode());</span>
+<span class="fc" id="L66">	}</span>
+	
+	@Test
+	public void pipe_EmptyStdoutDeleteFail_GetStatusCode1() {
+<span class="fc" id="L70">		ITool to = new DeleteTool(new String[]{&quot;invalid directory&quot;});</span>
+<span class="fc" id="L71">		Vector&lt;ITool&gt; tools = new Vector&lt;ITool&gt;();</span>
+<span class="fc" id="L72">		tools.add(to);</span>
+		
+<span class="fc" id="L74">		pipingTool = new PipingTool(tools);</span>
+<span class="fc" id="L75">		pipingTool.pipe(&quot;&quot;, to);</span>
+<span class="fc" id="L76">		assertEquals(1, pipingTool.getStatusCode());</span>
+<span class="fc" id="L77">	}</span>
+
+	@Test
+	public void pipe_DeleteLs_GetStatusCode0() {
+		// delete | ls
+<span class="fc" id="L82">		File dir = new File(&quot;testdirectory&quot;);</span>
+<span class="fc" id="L83">		dir.mkdir();</span>
+		
+<span class="fc" id="L85">		ITool from = new DeleteTool (new String[]{&quot;testdirectory&quot;});</span>
+<span class="fc" id="L86">		ITool to = new LsTool(new String[]{&quot;&quot;});</span>
+<span class="fc" id="L87">		Vector&lt;ITool&gt; tools = new Vector&lt;ITool&gt;();</span>
+<span class="fc" id="L88">		tools.add(from);</span>
+<span class="fc" id="L89">		tools.add(to);</span>
+		
+<span class="fc" id="L91">		pipingTool = new PipingTool(tools);</span>
+<span class="fc" id="L92">		pipingTool.pipe(from, to);</span>
+<span class="fc" id="L93">		assertFalse(dir.exists());</span>
+<span class="fc" id="L94">		assertEquals(0, pipingTool.getStatusCode());</span>
+<span class="fc" id="L95">	}</span>
+	
+	@Test
+	public void pipe_CdPwd_GetStatusCode0() {
+		// cd | pwd
+<span class="fc" id="L100">		ITool from = new CdTool(new String[]{System.getProperty(&quot;user.dir&quot;)});</span>
+<span class="fc" id="L101">		ITool to = new PWDTool();</span>
+<span class="fc" id="L102">		Vector&lt;ITool&gt; tools = new Vector&lt;ITool&gt;();</span>
+<span class="fc" id="L103">		tools.add(from);</span>
+<span class="fc" id="L104">		tools.add(to);</span>
+		
+<span class="fc" id="L106">		pipingTool = new PipingTool(tools);</span>
+<span class="fc" id="L107">		pipingTool.pipe(from, to);</span>
+<span class="fc" id="L108">		assertEquals(0, pipingTool.getStatusCode());</span>
+<span class="fc" id="L109">	}</span>
+	
+	@Test
+	public void pipe_EchoCatWithStdin_GetStatusCode0() {
+		// echo | cat (with stdin)
+<span class="fc" id="L114">		ITool from = new EchoTool(new String[]{System.getProperty(&quot;user.dir&quot;)});</span>
+<span class="fc" id="L115">		ITool to = new CatTool(new String[]{&quot;-&quot;});</span>
+<span class="fc" id="L116">		Vector&lt;ITool&gt; tools = new Vector&lt;ITool&gt;();</span>
+<span class="fc" id="L117">		tools.add(from);</span>
+<span class="fc" id="L118">		tools.add(to);</span>
+		
+<span class="fc" id="L120">		pipingTool = new PipingTool(tools);</span>
+<span class="fc" id="L121">		pipingTool.pipe(from, to);</span>
+<span class="fc" id="L122">		assertEquals(0, pipingTool.getStatusCode());</span>
+<span class="fc" id="L123">	}</span>
+	
+	@Test
+	public void pipe_LsMoveFail_GetStatusCode1() {
+		// ls | move (fail)
+<span class="fc" id="L128">		ITool from = new LsTool(new String[]{&quot;&quot;});</span>
+<span class="fc" id="L129">		ITool to = new MoveTool(new String[]{&quot;file1.txt&quot;, &quot;file2.txt&quot;, &quot;directory1&quot;});</span>
+<span class="fc" id="L130">		Vector&lt;ITool&gt; tools = new Vector&lt;ITool&gt;();</span>
+<span class="fc" id="L131">		tools.add(from);</span>
+<span class="fc" id="L132">		tools.add(to);</span>
+		
+<span class="fc" id="L134">		pipingTool = new PipingTool(tools);</span>
+<span class="fc" id="L135">		pipingTool.pipe(from, to);</span>
+<span class="fc" id="L136">		assertEquals(1, pipingTool.getStatusCode());</span>
+<span class="fc" id="L137">	}</span>
+	
+	@Test
+	public void execute_2Commands_GetStatusCode0() {
+		// cd | pwd
+<span class="fc" id="L142">		ITool tool1 = new CdTool(new String[]{System.getProperty(&quot;user.dir&quot;)});</span>
+<span class="fc" id="L143">		ITool tool2 = new PWDTool();</span>
+<span class="fc" id="L144">		Vector&lt;ITool&gt; tools = new Vector&lt;ITool&gt;();</span>
+<span class="fc" id="L145">		tools.add(tool1);</span>
+<span class="fc" id="L146">		tools.add(tool2);</span>
+		
+<span class="fc" id="L148">		pipingTool = new PipingTool(tools);</span>
+<span class="fc" id="L149">		pipingTool.execute(new File(System.getProperty(&quot;user.dir&quot;)), null);</span>
+<span class="fc" id="L150">		assertEquals(0, pipingTool.getStatusCode());</span>
+<span class="fc" id="L151">	}</span>
+	
+	@Test
+	public void execute_3CommandsWithStdin_GetStatusCode0() {
+		// cat (with stdin) | grep | echo
+<span class="fc" id="L156">		ITool tool1 = new CatTool(new String[]{&quot;-&quot;});</span>
+<span class="fc" id="L157">		ITool tool2 = new GrepTool(new String[]{&quot;-c&quot;, &quot;abc&quot;, &quot;-&quot;});</span>
+<span class="fc" id="L158">		ITool tool3 = new EchoTool(new String[]{&quot;testing 1 2 3&quot;});</span>
+<span class="fc" id="L159">		Vector&lt;ITool&gt; tools = new Vector&lt;ITool&gt;();</span>
+<span class="fc" id="L160">		tools.add(tool1);</span>
+<span class="fc" id="L161">		tools.add(tool2);</span>
+<span class="fc" id="L162">		tools.add(tool3);</span>
+		
+<span class="fc" id="L164">		pipingTool = new PipingTool(tools);</span>
+<span class="fc" id="L165">		pipingTool.execute(new File(System.getProperty(&quot;user.dir&quot;)), &quot;xyz&quot;);</span>
+<span class="fc" id="L166">		assertEquals(0, pipingTool.getStatusCode());</span>
+<span class="fc" id="L167">	}</span>
+	
+	@Test
+	public void execute_1CommandFail_GetStatusCode1() {
+		// copy (fail) | echo
+<span class="fc" id="L172">		ITool tool1 = new CopyTool(new String[]{&quot;abc.txt&quot;,&quot;def.txt&quot;});</span>
+<span class="fc" id="L173">		Vector&lt;ITool&gt; tools = new Vector&lt;ITool&gt;();</span>
+<span class="fc" id="L174">		tools.add(tool1);</span>
+		
+<span class="fc" id="L176">		pipingTool = new PipingTool(tools);</span>
+<span class="fc" id="L177">		pipingTool.execute(new File(System.getProperty(&quot;user.dir&quot;)), null);</span>
+<span class="fc" id="L178">		assertEquals(1, pipingTool.getStatusCode());</span>
+<span class="fc" id="L179">	}</span>
+	
+	@Test
+	public void execute_2CommandsFail_GetStatusCode1() {
+		// copy (fail) | echo
+<span class="fc" id="L184">		ITool tool1 = new CopyTool(new String[]{&quot;abc.txt&quot;,&quot;def.txt&quot;});</span>
+<span class="fc" id="L185">		ITool tool2 = new EchoTool(new String[]{&quot;testing 1 2 3&quot;});</span>
+<span class="fc" id="L186">		Vector&lt;ITool&gt; tools = new Vector&lt;ITool&gt;();</span>
+<span class="fc" id="L187">		tools.add(tool1);</span>
+<span class="fc" id="L188">		tools.add(tool2);</span>
+		
+<span class="fc" id="L190">		pipingTool = new PipingTool(tools);</span>
+<span class="fc" id="L191">		pipingTool.execute(new File(System.getProperty(&quot;user.dir&quot;)), null);</span>
+<span class="fc" id="L192">		assertEquals(1, pipingTool.getStatusCode());</span>
+<span class="fc" id="L193">	}</span>
+	
+	@Test
+	public void execute_3CommandsFail_GetStatusCode1() {
+		// echo | cd (fail) | pwd
+<span class="fc" id="L198">		ITool tool1 = new EchoTool(new String[]{&quot;testing 1 2 3&quot;});</span>
+<span class="fc" id="L199">		ITool tool2 = new CopyTool(new String[]{&quot;invalid directory&quot;});</span>
+<span class="fc" id="L200">		ITool tool3 = new PWDTool();</span>
+<span class="fc" id="L201">		Vector&lt;ITool&gt; tools = new Vector&lt;ITool&gt;();</span>
+<span class="fc" id="L202">		tools.add(tool1);</span>
+<span class="fc" id="L203">		tools.add(tool2);</span>
+<span class="fc" id="L204">		tools.add(tool3);</span>
+		
+<span class="fc" id="L206">		pipingTool = new PipingTool(tools);</span>
+<span class="fc" id="L207">		pipingTool.execute(new File(System.getProperty(&quot;user.dir&quot;)), null);</span>
+<span class="fc" id="L208">		assertEquals(1, pipingTool.getStatusCode());</span>
+<span class="fc" id="L209">	}</span>
+	
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

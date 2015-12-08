@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>WcTool.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">src</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.extended2</a> &gt; <span class="el_source">WcTool.java</span></div><h1>WcTool.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.extended2;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import sg.edu.nus.comp.cs4218.extended2.IWcTool;
+import sg.edu.nus.comp.cs4218.impl.ATool;
+
+public class WcTool extends ATool implements IWcTool {
+	
+	public static final int STATUS_CODE_FILE_EXCEPTION = 1;
+	public static final int STATUS_CODE_INVALID_ARGUMENTS = 2;
+	public static final int STATUS_CODE_INVALID_OPTION = 3;
+	public static final int STATUS_CODE_STDIN_EXPECTED = 4;
+	
+	public WcTool(String[] arguments) {
+<span class="fc" id="L24">		super(arguments);</span>
+<span class="fc" id="L25">	}</span>
+
+	@Override
+	public String getCharacterCount(String input) {
+<span class="fc bfc" id="L29" title="All 2 branches covered.">		if (input == null)</span>
+<span class="fc" id="L30">			return &quot;0&quot;;</span>
+		else
+<span class="fc" id="L32">			return String.valueOf(input.length());</span>
+	}
+
+	@Override
+	public String getWordCount(String input) {
+		
+<span class="fc bfc" id="L38" title="All 2 branches covered.">		if (input == null)</span>
+<span class="fc" id="L39">			return &quot;0&quot;;</span>
+		
+<span class="fc" id="L41">		String inputTrim = input.trim();</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">		if (inputTrim.isEmpty())</span>
+<span class="fc" id="L43">			return &quot;0&quot;;</span>
+		else {
+<span class="fc" id="L45">			String[] words = inputTrim.split(&quot;\\s+&quot;);</span>
+<span class="fc" id="L46">			return String.valueOf(words.length);</span>
+		}
+	}
+
+	@Override
+	public String getNewLineCount(String input) {
+<span class="fc bfc" id="L52" title="All 2 branches covered.">		if (input == null)</span>
+<span class="fc" id="L53">			return &quot;0&quot;;</span>
+<span class="fc" id="L54">		int count = 0;</span>
+<span class="fc" id="L55">		int index = -1;</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">		while ((index = input.indexOf(System.lineSeparator(), index+1)) != -1) {</span>
+<span class="fc" id="L57">			count ++;</span>
+		}
+<span class="fc" id="L59">		return String.valueOf(count);</span>
+	}
+
+	@Override
+	public String getHelp() {
+		try {
+<span class="fc" id="L65">			return new String(Files.readAllBytes(new File(&quot;help_files/wc_help&quot;).toPath())).trim();</span>
+<span class="nc" id="L66">		} catch (IOException iOE) {</span>
+<span class="nc" id="L67">			return null;</span>
+		}
+	}
+
+	@Override
+	public String execute(File workingDir, String stdin) {
+<span class="fc" id="L73">		String result = null;</span>
+<span class="fc" id="L74">		boolean hasEmptyArg = false;</span>
+		
+		// check for empty arguments
+<span class="fc bfc" id="L77" title="All 2 branches covered.">		if (args != null) {</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">			for (String arg : args) {</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">				if (arg.trim().isEmpty()) {</span>
+<span class="fc" id="L80">					hasEmptyArg = true;</span>
+<span class="fc" id="L81">					break;</span>
+				}
+			}
+		}
+		
+		// no argument and empty arguments are invalid
+<span class="pc bpc" id="L87" title="1 of 6 branches missed.">		if (args == null || args.length == 0 || hasEmptyArg) {</span>
+<span class="fc" id="L88">			setStatusCode(STATUS_CODE_INVALID_ARGUMENTS);</span>
+<span class="fc" id="L89">			result = &quot;wc: Invalid arguments given&quot;;</span>
+<span class="fc" id="L90">		}</span>
+		
+		else {
+<span class="fc" id="L93">			Map&lt;String, Boolean&gt; options = getOptions(args);</span>
+			
+<span class="fc bfc" id="L95" title="All 2 branches covered.">			if (options == null) {</span>
+<span class="fc" id="L96">				setStatusCode(STATUS_CODE_INVALID_OPTION);</span>
+<span class="fc" id="L97">				result = &quot;wc: illegal option&quot; + System.lineSeparator() + &quot;usage: wc [-clmw] [file ...]&quot;;</span>
+<span class="fc" id="L98">			}</span>
+			
+<span class="fc bfc" id="L100" title="All 2 branches covered.">			else if (options.size() == 0) {</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">				if (args[0].equals(&quot;-&quot;))</span>
+<span class="fc" id="L102">					result = getResultStdin(stdin, true, true, true);</span>
+				else
+<span class="fc" id="L104">					result = getResultFiles(args, true, true, true);</span>
+<span class="fc" id="L105">			}</span>
+			
+			// if there is a valid option
+			else {
+				
+<span class="fc bfc" id="L110" title="All 2 branches covered.">				if (options.get(&quot;-help&quot;) != null)</span>
+<span class="fc" id="L111">					result = getHelp();</span>
+				
+				else {
+<span class="fc" id="L114">					int numOfOptions = options.size();</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">					boolean isM = (options.get(&quot;-m&quot;) != null) ? true : false;</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">					boolean isW = (options.get(&quot;-w&quot;) != null) ? true : false;</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">					boolean isL = (options.get(&quot;-l&quot;) != null) ? true : false;</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">					boolean isStdin = (args.length == numOfOptions || </span>
+<span class="fc bfc" id="L119" title="All 4 branches covered.">									  (args.length == (numOfOptions + 1) &amp;&amp; args[numOfOptions].equals(&quot;-&quot;)));</span>
+					
+<span class="fc bfc" id="L121" title="All 2 branches covered.">					if (isStdin) {</span>
+<span class="fc" id="L122">						result = getResultStdin(stdin, isM, isW, isL);</span>
+<span class="fc" id="L123">					}</span>
+					else {
+<span class="fc" id="L125">						String[] fileNames = Arrays.copyOfRange(args, options.size(), args.length);</span>
+<span class="fc" id="L126">						result = getResultFiles(fileNames, isM, isW, isL);</span>
+					}
+				}
+			}
+		}
+		
+<span class="fc" id="L132">		return result;</span>
+	}
+	
+	/**
+	 * To retrieve options for wc command if any.
+	 * @return	Returns the valid options found in the form of a mapping from 
+	 * 			the option's name to true if the option is found.
+	 * 			If there is an argument that starts with &quot;-&quot; but it's not a valid option then return null.
+	 */
+	private Map&lt;String, Boolean&gt; getOptions(String[] args) {
+<span class="fc" id="L142">		Map&lt;String, Boolean&gt; optionsMap = new HashMap&lt;String, Boolean&gt;();</span>
+		
+<span class="fc bfc" id="L144" title="All 2 branches covered.">		for (String arg : args) {</span>
+			
+<span class="pc bpc" id="L146" title="4 of 13 branches missed.">			switch (arg) {</span>
+				case &quot;-help&quot;:
+<span class="fc" id="L148">					optionsMap.put(&quot;-help&quot;, true);</span>
+<span class="fc" id="L149">					break;</span>
+				case &quot;-m&quot;:
+<span class="fc" id="L151">					optionsMap.put(&quot;-m&quot;, true);</span>
+<span class="fc" id="L152">					break;</span>
+				case &quot;-w&quot;:
+<span class="fc" id="L154">					optionsMap.put(&quot;-w&quot;, true);</span>
+<span class="fc" id="L155">					break;</span>
+				case &quot;-l&quot;:
+<span class="fc" id="L157">					optionsMap.put(&quot;-l&quot;, true);</span>
+<span class="fc" id="L158">					break;</span>
+				default:
+<span class="fc bfc" id="L160" title="All 4 branches covered.">					if (arg.startsWith(&quot;-&quot;) &amp;&amp; arg.length() &gt; 1)</span>
+<span class="fc" id="L161">						return null;</span>
+					else
+						break;
+			}
+		}
+<span class="fc" id="L166">		return optionsMap;</span>
+	}
+	
+	/**
+	 * Executes the wc command for standard input
+	 * @param stdin		standard input entered by user
+	 * @param optionM	true to count characters in standard input, else false
+	 * @param optionW	true to count words in standard input, else false
+	 * @param optionL	true to count new lines in standard input, else false
+	 * @return			the results
+	 */
+	private String getResultStdin (String stdin, boolean optionM, boolean optionW, boolean optionL) {
+<span class="fc" id="L178">		StringBuilder strBuilder = new StringBuilder();</span>
+		
+<span class="fc bfc" id="L180" title="All 2 branches covered.">		if (stdin == null) {</span>
+<span class="fc" id="L181">			setStatusCode(STATUS_CODE_STDIN_EXPECTED);</span>
+<span class="fc" id="L182">			strBuilder.append(&quot;wc: A standard input is expected&quot;);</span>
+<span class="fc" id="L183">		}</span>
+		
+		else {
+<span class="fc bfc" id="L186" title="All 2 branches covered.">			if (optionL)</span>
+<span class="fc" id="L187">				strBuilder.append(&quot;\t&quot;+getNewLineCount(stdin));</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">			if (optionW)</span>
+<span class="fc" id="L189">				strBuilder.append(&quot;\t&quot;+getWordCount(stdin));</span>
+<span class="fc bfc" id="L190" title="All 2 branches covered.">			if (optionM)</span>
+<span class="fc" id="L191">				strBuilder.append(&quot;\t&quot;+getCharacterCount(stdin));</span>
+		}
+		
+<span class="fc" id="L194">		return strBuilder.toString();</span>
+	}
+	
+	/**
+	 * Executes the wc command for files
+	 * @param fileNames	array of file names to process
+	 * @param optionM	true to count characters in standard input, else false
+	 * @param optionW	true to count words in standard input, else false
+	 * @param optionL	true to count new lines in standard input, else false
+	 * @return			the results
+	 */
+	private String getResultFiles (String[] fileNames, boolean optionM, boolean optionW, boolean optionL) {
+<span class="fc" id="L206">		StringBuilder resultBuilder = new StringBuilder();</span>
+<span class="fc bfc" id="L207" title="All 2 branches covered.">		boolean oneFile = (fileNames.length == 1);</span>
+<span class="fc" id="L208">		int totalChars = 0, totalWords = 0, totalNewLines = 0;</span>
+		int chars, words, newLines;
+		
+<span class="fc bfc" id="L211" title="All 2 branches covered.">		for (String fileName : fileNames) {</span>
+			String content;
+<span class="fc" id="L213">			File file = new File(fileName);</span>
+<span class="fc bfc" id="L214" title="All 2 branches covered.">			if (file.isDirectory()) {</span>
+<span class="fc" id="L215">				resultBuilder.append(&quot;wc: &quot;+fileName+&quot;: read: Is a directory&quot; + System.lineSeparator());</span>
+<span class="fc" id="L216">				continue;</span>
+			}
+			
+<span class="fc bfc" id="L219" title="All 2 branches covered.">			else if (!file.exists()) {</span>
+<span class="fc" id="L220">				resultBuilder.append(&quot;wc: &quot;+fileName+&quot;: open: No such file or directory&quot; + System.lineSeparator());</span>
+<span class="fc" id="L221">				continue;</span>
+			}
+			
+			else {
+<span class="fc" id="L225">				content = getFileContent(fileName);</span>
+<span class="pc bpc" id="L226" title="1 of 2 branches missed.">				if (content == null) {</span>
+<span class="nc" id="L227">					resultBuilder.append(&quot;wc: &quot;+fileName+&quot;: Failed to read content&quot;);</span>
+<span class="nc" id="L228">					continue;</span>
+				}
+			}
+			
+<span class="fc bfc" id="L232" title="All 2 branches covered.">			if (optionL) {</span>
+<span class="fc" id="L233">				newLines = Integer.parseInt(getNewLineCount(content));</span>
+<span class="fc" id="L234">				totalNewLines += newLines;</span>
+<span class="fc" id="L235">				resultBuilder.append(&quot;\t&quot;+newLines);</span>
+			}
+<span class="fc bfc" id="L237" title="All 2 branches covered.">			if (optionW) {</span>
+<span class="fc" id="L238">				words = Integer.parseInt(getWordCount(content));</span>
+<span class="fc" id="L239">				totalWords += words;</span>
+<span class="fc" id="L240">				resultBuilder.append(&quot;\t&quot;+words);</span>
+			}
+<span class="fc bfc" id="L242" title="All 2 branches covered.">			if (optionM) {</span>
+<span class="fc" id="L243">				chars = Integer.parseInt(getCharacterCount(content));</span>
+<span class="fc" id="L244">				totalChars += chars;</span>
+<span class="fc" id="L245">				resultBuilder.append(&quot;\t&quot;+chars);</span>
+			}
+			
+<span class="fc bfc" id="L248" title="All 2 branches covered.">			if (oneFile)</span>
+<span class="fc" id="L249">				resultBuilder.append(&quot; &quot;+fileName);</span>
+			else
+<span class="fc" id="L251">				resultBuilder.append(&quot; &quot;+fileName + System.lineSeparator());</span>
+		}
+		
+<span class="fc bfc" id="L254" title="All 2 branches covered.">		if (!oneFile) {</span>
+<span class="fc bfc" id="L255" title="All 2 branches covered.">			if (optionL)</span>
+<span class="fc" id="L256">				resultBuilder.append(&quot;\t&quot;+totalNewLines);</span>
+<span class="fc bfc" id="L257" title="All 2 branches covered.">			if (optionW)</span>
+<span class="fc" id="L258">				resultBuilder.append(&quot;\t&quot;+totalWords);</span>
+<span class="fc bfc" id="L259" title="All 2 branches covered.">			if (optionM)</span>
+<span class="fc" id="L260">				resultBuilder.append(&quot;\t&quot;+totalChars);</span>
+			
+<span class="fc" id="L262">			resultBuilder.append(&quot; total&quot;);</span>
+		}
+		
+<span class="fc" id="L265">		return resultBuilder.toString();</span>
+	}
+	
+	private String getFileContent(String fileName) {
+<span class="fc" id="L269">		StringBuilder fileContentBuilder = new StringBuilder();</span>
+		
+		try {
+<span class="fc" id="L272">			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));</span>
+			int charValue;
+<span class="fc bfc" id="L274" title="All 2 branches covered.">			while ((charValue = reader.read()) != -1) {</span>
+<span class="fc" id="L275">				fileContentBuilder.append((char)charValue);</span>
+			}
+<span class="fc" id="L277">			reader.close();</span>
+<span class="pc" id="L278">		} catch (Exception e) {</span>
+<span class="nc" id="L279">			setStatusCode(STATUS_CODE_FILE_EXCEPTION);</span>
+<span class="nc" id="L280">			return null;</span>
+		} 
+		
+<span class="fc" id="L283">		return fileContentBuilder.toString();</span>
+	}
+	
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

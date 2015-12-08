@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>DeleteToolStateChangeTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.integrationtest.statechange</a> &gt; <span class="el_source">DeleteToolStateChangeTest.java</span></div><h1>DeleteToolStateChangeTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.integrationtest.statechange;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.util.Vector;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.impl.Shell;
+import sg.edu.nus.comp.cs4218.impl.extended1.GrepTool;
+
+<span class="fc" id="L19">public class DeleteToolStateChangeTest {</span>
+
+	private File file1, file2, dir;
+	private String userDir;
+	
+	@Before
+	public void setUpOnce() throws Exception {
+		
+		// create files with content
+<span class="fc" id="L28">		createFile1();</span>
+<span class="fc" id="L29">		createFile2();</span>
+		
+		// create directory
+<span class="fc" id="L32">		dir = new File(&quot;dir&quot;);</span>
+<span class="fc" id="L33">		dir.mkdir();</span>
+		
+<span class="fc" id="L35">		userDir = System.getProperty(&quot;user.dir&quot;);</span>
+<span class="fc" id="L36">	}</span>
+	
+	private void createFile1() throws Exception {
+		BufferedWriter bw;
+		String content;
+		
+<span class="fc" id="L42">		file1 = new File(&quot;file1&quot;);</span>
+<span class="fc" id="L43">		file1.createNewFile();</span>
+	
+<span class="fc" id="L45">		content = &quot;this is file1 used for testing&quot;+System.lineSeparator();</span>
+<span class="fc" id="L46">		content += &quot;there are 5 lines in this file&quot; + System.lineSeparator();</span>
+<span class="fc" id="L47">		content += &quot;this is the 3rd line&quot; + System.lineSeparator();</span>
+<span class="fc" id="L48">		content += &quot;this is the 4th line&quot; + System.lineSeparator();</span>
+<span class="fc" id="L49">		content += &quot;this is the 5th line&quot;;</span>
+		
+<span class="fc" id="L51">		bw = new BufferedWriter(new FileWriter(file1));</span>
+<span class="fc" id="L52">		bw.write(content);</span>
+<span class="fc" id="L53">		bw.close();</span>
+<span class="fc" id="L54">	}</span>
+	
+	private void createFile2() throws Exception {
+		BufferedWriter bw;
+		String content;
+		
+<span class="fc" id="L60">		file2 = new File(&quot;file2&quot;);</span>
+<span class="fc" id="L61">		file2.createNewFile();</span>
+<span class="fc" id="L62">		content = &quot;this is file2 used for testing&quot;+System.lineSeparator();</span>
+<span class="fc" id="L63">		content += &quot;testing testing 1 2 3&quot;+System.lineSeparator();</span>
+<span class="fc" id="L64">		content += &quot;	???	&quot;+System.lineSeparator()+System.lineSeparator();</span>
+		
+<span class="fc" id="L66">		bw = new BufferedWriter(new FileWriter(file2));</span>
+<span class="fc" id="L67">		bw.write(content);</span>
+<span class="fc" id="L68">		bw.close();</span>
+<span class="fc" id="L69">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L73">		file1.delete();</span>
+<span class="fc" id="L74">		file2.delete();</span>
+<span class="fc" id="L75">		dir.delete();</span>
+<span class="fc" id="L76">		System.setProperty(&quot;user.dir&quot;, userDir);</span>
+<span class="fc" id="L77">	}</span>
+	
+	
+	
+	@Test
+	public void stateChange_LsDeleteLs_GetStatusCode0() {
+		String commandline1, commandline2, commandline3, output;
+		Vector&lt;String&gt; results;
+		
+<span class="fc" id="L86">		commandline1 = &quot;ls&quot;;</span>
+<span class="fc" id="L87">		commandline2 = &quot;delete file1 file2&quot;;</span>
+<span class="fc" id="L88">		commandline3 = &quot;ls&quot;;</span>
+		
+		// 1. check that ls initially contains file1 and file2
+<span class="fc" id="L91">		results = Shell.shellTestExecution(commandline1);</span>
+<span class="fc" id="L92">		assertEquals(0, Integer.parseInt(results.get(1)));</span>
+
+<span class="fc" id="L94">		output = results.get(0);</span>
+<span class="fc" id="L95">		assertTrue(output.contains(&quot;file1&quot;));</span>
+<span class="fc" id="L96">		assertTrue(output.contains(&quot;file2&quot;));</span>
+		
+		// 2. delete file1 and file2
+		// 3. check if ls output contained the files deleted
+<span class="fc" id="L100">		results = Shell.shellTestExecution(commandline2, commandline3);</span>
+<span class="fc" id="L101">		assertEquals(0, Integer.parseInt(results.get(1)));</span>
+<span class="fc" id="L102">		assertEquals(0, Integer.parseInt(results.get(2)));</span>
+		
+<span class="fc" id="L104">		output = results.get(0);</span>
+<span class="fc" id="L105">		assertFalse(output.contains(&quot;file1&quot;));</span>
+<span class="fc" id="L106">		assertFalse(output.contains(&quot;file2&quot;));</span>
+		
+		// recreate the files that have been deleted
+		try {
+<span class="fc" id="L110">			createFile1();</span>
+<span class="fc" id="L111">			createFile2();</span>
+<span class="pc" id="L112">		} catch (Exception e) {</span>
+<span class="nc" id="L113">			e.printStackTrace();</span>
+		}
+<span class="fc" id="L115">	}</span>
+	
+	@Test
+	public void stateChange_LsDeleteGrep_GetStatusCode0() {
+		String commandline1, commandline2, commandline3, output;
+		Vector&lt;String&gt; results;
+		
+<span class="fc" id="L122">		commandline1 = &quot;ls&quot;;</span>
+<span class="fc" id="L123">		commandline2 = &quot;delete file1&quot;;</span>
+<span class="fc" id="L124">		commandline3 = &quot;grep test file1&quot;;</span>
+		
+		// 1. check that ls initially contains file1
+<span class="fc" id="L127">		results = Shell.shellTestExecution(commandline1);</span>
+<span class="fc" id="L128">		assertEquals(0, Integer.parseInt(results.get(1)));</span>
+		
+<span class="fc" id="L130">		output = results.get(0);</span>
+<span class="fc" id="L131">		assertTrue(output.contains(&quot;file1&quot;));</span>
+		
+		// 2. delete file1
+		// 3. execute grep for file1 which has been deleted
+<span class="fc" id="L135">		results = Shell.shellTestExecution(commandline2, commandline3);</span>
+<span class="fc" id="L136">		assertEquals(0, Integer.parseInt(results.get(1)));</span>
+<span class="fc" id="L137">		assertEquals(GrepTool.ERR_CODE_IO, Integer.parseInt(results.get(2)));</span>
+		
+<span class="fc" id="L139">		output = results.get(0);</span>
+<span class="fc" id="L140">		assertFalse(output.contains(&quot;file1&quot;));</span>
+		
+		// recreate file1
+		try {
+<span class="fc" id="L144">			createFile1();</span>
+<span class="pc" id="L145">		} catch (Exception e) {</span>
+<span class="nc" id="L146">			e.printStackTrace();</span>
+		}
+<span class="fc" id="L148">	}</span>
+	
+	@Test
+	public void stateChange_CdDeleteCd_GetStatusCode0() {
+		String commandline1, commandline2, commandline3;
+		Vector&lt;String&gt; results;
+		
+<span class="fc" id="L155">		commandline1 = &quot;cd dir&quot;;</span>
+<span class="fc" id="L156">		commandline2 = &quot;delete dir&quot;;</span>
+<span class="fc" id="L157">		commandline3 = &quot;cd dir&quot;;</span>
+		
+		// 1. check that it is able to cd to directory &quot;dir&quot;
+<span class="fc" id="L160">		results = Shell.shellTestExecution(commandline1);</span>
+<span class="fc" id="L161">		assertEquals(0, Integer.parseInt(results.get(1)));</span>
+		// restore original system property
+<span class="fc" id="L163">		System.setProperty(&quot;user.dir&quot;, userDir);</span>
+		
+		// 2. delete dir
+		// 3. check that cd to directory &quot;dir&quot; will fail
+<span class="fc" id="L167">		results = Shell.shellTestExecution(commandline2, commandline3);</span>
+<span class="fc" id="L168">		assertEquals(0, Integer.parseInt(results.get(1)));</span>
+<span class="fc" id="L169">		assertEquals(2, Integer.parseInt(results.get(2)));</span>
+		
+		// recreate dir
+<span class="fc" id="L172">		dir = new File(&quot;dir&quot;);</span>
+<span class="fc" id="L173">		dir.mkdir();</span>
+<span class="fc" id="L174">	}</span>
+	
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

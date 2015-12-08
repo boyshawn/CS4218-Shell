@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>HackathonUniqToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.bugfixestestcase</a> &gt; <span class="el_source">HackathonUniqToolTest.java</span></div><h1>HackathonUniqToolTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.bugfixestestcase;
+
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.impl.extended2.UniqTool;
+
+<span class="fc" id="L18">public class HackathonUniqToolTest {</span>
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+<span class="fc" id="L22">	}</span>
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+<span class="fc" id="L26">		File file = new File(&quot;workingDir&quot;);</span>
+<span class="pc bpc" id="L27" title="1 of 2 branches missed.">		if (file.exists()) {</span>
+<span class="fc" id="L28">			deleteFolder(file);</span>
+		}
+<span class="fc" id="L30">	}</span>
+
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L34">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L38">	}</span>
+
+	/**
+	 * Bug 8.2: Incorrect help file. 
+	 * Fixed in sg.edu.nus.comp.cs4218.impl.extended2.UniqTool.java:24 (24 refers to line num)
+	 */
+	@Test
+	public void getHelpTest() {
+<span class="fc" id="L46">		UniqTool uniqTool = new UniqTool();</span>
+<span class="fc" id="L47">		String helpMsg = uniqTool.getHelp();</span>
+<span class="fc" id="L48">		assertTrue(helpMsg.contains(&quot;Usage: uniq&quot;));</span>
+<span class="fc" id="L49">	}</span>
+
+	/**
+	 * Bug 8.3: Uniq no options return wrong result.
+	 * 
+	 * Actually it returns the correct result. I reverted back to previous commit
+	 * before receiving the Hackathon report and it works fine.
+	 * 
+	 * The reason why the other team finds out it's wrong is because they reverse
+	 * the expected and actual argument in assertEquals() and they don't use system's
+	 * new line character.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void executeGetUniqueTest() throws IOException {
+		// Setup.
+<span class="fc" id="L66">		File file = Files.createTempFile(&quot;tempFile&quot;, &quot;.tmp&quot;).toFile();</span>
+<span class="fc" id="L67">		String input = &quot; \nHello World\nhello World\nTest\ntest&quot;;</span>
+<span class="fc" id="L68">		Files.write(file.toPath(), input.getBytes(), StandardOpenOption.CREATE);</span>
+<span class="fc" id="L69">		UniqTool uniqtool = new UniqTool(</span>
+<span class="fc" id="L70">				new String[] { file.getAbsolutePath() });</span>
+		
+<span class="fc" id="L72">		String result = uniqtool.execute(file.getParentFile(), null);</span>
+<span class="fc" id="L73">		assertEquals(&quot;Hello World&quot;+System.lineSeparator()+&quot;hello World&quot;+System.lineSeparator()+&quot;Test&quot;+System.lineSeparator()+&quot;test&quot;, result);</span>
+		
+<span class="fc" id="L75">		Files.delete(file.toPath());</span>
+<span class="fc" id="L76">	}</span>
+	
+	
+	/**
+	 * Bug 8.6: Uniq does not support path relative to working dir specified
+	 * execute arg.
+	 * Fixed in sg.edu.nus.comp.cs4218.impl.extended2.UniqTool.java:179-181
+	 */
+	@Test
+	public void executeGetUniqueSkipNumMultipleSameOptionIgnoreCaseTest()
+			throws IOException {
+		// Create a temp working dir.
+<span class="fc" id="L88">		File workingDir = new File(&quot;workingDir&quot;);  </span>
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">		if (workingDir.exists()) {</span>
+<span class="fc" id="L90">			deleteFolder(workingDir);</span>
+		}
+<span class="fc" id="L92">		workingDir.mkdir();</span>
+		
+		// Create a test file in working dir.
+<span class="fc" id="L95">		File testFile = new File(workingDir, &quot;temp&quot;);</span>
+<span class="fc" id="L96">		String testInput = &quot; \nHello World\nhello World\nTEST\ntest\njest\nBEST&quot;;</span>
+<span class="fc" id="L97">		Files.write(testFile.toPath(), testInput.getBytes(), StandardOpenOption.CREATE);</span>
+		
+<span class="fc" id="L99">		String[] args = { &quot;-f&quot;, &quot;2&quot;, &quot;-f&quot;, &quot;3&quot;, &quot;-f&quot;, &quot;1&quot;, &quot;temp&quot; };</span>
+<span class="fc" id="L100">		UniqTool uniqTool = new UniqTool(args);</span>
+		
+<span class="fc" id="L102">		String actual = uniqTool.execute(workingDir, null);</span>
+<span class="fc" id="L103">		assertEquals(&quot;Hello World&quot;+System.lineSeparator()+&quot;TEST&quot;, actual);</span>
+<span class="fc" id="L104">	}</span>
+
+	/**
+	 * Bug 8.6: Uniq does not file name with space
+	 * Actually it does.
+	 */
+	@Test
+	public void executeGetUniqueSkipNumMultipleSameOptionTest() 
+			throws IOException {
+		// Create a temp working dir.
+<span class="fc" id="L114">		File workingDir = new File(&quot;workingDir&quot;);  </span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">		if (workingDir.exists()) {</span>
+<span class="nc" id="L116">			deleteFolder(workingDir);</span>
+		}
+<span class="fc" id="L118">		workingDir.mkdir();</span>
+		
+		// Create a test file in working dir.
+<span class="fc" id="L121">		File testFile = new File(workingDir, &quot;temp name&quot;);</span>
+<span class="fc" id="L122">		String testInput = &quot; \nHello World\nhello World\nTEST\ntest\njest\nBEST&quot;;</span>
+<span class="fc" id="L123">		Files.write(testFile.toPath(), testInput.getBytes(), StandardOpenOption.CREATE);</span>
+		
+<span class="fc" id="L125">		String[] args = { &quot;-f&quot;, &quot;2&quot;, &quot;-f&quot;, &quot;3&quot;, &quot;-f&quot;, &quot;1&quot;, &quot;temp name&quot; };</span>
+<span class="fc" id="L126">		UniqTool uniqTool = new UniqTool(args);</span>
+		
+<span class="fc" id="L128">		String actual = uniqTool.execute(workingDir, null);</span>
+<span class="fc" id="L129">		assertEquals(&quot;Hello World&quot;+System.lineSeparator()+&quot;TEST&quot;, actual);</span>
+<span class="fc" id="L130">	}</span>
+	
+	// Helper functions
+	public static void deleteFolder(File folder) {
+<span class="fc" id="L134">		File[] files = folder.listFiles();</span>
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">		if (files != null) { // some JVMs return null for empty dirs</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">			for (File f : files) {</span>
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">				if (f.isDirectory()) {</span>
+<span class="nc" id="L138">					deleteFolder(f);</span>
+<span class="nc" id="L139">				} else {</span>
+<span class="fc" id="L140">					f.delete();</span>
+				}
+			}
+		}
+<span class="fc" id="L144">		folder.delete();</span>
+<span class="fc" id="L145">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

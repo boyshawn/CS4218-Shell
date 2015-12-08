@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>IncrementBranchCoverageCopyToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.incrementalcoveragetestcase</a> &gt; <span class="el_source">IncrementBranchCoverageCopyToolTest.java</span></div><h1>IncrementBranchCoverageCopyToolTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.incrementalcoveragetestcase;
+
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.fileutils.ICopyTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.CopyTool;
+
+<span class="fc" id="L16">public class IncrementBranchCoverageCopyToolTest {</span>
+	// Variables
+	private ICopyTool copyTool;
+	private File workingDir;
+	private File sourceDir;
+	private File destDir;
+
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L25">		this.copyTool = new CopyTool(null);</span>
+<span class="fc" id="L26">		this.workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+<span class="fc" id="L27">		this.sourceDir = createDir(&quot;sourceDir&quot;);</span>
+<span class="fc" id="L28">		this.destDir = createDir(&quot;testDir&quot;);</span>
+<span class="fc" id="L29">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L33">		this.copyTool = null;</span>
+
+<span class="fc" id="L35">		this.removeFiles(this.sourceDir);</span>
+<span class="fc" id="L36">		this.removeFiles(this.destDir);</span>
+<span class="fc" id="L37">		Files.delete(this.sourceDir.toPath());</span>
+<span class="fc" id="L38">		Files.delete((this.destDir.toPath()));</span>
+
+<span class="fc" id="L40">		this.workingDir = null;</span>
+<span class="fc" id="L41">		this.sourceDir = null;</span>
+<span class="fc" id="L42">		this.destDir = null;</span>
+
+<span class="fc" id="L44">		File file = new File(&quot;copiedFolder&quot;);</span>
+<span class="pc bpc" id="L45" title="1 of 2 branches missed.">		if (file.exists()) {</span>
+<span class="nc" id="L46">			deleteFolder(file);</span>
+		}
+<span class="fc" id="L48">	}</span>
+
+	@Test
+	public void execute_NullArgumentsTest() throws IOException {
+
+<span class="fc" id="L53">		this.copyTool = new CopyTool(null);</span>
+<span class="fc" id="L54">		String returnMessage = this.copyTool.execute(this.workingDir, null);</span>
+
+<span class="fc" id="L56">		assertEquals(this.copyTool.getStatusCode(), -1);</span>
+<span class="fc" id="L57">		assertEquals(&quot;copy: missing file operand&quot;, returnMessage);</span>
+
+<span class="fc" id="L59">	}</span>
+
+	// Helper Functions
+	private void removeFiles(File directory) throws IOException {
+
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">		for (File f : directory.listFiles()) {</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">			if (f.isDirectory()) {</span>
+<span class="nc" id="L66">				removeFiles(f);</span>
+			}
+
+<span class="nc" id="L69">			Files.delete(f.toPath());</span>
+		}
+<span class="fc" id="L71">	}</span>
+
+	private File createDir(String path) {
+<span class="fc" id="L74">		File dir = new File(path);</span>
+		try {
+<span class="fc" id="L76">			Files.createDirectories(dir.toPath());</span>
+<span class="pc" id="L77">		} catch (IOException e) {</span>
+<span class="nc" id="L78">			e.printStackTrace();</span>
+		}
+<span class="fc" id="L80">		return dir;</span>
+	}
+
+	public static void deleteFolder(File folder) {
+<span class="nc" id="L84">		File[] files = folder.listFiles();</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">		if (files != null) { // some JVMs return null for empty dirs</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">			for (File f : files) {</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">				if (f.isDirectory()) {</span>
+<span class="nc" id="L88">					deleteFolder(f);</span>
+<span class="nc" id="L89">				} else {</span>
+<span class="nc" id="L90">					f.delete();</span>
+				}
+			}
+		}
+<span class="nc" id="L94">		folder.delete();</span>
+<span class="nc" id="L95">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

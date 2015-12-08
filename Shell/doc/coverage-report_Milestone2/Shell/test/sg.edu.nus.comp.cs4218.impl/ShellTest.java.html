@@ -1,0 +1,1008 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>ShellTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl</a> &gt; <span class="el_source">ShellTest.java</span></div><h1>ShellTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl;
+
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.ITool;
+import sg.edu.nus.comp.cs4218.impl.extended1.GrepTool;
+import sg.edu.nus.comp.cs4218.impl.extended1.PipingTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.CommTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.CutTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.PasteTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.SortTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.UniqTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.WcTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.CatTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.CdTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.CopyTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.DeleteTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.EchoTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.LsTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.MoveTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.PWDTool;
+
+<span class="fc" id="L30">public class ShellTest {</span>
+	Shell shell;
+<span class="fc" id="L32">	String sep = File.separator; // to make testing OS independent</span>
+	ITool tool;
+	
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L37">		shell = new Shell();</span>
+<span class="fc" id="L38">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L42">		shell = null;</span>
+<span class="fc" id="L43">		tool = null;</span>
+<span class="fc" id="L44">	}</span>
+
+	@Test
+	public void parse_PwdNoArgument_ReturnPWDTool() {
+<span class="fc" id="L48">		tool = shell.parse(&quot; pwd &quot;);</span>
+<span class="fc" id="L49">		assertTrue(tool instanceof PWDTool);</span>
+<span class="fc" id="L50">	}</span>
+	
+	@Test
+	public void parse_PwdWithArguments_ReturnPWDTool() {
+		// arguments will be ignored
+<span class="fc" id="L55">		tool = shell.parse(&quot; pwd asfjsjif ajsfijse&quot;);</span>
+<span class="fc" id="L56">		assertTrue(tool instanceof PWDTool);</span>
+<span class="fc" id="L57">	}</span>
+	
+	@Test
+	public void parse_CdNoArgument_ReturnCdTool() {
+		// cd
+<span class="fc" id="L62">		tool = shell.parse(&quot;cd 	&quot;);</span>
+<span class="fc" id="L63">		assertTrue(tool instanceof CdTool);</span>
+<span class="fc" id="L64">	}</span>
+	
+	@Test
+	public void parse_CdDirectory_ReturnCdTool() {
+		// cd directory
+		// Windows OS directory
+<span class="fc" id="L70">		tool = shell.parse(&quot;cd   C:&quot;+sep+&quot;dir&quot;+sep+&quot;dir2&quot;+sep+&quot;dir3&quot;);</span>
+<span class="fc" id="L71">		assertTrue(tool instanceof CdTool);</span>
+		
+<span class="fc" id="L73">	}</span>
+	
+	@Test
+	public void parse_CdDash_ReturnCdTool() {
+		// cd  -
+<span class="fc" id="L78">		tool = shell.parse(&quot;cd - &quot;);</span>
+<span class="fc" id="L79">		assertTrue(tool instanceof CdTool);</span>
+<span class="fc" id="L80">	}</span>
+	
+	@Test
+	public void parse_CdDoubleDots_ReturnCdTool() {
+		// cd  ..
+<span class="fc" id="L85">		tool = shell.parse(&quot;cd .. &quot;);</span>
+<span class="fc" id="L86">		assertTrue(tool instanceof CdTool);</span>
+<span class="fc" id="L87">	}</span>
+	
+	@Test
+	public void parse_CdFile_ReturnNull() {
+		// cd file (invalid)
+<span class="fc" id="L92">		tool = shell.parse(&quot;cd dir1&quot;+sep+&quot;file1.txt &quot;);</span>
+<span class="fc" id="L93">		assertNull(tool);</span>
+		
+<span class="fc" id="L95">	}</span>
+	
+	@Test
+	public void parse_CdDirectoryDirectory_ReturnNull() {
+		// cd directory directory (invalid)
+<span class="fc" id="L100">		tool = shell.parse(&quot;cd .&quot;+sep+&quot;dir 1		dir2&quot;);</span>
+<span class="fc" id="L101">		assertNull(tool);</span>
+<span class="fc" id="L102">	}</span>
+	
+	@Test
+	public void parse_CdFileDirectory_ReturnNull() {
+		// cd file directory (invalid)
+<span class="fc" id="L107">		tool = shell.parse(&quot;cd dir1&quot;+sep+&quot;file1.txt  \&quot;dir2&quot;+sep+&quot;dir  3\&quot;&quot;);</span>
+<span class="fc" id="L108">		assertNull(tool);</span>
+<span class="fc" id="L109">	}</span>
+	
+	@Test
+	public void parse_CdDirectoryFile_ReturnNull() {
+		// cd directory file (invalid)
+<span class="fc" id="L114">		tool = shell.parse(&quot;cd	\&quot;dir 2\&quot;  .&quot;+sep+&quot;dir1&quot;+sep+&quot;file1.txt&quot;);</span>
+<span class="fc" id="L115">		assertNull(tool);</span>
+<span class="fc" id="L116">	}</span>
+	
+	@Test
+	public void parse_LsNoArgument_ReturnLsTool() {
+		// ls
+<span class="fc" id="L121">		tool = shell.parse(&quot;ls&quot;);</span>
+<span class="fc" id="L122">		assertTrue(tool instanceof LsTool);</span>
+<span class="fc" id="L123">	}</span>
+	
+	@Test
+	public void parse_LsFile_ReturnLsTool() {
+		// ls file
+<span class="fc" id="L128">		tool = shell.parse(&quot;ls ~&quot;+sep+&quot;d1&quot;+sep+&quot;d2&quot;+sep+&quot;main123.xml&quot;);</span>
+<span class="fc" id="L129">		assertTrue(tool instanceof LsTool);</span>
+<span class="fc" id="L130">	}</span>
+	
+	@Test
+	public void parse_LsDirectory_ReturnLsTool() {
+		// ls directory
+<span class="fc" id="L135">		tool = shell.parse(&quot;ls .&quot;+sep+&quot;abc&quot;+sep+&quot;def&quot;+sep);</span>
+<span class="fc" id="L136">		assertTrue(tool instanceof LsTool);</span>
+<span class="fc" id="L137">	}</span>
+	
+	@Test
+	public void parse_LsDash_ReturnNull() {
+		// ls - (invalid)
+<span class="fc" id="L142">		tool = shell.parse(&quot;ls -&quot;);</span>
+<span class="fc" id="L143">		assertNull(tool);	</span>
+<span class="fc" id="L144">	}</span>
+	
+	@Test
+	public void parse_CopyFileFile_ReturnCopyTool() {
+		// copy file1 file2
+<span class="fc" id="L149">		tool = shell.parse(&quot;copy 	&quot;+sep+&quot;dir&quot;+sep+&quot;dir2&quot;+sep+&quot;dir3&quot;+sep+&quot;file.txt		dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt&quot;);</span>
+<span class="fc" id="L150">		assertTrue(tool instanceof CopyTool);</span>
+<span class="fc" id="L151">	}</span>
+	
+	@Test
+	public void parse_CopyDirectoryDirectory_ReturnCopyTool() {
+		// copy directory1 directory2
+<span class="fc" id="L156">		tool = shell.parse(&quot;copy 	&quot;+sep+&quot;dir&quot;+sep+&quot;dir2&quot;+sep+&quot;dir3&quot;+sep+&quot;		dir4&quot;+sep+&quot;dir5&quot;+sep);</span>
+<span class="fc" id="L157">		assertTrue(tool instanceof CopyTool);</span>
+<span class="fc" id="L158">	}</span>
+	
+	@Test
+	public void parse_CopyFileDirectory_ReturnCopyTool() {	
+		// copy file directory
+<span class="fc" id="L163">		tool = shell.parse(&quot;copy 	\&quot;~&quot;+sep+&quot;dir&quot;+sep+&quot;file 1.txt\&quot;		\&quot;dir4&quot;+sep+&quot;dir 5&quot;+sep+&quot;\&quot;&quot;);</span>
+<span class="fc" id="L164">		assertTrue(tool instanceof CopyTool);</span>
+<span class="fc" id="L165">	}</span>
+	
+	@Test
+	public void parse_CopyMultipleFilesDirectory_ReturnCopyTool() {
+		// copy file1 file2 file3 directory
+<span class="fc" id="L170">		tool = shell.parse(&quot;copy 	file.tar.gz		dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt  .&quot;+sep+&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file2.txt  ~&quot;+sep+&quot;dir1&quot;+sep+&quot;dir2&quot;+sep);</span>
+<span class="fc" id="L171">		assertTrue(tool instanceof CopyTool);</span>
+<span class="fc" id="L172">	}</span>
+	
+	/**
+	 * Assumption: Shell cannot distinguish a valid file name or directory name
+	 * since file names can be without extensions like .txt
+	 * Hence, this is left to the tool to check if it is an existing file or directory
+	 */
+	@Test
+	public void parse_CopyDirectoryFile_ReturnCopyTool() {
+		// copy directory file (assumptions made)
+<span class="fc" id="L182">		tool = shell.parse(&quot;copy \&quot;~&quot;+sep+&quot;dir 123\&quot;	file1.txt&quot;);</span>
+<span class="fc" id="L183">		assertTrue(tool instanceof CopyTool);</span>
+<span class="fc" id="L184">	}</span>
+	
+	@Test
+	public void parse_CopyMultipleFiles_ReturnCopyTool() {
+		// copy file1 file2 file3 (assumptions made)
+<span class="fc" id="L189">		tool = shell.parse(&quot;copy  file.tar.gz	dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt  .&quot;+sep+&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file2&quot;);</span>
+<span class="fc" id="L190">		assertTrue(tool instanceof CopyTool);</span>
+<span class="fc" id="L191">	}</span>
+	
+	@Test
+	public void parse_CopyMultipleFiles_ReturnNull() {
+		// copy file1 file2 file3 (invalid)
+<span class="fc" id="L196">		tool = shell.parse(&quot;copy  file.tar.gz	dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt  .&quot;+sep+&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file2.txt&quot;);</span>
+<span class="fc" id="L197">		assertNull(tool);</span>
+<span class="fc" id="L198">	}</span>
+	
+	@Test
+	public void parse_CopyNoArguments_ReturnNull() {
+		// copy (invalid)
+<span class="fc" id="L203">		tool = shell.parse(&quot;copy&quot;);</span>
+<span class="fc" id="L204">		assertNull(tool);</span>
+<span class="fc" id="L205">	}</span>
+	
+	@Test
+	public void parse_CopyFile_ReturnNull() {
+		// copy file (invalid)
+<span class="fc" id="L210">		tool = shell.parse(&quot;copy dir&quot;+sep+&quot;file&quot;);</span>
+<span class="fc" id="L211">		assertNull(tool);</span>
+<span class="fc" id="L212">	}</span>
+	
+	@Test
+	public void parse_MoveFileFile_ReturnMoveTool() {
+		// move file1 file2
+<span class="fc" id="L217">		tool = shell.parse(&quot;move 	&quot;+sep+&quot;dir&quot;+sep+&quot;dir2&quot;+sep+&quot;dir3&quot;+sep+&quot;file.txt		dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt&quot;);</span>
+<span class="fc" id="L218">		assertTrue(tool instanceof MoveTool);</span>
+<span class="fc" id="L219">	}</span>
+	
+	@Test
+	public void parse_MoveDirectoryDirectory_ReturnMoveTool() {
+		// move directory1 directory2
+<span class="fc" id="L224">		tool = shell.parse(&quot;move 	&quot;+sep+&quot;dir&quot;+sep+&quot;dir2&quot;+sep+&quot;dir3&quot;+sep+&quot;		dir4&quot;+sep+&quot;dir5&quot;+sep);</span>
+<span class="fc" id="L225">		assertTrue(tool instanceof MoveTool);</span>
+<span class="fc" id="L226">	}</span>
+	
+	@Test
+	public void parse_MoveFileDirectory_ReturnMoveTool() {
+		// move file directory
+<span class="fc" id="L231">		tool = shell.parse(&quot;move 	\&quot;~&quot;+sep+&quot;dir&quot;+sep+&quot;file 1.txt\&quot;		\&quot;dir4&quot;+sep+&quot;dir 5&quot;+sep+&quot;\&quot;&quot;);</span>
+<span class="fc" id="L232">		assertTrue(tool instanceof MoveTool);</span>
+<span class="fc" id="L233">	}</span>
+	
+	@Test
+	public void parse_MoveMultipleFilesDirectory_ReturnMoveTool() {	
+		// move file1 file2 file3 directory
+<span class="fc" id="L238">		tool = shell.parse(&quot;move 	file.tar.gz		dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt  .&quot;+sep+&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file2.txt  ~&quot;+sep+&quot;dir1&quot;+sep+&quot;dir2&quot;+sep);</span>
+<span class="fc" id="L239">		assertTrue(tool instanceof MoveTool);</span>
+<span class="fc" id="L240">	}</span>
+	
+	/**
+	 * Assumption: Shell cannot distinguish a valid file name or directory name
+	 * since file names can be without extensions like .txt
+	 * Hence, this is left to the tool to check if it is an existing file or directory
+	 */
+	@Test
+	public void parse_MoveDirectoryFile_ReturnMoveTool() {
+		// move directory file (assumptions made)
+<span class="fc" id="L250">		tool = shell.parse(&quot;move \&quot;~&quot;+sep+&quot;dir 123\&quot;	file1.txt&quot;);</span>
+<span class="fc" id="L251">		assertTrue(tool instanceof MoveTool);</span>
+<span class="fc" id="L252">	}</span>
+	
+	@Test
+	public void parse_MoveMultipleFiles_ReturnMoveTool() {
+		// move file1 file2 file3 (assumptions made)
+<span class="fc" id="L257">		tool = shell.parse(&quot;move  file.tar.gz	dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt  .&quot;+sep+&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file2&quot;);</span>
+<span class="fc" id="L258">		assertTrue(tool instanceof MoveTool);</span>
+<span class="fc" id="L259">	}</span>
+	
+	@Test
+	public void parse_MoveMultipleFiles_ReturnNull() {
+		// move file1 file2 file3 (invalid)
+<span class="fc" id="L264">		tool = shell.parse(&quot;move  file.tar.gz	dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file1.txt  .&quot;+sep+&quot;dir4&quot;+sep+&quot;dir5&quot;+sep+&quot;file2.txt&quot;);</span>
+<span class="fc" id="L265">		assertNull(tool);</span>
+<span class="fc" id="L266">	}</span>
+	
+	@Test
+	public void parse_MoveNoArguments_ReturnNull() {
+		// move (invalid)
+<span class="fc" id="L271">		tool = shell.parse(&quot;move&quot;);</span>
+<span class="fc" id="L272">		assertNull(tool);</span>
+<span class="fc" id="L273">	}</span>
+	
+	@Test
+	public void parse_MoveFile_ReturnNull() {
+		// move file (invalid)
+<span class="fc" id="L278">		tool = shell.parse(&quot;move dir&quot;+sep+&quot;file&quot;);</span>
+<span class="fc" id="L279">		assertNull(tool);</span>
+<span class="fc" id="L280">	}</span>
+	
+	@Test
+	public void parse_DeleteFile_ReturnDeleteTool() {
+		// delete file
+<span class="fc" id="L285">		tool = shell.parse(&quot;delete dir1d&quot;+sep+&quot;dir2dd&quot;+sep+&quot;main_1.java&quot;);</span>
+<span class="fc" id="L286">		assertTrue(tool instanceof DeleteTool);</span>
+<span class="fc" id="L287">	}</span>
+	
+	@Test
+	public void parse_DeleteDirectory_ReturnDeleteTool() {	
+		// delete directory
+<span class="fc" id="L292">		tool = shell.parse(&quot;delete		abc&quot;+sep+&quot;def&quot;+sep);</span>
+<span class="fc" id="L293">		assertTrue(tool instanceof DeleteTool);</span>
+<span class="fc" id="L294">	}</span>
+	
+	@Test
+	public void parse_DeleteDirectoryFile_ReturnDeleteTool() {
+		// delete directory file
+<span class="fc" id="L299">		tool = shell.parse(&quot;delete abc&quot;+sep+&quot;def&quot;+sep+&quot; test.java&quot;);</span>
+<span class="fc" id="L300">		assertTrue(tool instanceof DeleteTool);</span>
+<span class="fc" id="L301">	}</span>
+	
+	@Test
+	public void parse_DeleteFileDirectory_ReturnDeleteTool() {
+		// delete file directory
+<span class="fc" id="L306">		tool = shell.parse(&quot;delete  test.java abc&quot;+sep+&quot;def&quot;+sep+&quot;&quot;);</span>
+<span class="fc" id="L307">		assertTrue(tool instanceof DeleteTool);</span>
+<span class="fc" id="L308">	}</span>
+	
+	@Test
+	public void parse_DeleteNoArgument_ReturnNull() {
+		// delete (invalid)
+<span class="fc" id="L313">		tool = shell.parse(&quot;delete &quot;);</span>
+<span class="fc" id="L314">		assertNull(tool);</span>
+<span class="fc" id="L315">	}</span>
+	
+	@Test
+	public void parse_CatFileFile_ReturnCatTool() {
+		// cat file1 file2
+<span class="fc" id="L320">		tool = shell.parse(&quot;cat  	&quot;+sep+&quot;dir&quot;+sep+&quot;dir2&quot;+sep+sep+&quot;f_i_l_e.py  \&quot;dir1&quot;+sep+&quot;dir2&quot;+sep+&quot;my file.txt\&quot;&quot;);</span>
+<span class="fc" id="L321">		assertTrue(tool instanceof CatTool);</span>
+<span class="fc" id="L322">	}</span>
+	
+	@Test
+	public void parse_CatDash_ReturnCatTool() {
+		// cat -
+<span class="fc" id="L327">		tool = shell.parse(&quot;cat  -&quot;);</span>
+<span class="fc" id="L328">		assertTrue(tool instanceof CatTool);</span>
+<span class="fc" id="L329">	}</span>
+	
+	@Test
+	public void parse_CatDirectory_ReturnCatTool() {
+		// cat directory
+<span class="fc" id="L334">		tool = shell.parse(&quot;cat	 directory&quot;);</span>
+<span class="fc" id="L335">		assertTrue(tool instanceof CatTool);</span>
+<span class="fc" id="L336">	}</span>
+	
+	@Test
+	public void parse_CatMutipleFilesDirectories_ReturnCatTool() {
+		// cat directory1 file1 directory2 file2
+<span class="fc" id="L341">		tool = shell.parse(&quot;cat	 directory1 file1.txt directory2 file2.txt&quot;);</span>
+<span class="fc" id="L342">		assertTrue(tool instanceof CatTool);</span>
+<span class="fc" id="L343">	}</span>
+	
+	/**
+	 * Assumption: if there is no &quot;-&quot; or filename argument, 
+	 * it is by default treated as &quot;-&quot; (standard input)
+	 */
+	@Test
+	public void parse_CatNoArgument_ReturnCatTool() {
+		// cat
+<span class="fc" id="L352">		tool = shell.parse(&quot;cat&quot;);</span>
+<span class="fc" id="L353">		assertTrue(tool instanceof CatTool);</span>
+<span class="fc" id="L354">	}</span>
+	
+	@Test
+	public void parse_CatMultipleDashes_ReturnNull() {
+		// cat - file1 - file2 -
+<span class="fc" id="L359">		tool = shell.parse(&quot;cat  - \&quot;file1.txt\&quot; - file2.txt -&quot;);</span>
+<span class="fc" id="L360">		assertNull(tool);</span>
+<span class="fc" id="L361">	}</span>
+	
+	
+	@Test
+	public void parse_EchoString_ReturnEchoTool() {
+<span class="fc" id="L366">		tool = shell.parse(&quot;echo abc de34 [][] '''&quot;);</span>
+<span class="fc" id="L367">		assertTrue(tool instanceof EchoTool);</span>
+<span class="fc" id="L368">	}</span>
+	
+	@Test
+	public void parse_EchoNoArgument_ReturnEchoTool() {
+<span class="fc" id="L372">		tool = shell.parse(&quot;echo &quot;);</span>
+<span class="fc" id="L373">		assertTrue(tool instanceof EchoTool);</span>
+<span class="fc" id="L374">	}</span>
+	
+	@Test
+	public void parse_GrepOptionPatternFile_ReturnGrepTool() {
+		// grep option pattern file
+<span class="fc" id="L379">		tool = shell.parse(&quot;grep -A 5 \&quot;testing 123\&quot; test.txt&quot;);</span>
+<span class="fc" id="L380">		assertTrue(tool instanceof GrepTool);</span>
+<span class="fc" id="L381">	}</span>
+	
+	@Test
+	public void parse_GrepOptionPatternMultipleFiles_ReturnGrepTool() {
+		// grep option pattern file1 file2
+<span class="fc" id="L386">		tool = shell.parse(&quot;grep -A 5 \&quot;testing 123\&quot; test1.txt test2&quot;);</span>
+<span class="fc" id="L387">		assertTrue(tool instanceof GrepTool);</span>
+<span class="fc" id="L388">	}</span>
+	
+	@Test
+	public void parse_GrepPatternFile_ReturnGrepTool() {
+		// grep pattern file
+		// allows \&quot; in pattern
+<span class="fc" id="L394">		tool = shell.parse(&quot;grep	\&quot; a?^\\\&quot;. \&quot;	\&quot;~&quot;+sep+&quot;dir 1&quot;+sep+&quot;dir 2&quot;+sep+&quot;test.txt\&quot;&quot;);</span>
+<span class="fc" id="L395">		assertTrue(tool instanceof GrepTool);</span>
+<span class="fc" id="L396">	}</span>
+	
+	@Test
+	public void parse_GrepPatternMultipleFiles_ReturnGrepTool() {
+		// grep pattern file1 file2
+<span class="fc" id="L401">		tool = shell.parse(&quot;grep pattern123 file1 file2.mp3&quot;);</span>
+<span class="fc" id="L402">		assertTrue(tool instanceof GrepTool);</span>
+<span class="fc" id="L403">	}</span>
+	
+	@Test
+	public void parse_GrepOptionPatternDash_ReturnGrepTool() {
+		// grep option pattern -
+<span class="fc" id="L408">		tool = shell.parse(&quot;grep   -o    \&quot;(*){4}\&quot;   -&quot;);</span>
+<span class="fc" id="L409">		assertTrue(tool instanceof GrepTool);</span>
+<span class="fc" id="L410">	}</span>
+	
+	@Test
+	public void parse_GrepOptionWithNumPatternFile_ReturnGrepTool() {
+		// grep option num pattern file
+<span class="fc" id="L415">		tool = shell.parse(&quot;grep -B 21 \&quot;pattern_*\&quot; file&quot;);</span>
+<span class="fc" id="L416">		assertTrue(tool instanceof GrepTool);</span>
+<span class="fc" id="L417">	}</span>
+	
+	@Test
+	public void parse_GrepPatternDash_ReturnGrepTool() {
+		// grep pattern -
+<span class="fc" id="L422">		tool = shell.parse(&quot;grep \&quot;pattern xyz [a-zA-Z]?\&quot; -&quot;);</span>
+<span class="fc" id="L423">		assertTrue(tool instanceof GrepTool);</span>
+<span class="fc" id="L424">	}</span>
+	
+	@Test
+	public void parse_GrepPattern_ReturnGrepTool() {
+		// grep pattern
+<span class="fc" id="L429">		tool = shell.parse(&quot;grep	\&quot;pattern [0-9]* \\\&quot;\&quot;&quot;);</span>
+<span class="fc" id="L430">		assertTrue(tool instanceof GrepTool);</span>
+<span class="fc" id="L431">	}</span>
+	
+	@Test
+	public void parse_PatternNoQuotes_ReturnGrepTool() {
+		// grep pattern
+<span class="fc" id="L436">		tool = shell.parse(&quot;grep	pattern &quot;);</span>
+<span class="fc" id="L437">		assertTrue(tool instanceof GrepTool);</span>
+<span class="fc" id="L438">	}</span>
+	
+	@Test
+	public void parse_GrepEmptyPattern_ReturnGrepTool() {
+		// grep pattern in quotes
+<span class="fc" id="L443">		tool = shell.parse(&quot;grep \&quot;\&quot;&quot;);</span>
+<span class="fc" id="L444">		assertTrue(tool instanceof GrepTool);</span>
+<span class="fc" id="L445">	}</span>
+	
+	@Test
+	public void parse_GrepOptionHelp_ReturnGrepTool() {
+		// grep -help
+<span class="fc" id="L450">		tool = shell.parse(&quot;grep	-help&quot;);</span>
+<span class="fc" id="L451">		assertTrue(tool instanceof GrepTool);</span>
+<span class="fc" id="L452">	}</span>
+	
+	/**
+	 * Assumption: Pattern does not need to be in quotes. So the file name is treated as a pattern 
+	 * and assumes a standard input is expected, which adds an additional &quot;-&quot; in its argument
+	 */
+	@Test
+	public void parse_GrepFile_ReturnGrepTool() {	
+		// grep file (assumptions made)
+<span class="fc" id="L461">		tool = shell.parse(&quot;grep	.&quot;+sep+&quot;this&quot;+sep+&quot;is&quot;+sep+&quot;a&quot;+sep+&quot;test.txt&quot;);</span>
+<span class="fc" id="L462">		assertTrue(tool instanceof GrepTool);</span>
+<span class="fc" id="L463">	}</span>
+	
+	@Test
+	public void parse_GrepDash_ReturnGrepTool() {	
+		// grep - (assumptions made)
+<span class="fc" id="L468">		tool = shell.parse(&quot;grep -&quot;);</span>
+<span class="fc" id="L469">		assertTrue(tool instanceof GrepTool);</span>
+<span class="fc" id="L470">	}</span>
+	
+	/**
+	 * Assumption: pattern must always be declared in front of file 
+	 * but options can be anywhere in the command
+	 */
+	@Test
+	public void parse_GrepPatternFileOption_ReturnGrepTool() {
+		// grep pattern file option (assumptions made)
+<span class="fc" id="L479">		tool = shell.parse(&quot;grep	\&quot;pattern+\&quot; file.txt -v&quot;);</span>
+<span class="fc" id="L480">		assertTrue(tool instanceof GrepTool);</span>
+<span class="fc" id="L481">	}</span>
+	
+	@Test
+	public void parse_GrepPatternOption_ReturnGrepTool() {
+		// grep pattern option
+<span class="fc" id="L486">		tool = shell.parse(&quot;grep	\&quot;pattern+\&quot; -v&quot;);</span>
+<span class="fc" id="L487">		assertTrue(tool instanceof GrepTool);</span>
+<span class="fc" id="L488">	}</span>
+	
+	@Test
+	public void parse_GrepMultipleOptionsPatternFile_ReturnNull() {
+		// grep option1 option2 option3 pattern file (invalid)
+<span class="fc" id="L493">		tool = shell.parse(&quot;grep -c -o \&quot;testing 123\&quot; test.txt&quot;);</span>
+<span class="fc" id="L494">		assertNull(tool);</span>
+<span class="fc" id="L495">	}</span>
+	
+	@Test
+	public void parse_GrepOptionNoNumPatternDash_ReturnNull() {
+		// grep option(no num) pattern - (invalid)
+<span class="fc" id="L500">		tool = shell.parse(&quot;grep -C \&quot;pattern 1 2 3\&quot; file&quot;);</span>
+<span class="fc" id="L501">		assertNull(tool);</span>
+<span class="fc" id="L502">	}</span>
+	
+	@Test
+	public void parse_GrepOption_ReturnNull() {
+		// grep option (invalid)
+<span class="fc" id="L507">		tool = shell.parse(&quot;grep	-A&quot;);</span>
+<span class="fc" id="L508">		assertNull(tool);</span>
+<span class="fc" id="L509">	}</span>
+	
+	@Test
+	public void parse_GrepNoArguments_ReturnNull() {
+		// grep (invalid)
+<span class="fc" id="L514">		tool = shell.parse(&quot; grep &quot;);</span>
+<span class="fc" id="L515">		assertNull(tool);</span>
+<span class="fc" id="L516">	}</span>
+	
+	@Test
+	public void parse_Pipe2Commands_ReturnPipingTool() {
+		// cd | pwd
+<span class="fc" id="L521">		tool = shell.parse(&quot;cd \&quot;D:&quot;+sep+sep+&quot;dir 1&quot;+sep+&quot;dir 1 2 3\&quot;|pwd&quot;);</span>
+<span class="fc" id="L522">		assertTrue(tool instanceof PipingTool);</span>
+<span class="fc" id="L523">	}</span>
+	
+	@Test
+	public void parse_PipeFourCommands_ReturnPipingTool() {
+		// ls | cat | echo | grep
+<span class="fc" id="L528">		tool = shell.parse(&quot;ls \&quot;dir 1&quot;+sep+&quot;dir2\&quot; file.txt |cat directory1 | echo abcdefg| grep -c \&quot;(\\\\s)*\&quot;&quot;);</span>
+<span class="fc" id="L529">		assertTrue(tool instanceof PipingTool);</span>
+<span class="fc" id="L530">	}</span>
+	
+	@Test
+	public void parse_PipeCommandsWithStdin_ReturnTools() {
+		// cat (with stdin) | grep (with stdin) | echo
+<span class="fc" id="L535">		tool = shell.parse(&quot;cat file.txt - | grep -C 3 \&quot;abc\&quot; | echo testing 1 2 3 &quot;);</span>
+<span class="fc" id="L536">		assertTrue(tool instanceof PipingTool);</span>
+<span class="fc" id="L537">	}</span>
+	
+	@Test
+	public void parse_PipeAtStartOfCommand_ReturnNull() {
+<span class="fc" id="L541">		tool = shell.parse(&quot;   | copy file1.a file2.a directory | ls &quot;);</span>
+<span class="fc" id="L542">		assertNull(tool);</span>
+<span class="fc" id="L543">	}</span>
+	
+	@Test
+	public void parse_PipeAtEndOfCommand_ReturnNull() {
+<span class="fc" id="L547">		tool = shell.parse(&quot;copy file1.a file2.a directory | ls | &quot;);</span>
+<span class="fc" id="L548">		assertNull(tool);</span>
+<span class="fc" id="L549">	}</span>
+	
+	@Test
+	public void parse_WcNoArguments_ReturnWcTool() {
+<span class="fc" id="L553">		tool = shell.parse(&quot;wc&quot;);</span>
+<span class="fc" id="L554">		assertTrue(tool instanceof WcTool);</span>
+<span class="fc" id="L555">	}</span>
+	
+	@Test
+	public void parse_WcOption_ReturnWcTool() {
+<span class="fc" id="L559">		tool = shell.parse(&quot;wc -m&quot;);</span>
+<span class="fc" id="L560">		assertTrue(tool instanceof WcTool);</span>
+<span class="fc" id="L561">	}</span>
+	
+	@Test
+	public void parse_WcMultipleOptions_ReturnWcTool() {
+<span class="fc" id="L565">		tool = shell.parse(&quot;wc -l -w&quot;);</span>
+<span class="fc" id="L566">		assertTrue(tool instanceof WcTool);</span>
+<span class="fc" id="L567">	}</span>
+	
+	@Test
+	public void parse_WcMultipleOptionsWithStdin_ReturnWcTool() {
+<span class="fc" id="L571">		tool = shell.parse(&quot;wc -w -help -&quot;);</span>
+<span class="fc" id="L572">		assertTrue(tool instanceof WcTool);</span>
+<span class="fc" id="L573">	}</span>
+	
+	@Test
+	public void parse_WcFile_ReturnWcTool() {
+<span class="fc" id="L577">		tool = shell.parse(&quot;wc file&quot;);</span>
+<span class="fc" id="L578">		assertTrue(tool instanceof WcTool);</span>
+<span class="fc" id="L579">	}</span>
+	
+	@Test
+	public void parse_WcMultipleFiles_ReturnWcTool() {
+<span class="fc" id="L583">		tool = shell.parse(&quot;wc file1.txt file2&quot;);</span>
+<span class="fc" id="L584">		assertTrue(tool instanceof WcTool);</span>
+<span class="fc" id="L585">	}</span>
+	
+	@Test
+	public void parse_WcMultipleOptionsAndFiles_ReturnWcTool() {
+<span class="fc" id="L589">		tool = shell.parse(&quot;wc -w -l file1.txt file2&quot;);</span>
+<span class="fc" id="L590">		assertTrue(tool instanceof WcTool);</span>
+<span class="fc" id="L591">	}</span>
+	
+	@Test
+	public void parse_WcInvalidOption_ReturnNull() {
+<span class="fc" id="L595">		tool = shell.parse(&quot;wc -l -s&quot;);</span>
+<span class="fc" id="L596">		assertNull(tool);</span>
+<span class="fc" id="L597">	}</span>
+	
+	/**
+	 * Assumption: options must always be declared before files or stdin (&quot;-&quot;)
+	 */
+	@Test
+	public void parse_WcFilesOptions_ReturnNull() {
+<span class="fc" id="L604">		tool = shell.parse(&quot;wc file1 file2 -l -w&quot;);</span>
+<span class="fc" id="L605">		assertNull(tool);</span>
+<span class="fc" id="L606">	}</span>
+	
+	@Test
+	public void parse_SortOptionHelp_ReturnSortTool() {
+<span class="fc" id="L610">		tool = shell.parse(&quot;sort -help&quot;);</span>
+<span class="fc" id="L611">		assertTrue(tool instanceof SortTool);</span>
+<span class="fc" id="L612">	}</span>
+	
+	@Test
+	public void parse_SortFile_ReturnSortTool() {
+<span class="fc" id="L616">		tool = shell.parse(&quot;sort file.txt&quot;);</span>
+<span class="fc" id="L617">		assertTrue(tool instanceof SortTool);</span>
+<span class="fc" id="L618">	}</span>
+	
+	@Test
+	public void parse_SortMultipleFiles_ReturnSortTool() {
+<span class="fc" id="L622">		tool = shell.parse(&quot;sort file.txt file2&quot;);</span>
+<span class="fc" id="L623">		assertTrue(tool instanceof SortTool);</span>
+<span class="fc" id="L624">	}</span>
+	
+	@Test
+	public void parse_SortOptionFile_ReturnSortTool() {
+<span class="fc" id="L628">		tool = shell.parse(&quot;sort -c file&quot;);</span>
+<span class="fc" id="L629">		assertTrue(tool instanceof SortTool);</span>
+<span class="fc" id="L630">	}</span>
+	
+	@Test
+	public void parse_SortOptionMultipleFiles_ReturnSortTool() {
+<span class="fc" id="L634">		tool = shell.parse(&quot;sort -c file.txt file2&quot;);</span>
+<span class="fc" id="L635">		assertTrue(tool instanceof SortTool);</span>
+<span class="fc" id="L636">	}</span>
+	
+	@Test
+	public void parse_SortMultipleOptionsAndFiles_ReturnSortTool() {
+<span class="fc" id="L640">		tool = shell.parse(&quot;sort -c -help file1 file2&quot;);</span>
+<span class="fc" id="L641">		assertTrue(tool instanceof SortTool);</span>
+<span class="fc" id="L642">	}</span>
+	
+	@Test
+	public void parse_SortNoArguments_ReturnNull() {
+<span class="fc" id="L646">		tool = shell.parse(&quot;sort&quot;);</span>
+<span class="fc" id="L647">		assertNull(tool);</span>
+<span class="fc" id="L648">	}</span>
+	
+	@Test
+	public void parse_SortStdin_ReturnNull() {
+<span class="fc" id="L652">		tool = shell.parse(&quot;sort -&quot;);</span>
+<span class="fc" id="L653">		assertNull(tool);</span>
+<span class="fc" id="L654">	}</span>
+	
+	@Test
+	public void parse_SortOption_ReturnNull() {
+<span class="fc" id="L658">		tool = shell.parse(&quot;sort -c&quot;);</span>
+<span class="fc" id="L659">		assertNull(tool);</span>
+<span class="fc" id="L660">	}</span>
+	
+	/**
+	 * Assumption: option must always be declared before files
+	 */
+	@Test
+	public void parse_SortFileOption_ReturnNull() {
+<span class="fc" id="L667">		tool = shell.parse(&quot;sort file.txt -c&quot;);</span>
+<span class="fc" id="L668">		assertNull(tool);</span>
+<span class="fc" id="L669">	}</span>
+	
+	@Test
+	public void parse_SortInvalidOptionFile_ReturnNull() {
+<span class="fc" id="L673">		tool = shell.parse(&quot;sort -d file.txt&quot;);</span>
+<span class="fc" id="L674">		assertNull(tool);</span>
+<span class="fc" id="L675">	}</span>
+	
+	@Test
+	public void parse_CommNoOptionFiles_ReturnCommTool() {
+<span class="fc" id="L679">		tool = shell.parse(&quot;comm file.txt file2&quot;);</span>
+<span class="fc" id="L680">		assertTrue(tool instanceof CommTool);</span>
+<span class="fc" id="L681">	}</span>
+	
+	@Test
+	public void parse_CommOptionCFiles_ReturnCommTool() {
+<span class="fc" id="L685">		tool = shell.parse(&quot;comm -c file.txt file2.txt&quot;);</span>
+<span class="fc" id="L686">		assertTrue(tool instanceof CommTool);</span>
+<span class="fc" id="L687">	}</span>
+	
+	@Test
+	public void parse_CommOptionDFiles_ReturnCommTool() {
+<span class="fc" id="L691">		tool = shell.parse(&quot;comm -d file.txt file2.txt&quot;);</span>
+<span class="fc" id="L692">		assertTrue(tool instanceof CommTool);</span>
+<span class="fc" id="L693">	}</span>
+	
+	@Test
+	public void parse_CommOptionHelpFiles_ReturnCommTool() {
+<span class="fc" id="L697">		tool = shell.parse(&quot;comm -help file.txt file2.txt&quot;);</span>
+<span class="fc" id="L698">		assertTrue(tool instanceof CommTool);</span>
+<span class="fc" id="L699">	}</span>
+	
+	@Test
+	public void parse_CommOptionHelp_ReturnCommTool() {
+<span class="fc" id="L703">		tool = shell.parse(&quot;comm -help&quot;);</span>
+<span class="fc" id="L704">		assertTrue(tool instanceof CommTool);</span>
+<span class="fc" id="L705">	}</span>
+	
+	@Test
+	public void parse_CommOptionDHelpFiles_ReturnCommTool() {
+<span class="fc" id="L709">		tool = shell.parse(&quot;comm -d -help file.txt file2&quot;);</span>
+<span class="fc" id="L710">		assertTrue(tool instanceof CommTool);</span>
+<span class="fc" id="L711">	}</span>
+	
+	@Test
+	public void parse_CommOptionCHelpNoFiles_ReturnCommTool() {
+<span class="fc" id="L715">		tool = shell.parse(&quot;comm -c -help&quot;);</span>
+<span class="fc" id="L716">		assertTrue(tool instanceof CommTool);</span>
+<span class="fc" id="L717">	}</span>
+	
+	@Test
+	public void parse_CommOptionCDFiles_ReturnNull() {
+<span class="fc" id="L721">		tool = shell.parse(&quot;comm -c -d file.txt file2&quot;);</span>
+<span class="fc" id="L722">		assertNull(tool);</span>
+<span class="fc" id="L723">	}</span>
+	
+	@Test
+	public void parse_Comm1File_ReturnNull() {
+<span class="fc" id="L727">		tool = shell.parse(&quot;comm file.txt&quot;);</span>
+<span class="fc" id="L728">		assertNull(tool);</span>
+<span class="fc" id="L729">	}</span>
+	
+	@Test
+	public void parse_CommNoArguments_ReturnNull() {
+<span class="fc" id="L733">		tool = shell.parse(&quot;comm&quot;);</span>
+<span class="fc" id="L734">		assertNull(tool);</span>
+<span class="fc" id="L735">	}</span>
+	
+	@Test
+	public void parse_CommStdin_ReturnNull() {
+<span class="fc" id="L739">		tool = shell.parse(&quot;comm -&quot;);</span>
+<span class="fc" id="L740">		assertNull(tool);</span>
+<span class="fc" id="L741">	}</span>
+	
+	/**
+	 * Assumption: options must always be declared before files
+	 */
+	@Test
+	public void parse_CommFilesOption_ReturnNull() {
+<span class="fc" id="L748">		tool = shell.parse(&quot;comm file1 file2 -c&quot;);</span>
+<span class="fc" id="L749">		assertNull(tool);</span>
+<span class="fc" id="L750">	}</span>
+	
+	/**
+	 * Assumption: if there is no &quot;-&quot; or filename as last argument, 
+	 * it is by default treated as &quot;-&quot; (standard input)
+	 */
+	@Test
+	public void parse_PasteOption_ReturnPasteTool() {
+<span class="fc" id="L758">		tool = shell.parse(&quot;paste -s&quot;);</span>
+<span class="fc" id="L759">		assertTrue(tool instanceof PasteTool);</span>
+<span class="fc" id="L760">	}</span>
+	
+	@Test
+	public void parse_PasteStdin_ReturnPasteTool() {
+<span class="fc" id="L764">		tool = shell.parse(&quot;paste -&quot;);</span>
+<span class="fc" id="L765">		assertTrue(tool instanceof PasteTool);</span>
+<span class="fc" id="L766">	}</span>
+	
+	@Test
+	public void parse_PasteFile_ReturnPasteTool() {
+<span class="fc" id="L770">		tool = shell.parse(&quot;paste file1&quot;);</span>
+<span class="fc" id="L771">		assertTrue(tool instanceof PasteTool);</span>
+<span class="fc" id="L772">	}</span>
+	
+	@Test
+	public void parse_PasteMultipleFiles_ReturnPasteTool() {
+<span class="fc" id="L776">		tool = shell.parse(&quot;paste file1 file2&quot;);</span>
+<span class="fc" id="L777">		assertTrue(tool instanceof PasteTool);</span>
+<span class="fc" id="L778">	}</span>
+	
+	@Test
+	public void parse_PasteOptionHelp_ReturnPasteTool() {
+<span class="fc" id="L782">		tool = shell.parse(&quot;paste -help&quot;);</span>
+<span class="fc" id="L783">		assertTrue(tool instanceof PasteTool);</span>
+<span class="fc" id="L784">	}</span>
+	
+	@Test
+	public void parse_PasteOptionSHelpStdin_ReturnPasteTool() {
+<span class="fc" id="L788">		tool = shell.parse(&quot;paste -s -help -&quot;);</span>
+<span class="fc" id="L789">		assertTrue(tool instanceof PasteTool);</span>
+<span class="fc" id="L790">	}</span>
+	
+	@Test
+	public void parse_PasteOptionHelpFile_ReturnPasteTool() {
+<span class="fc" id="L794">		tool = shell.parse(&quot;paste -help file&quot;);</span>
+<span class="fc" id="L795">		assertTrue(tool instanceof PasteTool);</span>
+<span class="fc" id="L796">	}</span>
+	
+	@Test
+	public void parse_PasteOptionDNoDelim_ReturnPasteTool() {
+<span class="fc" id="L800">		tool = shell.parse(&quot;paste -d&quot;);</span>
+<span class="fc" id="L801">		assertTrue(tool instanceof PasteTool);</span>
+<span class="fc" id="L802">	}</span>
+	
+	@Test
+	public void parse_PasteOptionDDelimStdin_ReturnPasteTool() {
+<span class="fc" id="L806">		tool = shell.parse(&quot;paste -d -abc- -&quot;);</span>
+<span class="fc" id="L807">		assertTrue(tool instanceof PasteTool);</span>
+<span class="fc" id="L808">	}</span>
+	
+	@Test
+	public void parse_PasteOptionSFiles_ReturnPasteTool() {
+<span class="fc" id="L812">		tool = shell.parse(&quot;paste -s file file2&quot;);</span>
+<span class="fc" id="L813">		assertTrue(tool instanceof PasteTool);</span>
+<span class="fc" id="L814">	}</span>
+	
+	@Test
+	public void parse_PasteOptionSDFile_ReturnPasteTool() {
+<span class="fc" id="L818">		tool = shell.parse(&quot;paste -s -d ( file.py&quot;);</span>
+<span class="fc" id="L819">		assertTrue(tool instanceof PasteTool);</span>
+<span class="fc" id="L820">	}</span>
+	
+	@Test
+	public void parse_PasteInvalidOption_ReturnNull() {
+<span class="fc" id="L824">		tool = shell.parse(&quot;paste -c file&quot;);</span>
+<span class="fc" id="L825">		assertNull(tool);</span>
+<span class="fc" id="L826">	}</span>
+	
+	/**
+	 * Assumption: options must always be declared before files or stdin (&quot;-&quot;)
+	 */
+	@Test
+	public void parse_PasteFileOption_ReturnNull() {
+<span class="fc" id="L833">		tool = shell.parse(&quot;paste file -s&quot;);</span>
+<span class="fc" id="L834">		assertNull(tool);</span>
+<span class="fc" id="L835">	}</span>
+	
+	/**
+	 * Assumption: if there is no &quot;-&quot; or filename as last argument, 
+	 * it is by default treated as &quot;-&quot; (standard input)
+	 */
+	@Test
+	public void parse_UniqOption_ReturnUniqTool() {
+<span class="fc" id="L843">		tool = shell.parse(&quot;uniq -i&quot;);</span>
+<span class="fc" id="L844">		assertTrue(tool instanceof UniqTool);</span>
+<span class="fc" id="L845">	}</span>
+	
+	@Test
+	public void parse_UniqNoArguments_ReturnUniqTool() {
+<span class="fc" id="L849">		tool = shell.parse(&quot;uniq&quot;);</span>
+<span class="fc" id="L850">		assertTrue(tool instanceof UniqTool);</span>
+<span class="fc" id="L851">	}</span>
+	
+	@Test
+	public void parse_UniqStdin_ReturnUniqTool() {
+<span class="fc" id="L855">		tool = shell.parse(&quot;uniq -&quot;);</span>
+<span class="fc" id="L856">		assertTrue(tool instanceof UniqTool);</span>
+<span class="fc" id="L857">	}</span>
+	
+	@Test
+	public void parse_UniqFile_ReturnUniqTool() {
+<span class="fc" id="L861">		tool = shell.parse(&quot;uniq file&quot;);</span>
+<span class="fc" id="L862">		assertTrue(tool instanceof UniqTool);</span>
+<span class="fc" id="L863">	}</span>
+	
+	@Test
+	public void parse_UniqMultipleFiles_ReturnUniqTool() {
+<span class="fc" id="L867">		tool = shell.parse(&quot;uniq file1 file2&quot;);</span>
+<span class="fc" id="L868">		assertTrue(tool instanceof UniqTool);</span>
+<span class="fc" id="L869">	}</span>
+	
+	@Test
+	public void parse_UniqOptionHelp_ReturnUniqTool() {
+<span class="fc" id="L873">		tool = shell.parse(&quot;uniq -help&quot;);</span>
+<span class="fc" id="L874">		assertTrue(tool instanceof UniqTool);</span>
+<span class="fc" id="L875">	}</span>
+	
+	@Test
+	public void parse_UniqOptionIHelpFile_ReturnUniqTool() {
+<span class="fc" id="L879">		tool = shell.parse(&quot;uniq -i -help file&quot;);</span>
+<span class="fc" id="L880">		assertTrue(tool instanceof UniqTool);</span>
+<span class="fc" id="L881">	}</span>
+	
+	@Test
+	public void parse_UniqOptionIStdin_ReturnUniqTool() {
+<span class="fc" id="L885">		tool = shell.parse(&quot;uniq -i -&quot;);</span>
+<span class="fc" id="L886">		assertTrue(tool instanceof UniqTool);</span>
+<span class="fc" id="L887">	}</span>
+	
+	@Test
+	public void parse_UniqOptionFNum_ReturnUniqTool() {
+<span class="fc" id="L891">		tool = shell.parse(&quot;uniq -f 100&quot;);</span>
+<span class="fc" id="L892">		assertTrue(tool instanceof UniqTool);</span>
+<span class="fc" id="L893">	}</span>
+	
+	@Test
+	public void parse_UniqOptionFNumFile_ReturnUniqTool() {
+<span class="fc" id="L897">		tool = shell.parse(&quot;uniq -f 100 file&quot;);</span>
+<span class="fc" id="L898">		assertTrue(tool instanceof UniqTool);</span>
+<span class="fc" id="L899">	}</span>
+	
+	@Test
+	public void parse_UniqOptionFNoNumFile_ReturnNull() {
+<span class="fc" id="L903">		tool = shell.parse(&quot;uniq -f file1&quot;);</span>
+<span class="fc" id="L904">		assertNull(tool);</span>
+<span class="fc" id="L905">	}</span>
+	
+	@Test
+	public void parse_UniqOptionINum_ReturnNull() {
+<span class="fc" id="L909">		tool = shell.parse(&quot;uniq -i 7&quot;);</span>
+<span class="fc" id="L910">		assertNull(tool);</span>
+<span class="fc" id="L911">	}</span>
+	
+	@Test
+	public void parse_UniqInvalidOption_ReturnNull() {
+<span class="fc" id="L915">		tool = shell.parse(&quot;uniq -d file&quot;);</span>
+<span class="fc" id="L916">		assertNull(tool);</span>
+<span class="fc" id="L917">	}</span>
+	
+	/**
+	 * Assumption: options must always be declared before files or stdin (&quot;-&quot;)
+	 */
+	@Test
+	public void parse_UniqFileOption_ReturnNull() {
+<span class="fc" id="L924">		tool = shell.parse(&quot;uniq file -f 2-10,19&quot;);</span>
+<span class="fc" id="L925">		assertNull(tool);</span>
+<span class="fc" id="L926">	}</span>
+	
+	/**
+	 * Assumption: if there is no &quot;-&quot; or filename as last argument, 
+	 * it is by default treated as &quot;-&quot; (standard input)
+	 */
+	@Test
+	public void parse_CutOptionFList_ReturnCutTool() {
+<span class="fc" id="L934">		tool = shell.parse(&quot;cut -f 1-3,6,-10&quot;);</span>
+<span class="fc" id="L935">		assertTrue(tool instanceof CutTool);</span>
+<span class="fc" id="L936">	}</span>
+	
+	@Test
+	public void parse_CutOptionCStdin_ReturnCutTool() {
+<span class="fc" id="L940">		tool = shell.parse(&quot;cut -c 8 -&quot;);</span>
+<span class="fc" id="L941">		assertTrue(tool instanceof CutTool);</span>
+<span class="fc" id="L942">	}</span>
+	
+	@Test
+	public void parse_CutOptionFDFile_ReturnCutTool() {
+<span class="fc" id="L946">		tool = shell.parse(&quot;cut -f -10,3 - 7,20 -d \&quot;+  +\&quot; file&quot;);</span>
+<span class="fc" id="L947">		assertTrue(tool instanceof CutTool);</span>
+<span class="fc" id="L948">	}</span>
+	
+	@Test
+	public void parse_CutOptionCMultipleFiles_ReturnCutTool() {
+<span class="fc" id="L952">		tool = shell.parse(&quot;cut -c 1-3, 2- file.txt file2&quot;);</span>
+<span class="fc" id="L953">		assertTrue(tool instanceof CutTool);</span>
+<span class="fc" id="L954">	}</span>
+	
+	/**
+	 * Assumption: the delimiter for -d can be any string of characters
+	 * In this test case, &quot;file&quot; is taken as the delimiter for -d thus a standard input is expected
+	 */
+	@Test
+	public void parse_CutOptionFDWithoutDelim_ReturnCutTool() {
+<span class="fc" id="L962">		tool = shell.parse(&quot;cut -f 2 -d file&quot;);</span>
+<span class="fc" id="L963">		assertTrue(tool instanceof CutTool);</span>
+<span class="fc" id="L964">	}</span>
+	
+	@Test
+	public void parse_CutOptionCNoList_ReturnNull() {
+<span class="fc" id="L968">		tool = shell.parse(&quot;cut -c&quot;);</span>
+<span class="fc" id="L969">		assertNull(tool);</span>
+<span class="fc" id="L970">	}</span>
+	
+	/**
+	 * Assumption: the cut command requires -f option if -d option is used
+	 */
+	@Test
+	public void parse_CutOptionDWithoutOptionF_ReturnNull() {
+<span class="fc" id="L977">		tool = shell.parse(&quot;cut -d abc file&quot;);</span>
+<span class="fc" id="L978">		assertNull(tool);</span>
+<span class="fc" id="L979">	}</span>
+	
+	@Test
+	public void parse_CutNoArguments_ReturnNull() {
+<span class="fc" id="L983">		tool = shell.parse(&quot;cut&quot;);</span>
+<span class="fc" id="L984">		assertNull(tool);</span>
+<span class="fc" id="L985">	}</span>
+	
+	@Test
+	public void parse_CutNoOption_ReturnNull() {
+<span class="fc" id="L989">		tool = shell.parse(&quot;cut file&quot;);</span>
+<span class="fc" id="L990">		assertNull(tool);</span>
+<span class="fc" id="L991">	}</span>
+	
+	@Test
+	public void parse_CutInvalidOption_ReturnNull() {
+<span class="fc" id="L995">		tool = shell.parse(&quot;cut -a file&quot;);</span>
+<span class="fc" id="L996">		assertNull(tool);</span>
+<span class="fc" id="L997">	}</span>
+	
+	/**
+	 * Assumption: options must always be declared before files or stdin (&quot;-&quot;)
+	 */
+	@Test
+	public void parse_CutFileOption_ReturnNull() {
+<span class="fc" id="L1004">		tool = shell.parse(&quot;cut file -c 1-10&quot;);</span>
+<span class="fc" id="L1005">		assertNull(tool);</span>
+<span class="fc" id="L1006">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

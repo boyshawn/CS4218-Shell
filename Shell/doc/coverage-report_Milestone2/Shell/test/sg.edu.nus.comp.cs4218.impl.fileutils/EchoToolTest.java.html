@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>EchoToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.fileutils</a> &gt; <span class="el_source">EchoToolTest.java</span></div><h1>EchoToolTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.fileutils;
+
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.fileutils.IEchoTool;
+
+
+<span class="fc" id="L14">public class EchoToolTest {</span>
+	private IEchoTool echoTool;
+	private File workingDir;
+
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L20">		workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+<span class="fc" id="L21">		echoTool = new EchoTool();</span>
+<span class="fc" id="L22">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L26">		echoTool = null;</span>
+<span class="fc" id="L27">	}</span>
+	
+	@Test 
+	public void echoNullArgument_StatusCodeZero() {
+<span class="fc" id="L31">		assertEquals(&quot;&quot;, echoTool.echo(null));</span>
+<span class="fc" id="L32">		assertEquals(0, echoTool.getStatusCode());</span>
+<span class="fc" id="L33">	}</span>
+	
+	@Test 
+	public void echoNewLineAtStart_StatusCodeZero() {
+<span class="fc" id="L37">		assertEquals(System.lineSeparator(), </span>
+<span class="fc" id="L38">				echoTool.echo(System.lineSeparator() + &quot;word&quot;));</span>
+<span class="fc" id="L39">		assertEquals(0, echoTool.getStatusCode());</span>
+<span class="fc" id="L40">	}</span>
+	
+	@Test 
+	public void echoNewLineNotAtStart_StatusCodeZero() {
+<span class="fc" id="L44">		assertEquals(&quot;word&quot; + System.lineSeparator(), </span>
+<span class="fc" id="L45">				echoTool.echo(&quot;word&quot; + System.lineSeparator() + &quot;next&quot;));</span>
+<span class="fc" id="L46">		assertEquals(0, echoTool.getStatusCode());</span>
+<span class="fc" id="L47">	}</span>
+	
+	
+	@Test 
+	public void echoWithNullArgument_StatusCodeZero() {
+<span class="fc" id="L52">		assertEquals(System.lineSeparator(), echoTool.execute(workingDir, null));</span>
+<span class="fc" id="L53">		assertEquals(0, echoTool.getStatusCode());</span>
+<span class="fc" id="L54">	}</span>
+	
+	@Test 
+	public void echoWithOneArgument_StatusCodeZero() {
+<span class="fc" id="L58">		String[] args = { &quot; Lorem ipsum &quot; };</span>
+<span class="fc" id="L59">		echoTool = new EchoTool(args);</span>
+		
+<span class="fc" id="L61">		assertEquals(&quot;Lorem ipsum&quot; + System.lineSeparator(), </span>
+<span class="fc" id="L62">				echoTool.execute(workingDir, null));</span>
+<span class="fc" id="L63">		assertEquals(0, echoTool.getStatusCode());</span>
+<span class="fc" id="L64">	}</span>
+	
+	@Test 
+	public void echoWithMultipleArguments_StatusCodeZero() {
+<span class="fc" id="L68">		String[] args = { &quot; Lorem ipsum &quot;, &quot;  odit tempore debitis &quot; };</span>
+<span class="fc" id="L69">		echoTool = new EchoTool(args);</span>
+		
+<span class="fc" id="L71">		assertEquals(&quot;Lorem ipsum   odit tempore debitis&quot; + System.lineSeparator(), </span>
+<span class="fc" id="L72">				echoTool.execute(workingDir, null));</span>
+<span class="fc" id="L73">		assertEquals(0, echoTool.getStatusCode());</span>
+<span class="fc" id="L74">	}</span>
+	
+	@Test 
+	public void echoWithOnlyNeWLine_StatusCodeZero() {
+<span class="fc" id="L78">		String[] args = { System.lineSeparator() };</span>
+<span class="fc" id="L79">		echoTool = new EchoTool(args);</span>
+		
+<span class="fc" id="L81">		assertEquals( System.lineSeparator(), </span>
+<span class="fc" id="L82">				echoTool.execute(workingDir, null));</span>
+<span class="fc" id="L83">		assertEquals(0, echoTool.getStatusCode());</span>
+<span class="fc" id="L84">	}</span>
+	
+	@Test 
+	public void echoWithStringAfterNewLine_StatusCodeZero() {
+<span class="fc" id="L88">		String[] args = { &quot;Lorem ipsum  &quot;, System.lineSeparator(), &quot;consectetur adipisicing&quot; };</span>
+<span class="fc" id="L89">		echoTool = new EchoTool(args);</span>
+		
+<span class="fc" id="L91">		assertEquals(&quot;Lorem ipsum&quot; + System.lineSeparator(), </span>
+<span class="fc" id="L92">				echoTool.execute(workingDir, null));</span>
+<span class="fc" id="L93">		assertEquals(0, echoTool.getStatusCode());</span>
+<span class="fc" id="L94">	}</span>
+	
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

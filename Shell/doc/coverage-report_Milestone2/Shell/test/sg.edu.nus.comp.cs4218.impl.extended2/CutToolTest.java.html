@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>CutToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.extended2</a> &gt; <span class="el_source">CutToolTest.java</span></div><h1>CutToolTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.extended2;
+
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.extended2.ICutTool;
+
+<span class="fc" id="L13">public class CutToolTest {</span>
+	// Variables
+	private ICutTool cutTool;
+	
+	@Before
+	public void setUpOnce() throws IOException {
+<span class="fc" id="L19">		cutTool = new CutTool(null);</span>
+		
+<span class="fc" id="L21">	}</span>
+
+	@After
+	public void tearDownOnce() throws IOException {
+<span class="fc" id="L25">		cutTool = null;</span>
+<span class="fc" id="L26">	}</span>
+
+	@Test
+	/**
+	 * cut specified character with valid range given
+	 */
+	public void cutSpecfiedCharacters_ListWithInRange_CharactersReturned() {
+<span class="fc" id="L33">		String list1 = &quot;1,8-9,3-10&quot;;</span>
+<span class="fc" id="L34">		String list2 = &quot;8-9,3-6,-1&quot;;</span>
+<span class="fc" id="L35">		String input1 = &quot;123456789012345&quot;;</span>
+<span class="fc" id="L36">		String input2 = &quot;123&quot;;</span>
+<span class="fc" id="L37">		String output11 = &quot;134567890&quot;;</span>
+<span class="fc" id="L38">		String output12 = &quot;1345689&quot;;</span>
+<span class="fc" id="L39">		String output21 = &quot;13&quot;;</span>
+<span class="fc" id="L40">		String output22 = &quot;13&quot;;</span>
+<span class="fc" id="L41">		assertEquals(output11, cutTool.cutSpecfiedCharacters(list1, input1));</span>
+<span class="fc" id="L42">		assertEquals(output12, cutTool.cutSpecfiedCharacters(list2, input1));</span>
+
+<span class="fc" id="L44">		assertEquals(output21, cutTool.cutSpecfiedCharacters(list1, input2));</span>
+<span class="fc" id="L45">		assertEquals(output22, cutTool.cutSpecfiedCharacters(list2, input2));</span>
+<span class="fc" id="L46">	}</span>
+
+	@Test
+	/**
+	 * cut specified character with out of range given
+	 */
+	public void cutSpecfiedCharacters_ListOutOfRange_CharactersReturned() {
+<span class="fc" id="L53">		String list1 = &quot;1,8-9,3-16&quot;;</span>
+<span class="fc" id="L54">		String list2 = &quot;8-19,3-6,-1&quot;;</span>
+<span class="fc" id="L55">		String input1 = &quot;123456789012345&quot;;</span>
+<span class="fc" id="L56">		String input2 = &quot;123&quot;;</span>
+<span class="fc" id="L57">		String output11 = &quot;13456789012345&quot;;</span>
+<span class="fc" id="L58">		String output12 = &quot;1345689012345&quot;;</span>
+<span class="fc" id="L59">		String output21 = &quot;13&quot;;</span>
+<span class="fc" id="L60">		String output22 = &quot;13&quot;;</span>
+<span class="fc" id="L61">		assertEquals(output11, cutTool.cutSpecfiedCharacters(list1, input1));</span>
+<span class="fc" id="L62">		assertEquals(output12, cutTool.cutSpecfiedCharacters(list2, input1));</span>
+
+<span class="fc" id="L64">		assertEquals(output21, cutTool.cutSpecfiedCharacters(list1, input2));</span>
+<span class="fc" id="L65">		assertEquals(output22, cutTool.cutSpecfiedCharacters(list2, input2));</span>
+<span class="fc" id="L66">	}</span>
+
+	@Test
+	/**
+	 * cut specified field with delimiter and valid range list
+	 */
+	public void cutSpecifiedCharactersUseDelimiter_ListWithInRange_CharactersReturned() {
+<span class="fc" id="L73">		String list1 = &quot;1,8-9,3-15&quot;;</span>
+<span class="fc" id="L74">		String list2 = &quot;12-,3-6,-1&quot;;</span>
+<span class="fc" id="L75">		String input1 = &quot;1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17&quot;;</span>
+<span class="fc" id="L76">		String output1 = &quot;1 3 4 5 6 7 8 9 10 11 12 13 14 15&quot;;</span>
+<span class="fc" id="L77">		String output2 = &quot;1 3 4 5 6 12 13 14 15 16 17&quot;;</span>
+
+<span class="fc" id="L79">		assertEquals(output1,</span>
+<span class="fc" id="L80">				cutTool.cutSpecifiedCharactersUseDelimiter(list1, &quot; &quot;, input1));</span>
+<span class="fc" id="L81">		assertEquals(output2,</span>
+<span class="fc" id="L82">				cutTool.cutSpecifiedCharactersUseDelimiter(list2, &quot; &quot;, input1));</span>
+<span class="fc" id="L83">	}</span>
+
+	@Test
+	/**
+	 * cut specified field with delimiter and out of range list
+	 */
+	public void cutSpecifiedCharactersUseDelimiter_ListOutOfRange_CharactersReturned() {
+<span class="fc" id="L90">		String list1 = &quot;1,8-9,3-100&quot;;</span>
+<span class="fc" id="L91">		String list2 = &quot;12-,3-6,-1&quot;;</span>
+<span class="fc" id="L92">		String input1 = &quot;1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17&quot;;</span>
+<span class="fc" id="L93">		String output1 = &quot;1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17&quot;;</span>
+<span class="fc" id="L94">		String output2 = &quot;1 3 4 5 6 12 13 14 15 16 17&quot;;</span>
+
+<span class="fc" id="L96">		assertEquals(output1,</span>
+<span class="fc" id="L97">				cutTool.cutSpecifiedCharactersUseDelimiter(list1, &quot; &quot;, input1));</span>
+<span class="fc" id="L98">		assertEquals(output2,</span>
+<span class="fc" id="L99">				cutTool.cutSpecifiedCharactersUseDelimiter(list2, &quot; &quot;, input1));</span>
+<span class="fc" id="L100">	}</span>
+
+	@Test
+	/**
+	 * cut specified field with delimiter and list with single values
+	 */
+	public void cutSpecifiedCharactersUseDelimiter_ListWithSingleNum_CharactersReturned() {
+<span class="fc" id="L107">		String list1 = &quot;15,12,14,16,200,29,1&quot;;</span>
+<span class="fc" id="L108">		String input1 = &quot;1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17&quot;;</span>
+<span class="fc" id="L109">		String output1 = &quot;1 12 14 15 16&quot;;</span>
+
+<span class="fc" id="L111">		assertEquals(output1,</span>
+<span class="fc" id="L112">				cutTool.cutSpecifiedCharactersUseDelimiter(list1, &quot; &quot;, input1));</span>
+<span class="fc" id="L113">	}</span>
+
+	@Test
+	/**
+	 * cut specified field with delimiter and list with single values
+	 */
+	public void cutSpecifiedCharactersUseDelimiter_ListAllOutofRangeNum_CharactersReturned() {
+<span class="fc" id="L120">		String list1 = &quot;200,211,231&quot;;</span>
+<span class="fc" id="L121">		String input1 = &quot;1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17&quot;;</span>
+<span class="fc" id="L122">		String output1 = &quot;&quot;;</span>
+<span class="fc" id="L123">		assertEquals(output1,</span>
+<span class="fc" id="L124">				cutTool.cutSpecifiedCharactersUseDelimiter(list1, &quot; &quot;, input1));</span>
+<span class="fc" id="L125">	}</span>
+
+	@Test
+	/**
+	 * cut specified field with delimiter and list with single and out of
+	range values
+	 */
+	public void cutSpecifiedCharactersUseDelimiter_DelimNotExistNum_CharactersReturned() {
+<span class="fc" id="L133">		String list1 = &quot;15,12,14,16,200,29,1&quot;;</span>
+<span class="fc" id="L134">		String input1 = &quot;1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17&quot;;</span>
+<span class="fc" id="L135">		String output1 = &quot;1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17&quot;;</span>
+
+<span class="fc" id="L137">		assertEquals(output1,</span>
+<span class="fc" id="L138">				cutTool.cutSpecifiedCharactersUseDelimiter(list1, &quot;d&quot;, input1));</span>
+<span class="fc" id="L139">	}</span>
+
+	@Test
+	/**
+	 * cut specified field with delimiter and list with single and out of
+	range values and tab contain in input
+	 */
+	public void cutSpecifiedCharactersUseDelimiter_DelimInputContainTab_CharactersReturned() {
+<span class="fc" id="L147">		String list1 = &quot;15,12,14,16,200,29,1&quot;;</span>
+<span class="fc" id="L148">		String input1 = &quot;1 2 	 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17&quot;;</span>
+<span class="fc" id="L149">		String output1 = &quot;1 11 13 14 15&quot;;</span>
+
+<span class="fc" id="L151">		assertEquals(output1,</span>
+<span class="fc" id="L152">				cutTool.cutSpecifiedCharactersUseDelimiter(list1, &quot; &quot;, input1));</span>
+<span class="fc" id="L153">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

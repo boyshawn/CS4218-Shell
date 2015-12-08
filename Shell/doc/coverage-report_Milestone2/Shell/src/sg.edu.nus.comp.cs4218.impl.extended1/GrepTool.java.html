@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>GrepTool.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">src</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.extended1</a> &gt; <span class="el_source">GrepTool.java</span></div><h1>GrepTool.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.extended1;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import sg.edu.nus.comp.cs4218.extended1.IGrepTool;
+import sg.edu.nus.comp.cs4218.impl.ATool;
+
+public class GrepTool extends ATool implements IGrepTool {
+	public static final int ERR_CODE_INVALID_ARG = 1;
+<span class="fc" id="L19">	public static final String ERR_MSG_INVALID_ARG = &quot;Error: Invalid arguments. See grep -help.&quot;</span>
+<span class="fc" id="L20">			+ System.lineSeparator();</span>
+	public static final String ERR_MSG_INVALID_CONTEXT_ARG = &quot;grep: %s: invalid context length argument&quot;;
+
+	public static final int ERR_CODE_IO = 2;
+<span class="fc" id="L24">	public static final String ERR_MSG_IO = &quot;Error: Reading or writing problem. Please retry and check that file path is correct&quot;</span>
+<span class="fc" id="L25">			+ System.lineSeparator();</span>
+
+	public static final int ERR_CODE_INVALID_REGEX = 3;
+<span class="fc" id="L28">	public static final String ERR_MSG_INVALID_REGEX = &quot;Error: Regex syntax is incorrect. Please retry.&quot;</span>
+<span class="fc" id="L29">			+ System.lineSeparator();</span>
+
+<span class="fc" id="L31">	public static final String MATCHES_SEPARATOR = &quot;--&quot;</span>
+<span class="fc" id="L32">			+ System.lineSeparator();</span>
+
+	public static final String FILE_PATH_HELP = &quot;help_files/grep_help&quot;;
+
+<span class="fc" id="L36">	public static Pattern pattern;</span>
+
+	public GrepTool() {
+<span class="fc" id="L39">		super(null);</span>
+<span class="fc" id="L40">	}</span>
+	
+	public GrepTool(String[] arguments) {
+<span class="fc" id="L43">		super(arguments);</span>
+<span class="fc" id="L44">	}</span>
+
+	@Override
+	public int getCountOfMatchingLines(String pattern, String input) {
+<span class="fc" id="L48">		String[] lines = getLines(input);</span>
+<span class="fc" id="L49">		Integer[] matchingIndexes = getMatchingIndexes(lines, pattern);</span>
+<span class="fc" id="L50">		return matchingIndexes.length;</span>
+	}
+
+	/**
+	 * The output contains line separator that follows the system's line
+	 * separator, which may be different from the line separator format in the
+	 * original input file.
+	 */
+	@Override
+	public String getOnlyMatchingLines(String pattern, String input) {
+<span class="fc" id="L60">		String[] lines = getLines(input);</span>
+<span class="fc" id="L61">		Integer[] matchingIndexes = getMatchingIndexes(lines, pattern);</span>
+
+<span class="fc" id="L63">		StringBuilder output = new StringBuilder();</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">		for (int index : matchingIndexes) {</span>
+<span class="fc" id="L65">			output.append(lines[index]);</span>
+<span class="fc" id="L66">			output.append(System.lineSeparator());</span>
+		}
+
+<span class="fc" id="L69">		return output.toString();</span>
+	}
+
+	@Override
+	public String getMatchingLinesWithTrailingContext(int option_A,
+			String pattern, String input) {
+<span class="fc" id="L75">		String[] lines = getLines(input);</span>
+<span class="fc" id="L76">		Integer[] matchingIndexes = getMatchingIndexes(lines, pattern);</span>
+
+<span class="fc" id="L78">		StringBuilder output = new StringBuilder();</span>
+<span class="fc" id="L79">		int prevMaxIndex = -1;</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">		for (int index : matchingIndexes) {</span>
+			// Check if the current match has at least one line vertical margin
+			// with the previous match.
+<span class="fc bfc" id="L83" title="All 4 branches covered.">			if (prevMaxIndex &gt; -1 &amp;&amp; index - prevMaxIndex &gt; 0) {</span>
+<span class="fc" id="L84">				output.append(MATCHES_SEPARATOR);</span>
+			}
+
+			// Prevent index out of bounds.
+<span class="fc" id="L88">			int maxIndex = Math.min(index + option_A, lines.length - 1);</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">			while (index &lt;= maxIndex) {</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">				if (index &gt; prevMaxIndex) {</span>
+<span class="fc" id="L91">					output.append(lines[index]);</span>
+<span class="fc" id="L92">					output.append(System.lineSeparator());</span>
+				}
+<span class="fc" id="L94">				index++;</span>
+			}
+<span class="fc" id="L96">			prevMaxIndex = maxIndex;</span>
+		}
+
+<span class="fc" id="L99">		return output.toString();</span>
+	}
+
+	@Override
+	public String getMatchingLinesWithLeadingContext(int option_B,
+			String pattern, String input) {
+<span class="fc" id="L105">		String[] lines = getLines(input);</span>
+<span class="fc" id="L106">		Integer[] matchingIndexes = getMatchingIndexes(lines, pattern);</span>
+
+<span class="fc" id="L108">		StringBuilder output = new StringBuilder();</span>
+<span class="fc" id="L109">		int prevIndex = -1;</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">		for (int index : matchingIndexes) {</span>
+<span class="fc" id="L111">			int minIndex = Math.max(index - option_B, 0);</span>
+
+<span class="pc bpc" id="L113" title="1 of 4 branches missed.">			if (prevIndex &gt; -1 &amp;&amp; minIndex - prevIndex &gt; 0) {</span>
+<span class="fc" id="L114">				output.append(MATCHES_SEPARATOR);</span>
+			}
+
+<span class="fc bfc" id="L117" title="All 2 branches covered.">			while (minIndex &lt;= index) {</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">				if (minIndex &gt; prevIndex) {</span>
+<span class="fc" id="L119">					output.append(lines[minIndex]);</span>
+<span class="fc" id="L120">					output.append(System.lineSeparator());</span>
+				}
+<span class="fc" id="L122">				minIndex++;</span>
+			}
+
+<span class="fc" id="L125">			prevIndex = index;</span>
+		}
+
+<span class="fc" id="L128">		return output.toString();</span>
+	}
+
+	@Override
+	public String getMatchingLinesWithOutputContext(int option_C,
+			String pattern, String input) {
+<span class="fc" id="L134">		String[] lines = getLines(input);</span>
+<span class="fc" id="L135">		Integer[] matchingIndexes = getMatchingIndexes(lines, pattern);</span>
+
+<span class="fc" id="L137">		StringBuilder output = new StringBuilder();</span>
+<span class="fc" id="L138">		int prevMaxIndex = -1;</span>
+
+<span class="fc bfc" id="L140" title="All 2 branches covered.">		for (int i = 0; i &lt; matchingIndexes.length; i++) {</span>
+<span class="fc" id="L141">			int matchingIndex = matchingIndexes[i];</span>
+
+			// Append '--' if the first line in block of lines in context is
+			// one more line than prevMaxIndex
+<span class="fc bfc" id="L145" title="All 2 branches covered.">			if (prevMaxIndex &gt; -1) { // Make sure it's not the first match</span>
+<span class="fc" id="L146">				int smallestIndexInContext = matchingIndex - option_C;</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">				if (smallestIndexInContext - prevMaxIndex &gt; 1) {</span>
+<span class="fc" id="L148">					output.append(&quot;--&quot;);</span>
+<span class="fc" id="L149">					output.append(System.lineSeparator());</span>
+				}
+			}
+
+<span class="fc" id="L153">			int currentIndexInContext = matchingIndex - option_C;</span>
+<span class="fc bfc" id="L154" title="All 4 branches covered.">			while (currentIndexInContext &lt;= matchingIndex + option_C</span>
+<span class="fc" id="L155">					&amp;&amp; currentIndexInContext &lt; lines.length) {</span>
+
+<span class="fc bfc" id="L157" title="All 2 branches covered.">				if (currentIndexInContext &lt;= prevMaxIndex</span>
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">						|| currentIndexInContext &lt; 0) {</span>
+<span class="fc" id="L159">					currentIndexInContext++;</span>
+<span class="fc" id="L160">					continue;</span>
+				}
+
+<span class="fc" id="L163">				output.append(lines[currentIndexInContext]);</span>
+<span class="fc" id="L164">				output.append(System.lineSeparator());</span>
+
+<span class="fc" id="L166">				currentIndexInContext++;</span>
+			}
+
+<span class="fc" id="L169">			prevMaxIndex = matchingIndex + option_C;</span>
+		}
+
+<span class="fc" id="L172">		return output.toString();</span>
+	}
+
+	@Override
+	public String getMatchingLinesOnlyMatchingPart(String pattern, String input) {
+<span class="fc" id="L177">		String[] lines = getLines(input);</span>
+<span class="fc" id="L178">		Integer[] matchingIndexes = getMatchingIndexes(lines, pattern);</span>
+<span class="fc" id="L179">		GrepTool.pattern = Pattern.compile(pattern);</span>
+
+<span class="fc" id="L181">		StringBuilder output = new StringBuilder();</span>
+<span class="fc bfc" id="L182" title="All 2 branches covered.">		for (int index : matchingIndexes) {</span>
+<span class="fc" id="L183">			String matchingSentence = lines[index];</span>
+<span class="fc" id="L184">			Matcher matcher = GrepTool.pattern.matcher(matchingSentence);</span>
+
+<span class="fc bfc" id="L186" title="All 2 branches covered.">			while (matcher.find()) {</span>
+<span class="fc" id="L187">				String matchingPart = matcher.group();</span>
+<span class="fc" id="L188">				output.append(matchingPart);</span>
+<span class="fc" id="L189">				output.append(System.lineSeparator());</span>
+			}
+		}
+
+<span class="fc" id="L193">		return output.toString();</span>
+	}
+	
+	@Override
+	public String getNonMatchingLines(String pattern, String input) {
+<span class="fc" id="L198">		String[] lines = getLines(input);</span>
+<span class="fc" id="L199">		Integer[] matchingIndexes = getMatchingIndexes(lines, pattern);</span>
+<span class="fc" id="L200">		StringBuilder output = new StringBuilder();</span>
+
+		/**
+		 * i is the iterating index for all the lines j is the iterating index
+		 * for matching lines
+		 */
+<span class="fc bfc" id="L206" title="All 2 branches covered.">		for (int i = 0, j = 0; i &lt; lines.length; i++) {</span>
+			// Check if current index is a matching index
+<span class="pc bpc" id="L208" title="1 of 4 branches missed.">			if (j &lt; matchingIndexes.length &amp;&amp; i == matchingIndexes[j]) {</span>
+<span class="fc" id="L209">				j++;</span>
+<span class="fc" id="L210">				continue;</span>
+			}
+<span class="fc" id="L212">			output.append(lines[i]);</span>
+<span class="fc" id="L213">			output.append(System.lineSeparator());</span>
+		}
+
+<span class="fc" id="L216">		return output.toString();</span>
+	}
+
+	@Override
+	public String getHelp() {
+<span class="fc" id="L221">		String output = &quot;&quot;;</span>
+
+		try {
+<span class="fc" id="L224">			output = new String(Files.readAllBytes(new File(FILE_PATH_HELP).toPath()));</span>
+<span class="pc" id="L225">		} catch (IOException e) {</span>
+<span class="nc" id="L226">			setStatusCode(ERR_CODE_IO);</span>
+<span class="nc" id="L227">			return ERR_MSG_IO;</span>
+		}
+
+<span class="fc" id="L230">		return output;</span>
+	}
+
+	/**
+	 * Assumptions: [options] always comes before PATTERN and [FILE...] Only
+	 * allow one option Only allow one '-'. Behaviour is undefined otherwise.
+	 */
+	@Override
+	public String execute(File workingDir, String stdin) {
+<span class="fc bfc" id="L239" title="All 2 branches covered.">		if (args.length &lt; 1) {</span>
+<span class="fc" id="L240">			setStatusCode(ERR_CODE_INVALID_ARG);</span>
+<span class="fc" id="L241">			return ERR_MSG_INVALID_ARG;</span>
+		}
+
+<span class="fc" id="L244">		StringBuilder output = new StringBuilder();</span>
+
+		try {
+<span class="fc" id="L247">			boolean hasMultipleFiles = false;</span>
+<span class="fc bfc" id="L248" title="All 2 branches covered.">			if (!hasOption(args)) {</span>
+<span class="fc" id="L249">				String pattern = args[0];</span>
+
+<span class="fc bfc" id="L251" title="All 2 branches covered.">				if (args.length &lt; 2) {</span>
+<span class="fc bfc" id="L252" title="All 2 branches covered.">					if (stdin == null) {</span>
+<span class="fc" id="L253">						setStatusCode(ERR_CODE_INVALID_ARG);</span>
+<span class="fc" id="L254">						return ERR_MSG_INVALID_ARG;</span>
+					}
+
+<span class="fc" id="L257">					output.append(getOnlyMatchingLines(pattern, stdin));</span>
+				}
+
+<span class="fc bfc" id="L260" title="All 2 branches covered.">				for (int i = 1; i &lt; args.length; i++) {</span>
+<span class="pc bpc" id="L261" title="1 of 2 branches missed.">					if (args.length &gt; 2) {</span>
+<span class="nc" id="L262">						hasMultipleFiles = true;</span>
+					}
+<span class="fc" id="L264">					String input = readFile(args[i], stdin, &quot;UTF8&quot;, hasMultipleFiles);</span>
+<span class="fc" id="L265">					output.append(getOnlyMatchingLines(pattern, input));</span>
+				}
+<span class="fc" id="L267">			} else {</span>
+				int lineCount;
+				String pattern;
+
+<span class="fc" id="L271">				String option = args[0];</span>
+<span class="pc bpc" id="L272" title="7 of 22 branches missed.">				switch (option) {</span>
+				case &quot;-A&quot;:
+					try {
+<span class="fc" id="L275">						lineCount = Integer.parseInt(args[1]);</span>
+<span class="fc" id="L276">						pattern = args[2];</span>
+						// Check if there is [FILES] arg
+<span class="fc bfc" id="L278" title="All 2 branches covered.">						if (args.length &lt; 4) {</span>
+<span class="fc" id="L279">							output.append(getMatchingLinesWithTrailingContext(</span>
+<span class="fc" id="L280">									lineCount, pattern, stdin));</span>
+						}
+
+						// [FILES] arg present
+<span class="fc bfc" id="L284" title="All 2 branches covered.">						for (int i = 3; i &lt; args.length; i++) {</span>
+<span class="fc bfc" id="L285" title="All 2 branches covered.">							if (args.length &gt; 4) {</span>
+<span class="fc" id="L286">								hasMultipleFiles = true;</span>
+							}
+<span class="fc" id="L288">							String input = readFile(args[i], stdin, &quot;UTF8&quot;, hasMultipleFiles);</span>
+<span class="fc" id="L289">							output.append(getMatchingLinesWithTrailingContext(</span>
+<span class="fc" id="L290">									lineCount, pattern, input));</span>
+						}
+<span class="fc" id="L292">					} catch (NumberFormatException e) {</span>
+<span class="fc" id="L293">						setStatusCode(ERR_CODE_INVALID_ARG);</span>
+<span class="fc" id="L294">						return String.format(ERR_MSG_INVALID_CONTEXT_ARG,</span>
+<span class="fc" id="L295">								args[1]);</span>
+					}
+					break;
+
+				case &quot;-B&quot;:
+					try {
+<span class="fc" id="L301">						lineCount = Integer.parseInt(args[1]);</span>
+<span class="fc" id="L302">						pattern = args[2];</span>
+<span class="fc bfc" id="L303" title="All 2 branches covered.">						if (args.length &lt; 4) {</span>
+<span class="fc" id="L304">							output.append(getMatchingLinesWithLeadingContext(</span>
+<span class="fc" id="L305">									lineCount, pattern, stdin));</span>
+						}
+
+<span class="fc bfc" id="L308" title="All 2 branches covered.">						for (int i = 3; i &lt; args.length; i++) {</span>
+<span class="pc bpc" id="L309" title="1 of 2 branches missed.">							if (args.length &gt; 4) {</span>
+<span class="nc" id="L310">								hasMultipleFiles = true;</span>
+							}
+<span class="fc" id="L312">							String input = readFile(args[i], stdin, &quot;UTF8&quot;, hasMultipleFiles);</span>
+<span class="fc" id="L313">							output.append(getMatchingLinesWithLeadingContext(</span>
+<span class="fc" id="L314">									lineCount, pattern, input));</span>
+						}
+<span class="pc" id="L316">					} catch (NumberFormatException e) {</span>
+<span class="nc" id="L317">						setStatusCode(ERR_CODE_INVALID_ARG);</span>
+<span class="nc" id="L318">						return String.format(ERR_MSG_INVALID_CONTEXT_ARG,</span>
+<span class="nc" id="L319">								args[1]);</span>
+					}
+					break;
+
+				case &quot;-C&quot;:
+					try {
+<span class="fc" id="L325">						lineCount = Integer.valueOf(args[1]);</span>
+<span class="fc" id="L326">						pattern = args[2];</span>
+<span class="fc bfc" id="L327" title="All 2 branches covered.">						if (args.length &lt; 4) {</span>
+<span class="fc" id="L328">							output.append(getMatchingLinesWithOutputContext(</span>
+<span class="fc" id="L329">									lineCount, pattern, stdin));</span>
+						}
+
+<span class="fc bfc" id="L332" title="All 2 branches covered.">						for (int i = 3; i &lt; args.length; i++) {</span>
+<span class="pc bpc" id="L333" title="1 of 2 branches missed.">							if (args.length &gt; 4) {</span>
+<span class="nc" id="L334">								hasMultipleFiles = true;</span>
+							}
+<span class="fc" id="L336">							String input = readFile(args[i], stdin, &quot;UTF8&quot;, hasMultipleFiles);</span>
+<span class="fc" id="L337">							output.append(getMatchingLinesWithOutputContext(</span>
+<span class="fc" id="L338">									lineCount, pattern, input));</span>
+						}
+<span class="pc" id="L340">					} catch (NumberFormatException e) {</span>
+<span class="nc" id="L341">						setStatusCode(ERR_CODE_INVALID_ARG);</span>
+<span class="nc" id="L342">						return String.format(ERR_MSG_INVALID_CONTEXT_ARG,</span>
+<span class="nc" id="L343">								args[1]);</span>
+					}
+					break;
+
+				case &quot;-c&quot;:
+<span class="fc" id="L348">					pattern = args[1];</span>
+<span class="fc bfc" id="L349" title="All 2 branches covered.">					if (args.length &lt; 3) {</span>
+<span class="fc" id="L350">						output.append(getCountOfMatchingLines(pattern, stdin));</span>
+<span class="fc" id="L351">						output.append(System.lineSeparator());</span>
+					}
+
+<span class="fc bfc" id="L354" title="All 2 branches covered.">					for (int i = 2; i &lt; args.length; i++) {</span>
+<span class="pc bpc" id="L355" title="1 of 2 branches missed.">						if (args.length &gt; 3) {</span>
+<span class="nc" id="L356">							hasMultipleFiles = true;</span>
+						}
+<span class="fc" id="L358">						String input = readFile(args[i], stdin, &quot;UTF8&quot;, hasMultipleFiles);</span>
+<span class="fc" id="L359">						output.append(getCountOfMatchingLines(pattern, input));</span>
+<span class="fc" id="L360">						output.append(System.lineSeparator());</span>
+					}
+<span class="fc" id="L362">					break;</span>
+
+				case &quot;-o&quot;:
+<span class="fc" id="L365">					pattern = args[1];</span>
+<span class="fc bfc" id="L366" title="All 2 branches covered.">					if (args.length &lt; 3) {</span>
+<span class="fc" id="L367">						output.append(getMatchingLinesOnlyMatchingPart(pattern,</span>
+<span class="fc" id="L368">								stdin));</span>
+<span class="fc" id="L369">						output.append(System.lineSeparator());</span>
+					}
+
+<span class="fc bfc" id="L372" title="All 2 branches covered.">					for (int i = 2; i &lt; args.length; i++) {</span>
+<span class="pc bpc" id="L373" title="1 of 2 branches missed.">						if (args.length &gt; 3) {</span>
+<span class="nc" id="L374">							hasMultipleFiles = true;</span>
+						}
+<span class="fc" id="L376">						String input = readFile(args[i], stdin, &quot;UTF8&quot;, hasMultipleFiles);</span>
+<span class="fc" id="L377">						output.append(getMatchingLinesOnlyMatchingPart(pattern,</span>
+<span class="fc" id="L378">								input));</span>
+					}
+<span class="fc" id="L380">					break;</span>
+
+				case &quot;-v&quot;:
+<span class="fc" id="L383">					pattern = args[1];</span>
+<span class="fc bfc" id="L384" title="All 2 branches covered.">					if (args.length &lt; 3) {</span>
+<span class="fc" id="L385">						output.append(getNonMatchingLines(pattern, stdin));</span>
+					}
+
+<span class="fc bfc" id="L388" title="All 2 branches covered.">					for (int i = 2; i &lt; args.length; i++) {</span>
+<span class="pc bpc" id="L389" title="1 of 2 branches missed.">						if (args.length &gt; 3) {</span>
+<span class="nc" id="L390">							hasMultipleFiles = true;</span>
+						}
+<span class="fc" id="L392">						String input = readFile(args[i], stdin, &quot;UTF8&quot;, hasMultipleFiles);</span>
+<span class="fc" id="L393">						output.append(getNonMatchingLines(pattern, input));</span>
+					}
+<span class="fc" id="L395">					break;</span>
+
+				case &quot;-help&quot;:
+					// If it's help option, ignore the rest
+<span class="fc" id="L399">					return getHelp();</span>
+
+				default:
+<span class="fc" id="L402">					setStatusCode(ERR_CODE_INVALID_ARG);</span>
+<span class="fc" id="L403">					return ERR_MSG_INVALID_ARG;</span>
+				}
+			}
+<span class="fc" id="L406">		} catch (IOException e) {</span>
+<span class="fc" id="L407">			setStatusCode(ERR_CODE_IO);</span>
+<span class="fc" id="L408">			return ERR_MSG_IO;</span>
+		}
+
+<span class="fc" id="L411">		return output.toString();</span>
+	}
+
+	public boolean hasOption(String[] args) {
+<span class="pc bpc" id="L415" title="1 of 4 branches missed.">		return args[0].startsWith(&quot;-&quot;) &amp;&amp; args[0].length() &gt; 1;</span>
+	}
+
+	public Integer[] getMatchingIndexes(String[] lines, String regex) {
+<span class="fc" id="L419">		pattern = Pattern.compile(regex);</span>
+<span class="fc" id="L420">		ArrayList&lt;Integer&gt; matchingLines = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L421">		Matcher matcher = null;</span>
+
+<span class="fc" id="L423">		int index = 0;</span>
+<span class="fc bfc" id="L424" title="All 2 branches covered.">		for (String line : lines) {</span>
+			// Set matcher to match new line of text
+<span class="fc bfc" id="L426" title="All 2 branches covered.">			if (matcher != null) {</span>
+<span class="fc" id="L427">				matcher.reset(line);</span>
+<span class="fc" id="L428">			} else {</span>
+<span class="fc" id="L429">				matcher = pattern.matcher(line);</span>
+			}
+
+<span class="fc bfc" id="L432" title="All 2 branches covered.">			if (matcher.find()) {</span>
+<span class="fc" id="L433">				matchingLines.add(index);</span>
+			}
+
+<span class="fc" id="L436">			index++;</span>
+		}
+<span class="fc" id="L438">		return matchingLines.toArray(new Integer[matchingLines.size()]); </span>
+	}
+
+	/**
+	 * Convert the input into array of lines.
+	 * &lt;p&gt;
+	 * Information about the original new line is discarded. Thus, when
+	 * generating the original string from the array, the new line will follow
+	 * the new line format of the system running the program e.g. /r/n for
+	 * Windows and /n for Unix
+	 * 
+	 * @param input
+	 * @return Array of lines
+	 */
+	public static String[] getLines(String input) {
+<span class="fc" id="L453">		Scanner sc = new Scanner(input);</span>
+<span class="fc" id="L454">		ArrayList&lt;String&gt; lines = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L455" title="All 2 branches covered.">		while (sc.hasNextLine()) {</span>
+<span class="fc" id="L456">			lines.add(sc.nextLine());</span>
+		}
+<span class="fc" id="L458">		sc.close();</span>
+
+<span class="fc" id="L460">		return lines.toArray(new String[lines.size()]);</span>
+	}
+
+	public String readFile(String path, String stdin, String encodingName, boolean hasMultipleFiles)
+			throws IOException {
+<span class="fc bfc" id="L465" title="All 2 branches covered.">		if (path.equals(&quot;-&quot;)) {</span>
+<span class="pc bpc" id="L466" title="1 of 2 branches missed.">			if (hasMultipleFiles) {</span>
+<span class="nc" id="L467">				return &quot;(standard input):&quot; + stdin;</span>
+			} else {
+<span class="fc" id="L469">				return stdin;</span>
+			}
+		}
+
+<span class="fc" id="L473">		File file = new File(path);</span>
+<span class="fc" id="L474">		BufferedReader in = new BufferedReader(new InputStreamReader(</span>
+<span class="fc" id="L475">				new FileInputStream(file), encodingName));</span>
+<span class="fc" id="L476">		StringBuilder fileContent = new StringBuilder();</span>
+<span class="fc" id="L477">		String line = in.readLine();</span>
+
+		
+		
+<span class="fc bfc" id="L481" title="All 2 branches covered.">		while (line != null) {</span>
+<span class="fc bfc" id="L482" title="All 2 branches covered.">			if (hasMultipleFiles) {</span>
+<span class="fc" id="L483">				fileContent.append(path + &quot;:&quot;);</span>
+			}
+<span class="fc" id="L485">			fileContent.append(line + System.lineSeparator());</span>
+<span class="fc" id="L486">			line = in.readLine();</span>
+		}
+<span class="fc" id="L488">		in.close();</span>
+
+<span class="fc" id="L490">		return fileContent.toString();</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>DeleteTool.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">src</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.fileutils</a> &gt; <span class="el_source">DeleteTool.java</span></div><h1>DeleteTool.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.fileutils;
+
+import java.io.File;
+
+import sg.edu.nus.comp.cs4218.fileutils.IDeleteTool;
+import sg.edu.nus.comp.cs4218.impl.ATool;
+
+public class DeleteTool extends ATool implements IDeleteTool {
+	
+	public static final int STATUS_CODE_NOT_EXECUTED      = -1;
+	public static final int STATUS_CODE_SUCCESSFUL		  = 0;
+	public static final int STATUS_CODE_INVALID_ARGUMENTS = 1;
+	public static final int STATUS_CODE_INVALID_FILE_OR_DIRECTORY = 2;
+	public static final int STATUS_CODE_FAILED_TO_DELETE  = 3;
+	
+	public DeleteTool(String[] arguments) {
+<span class="fc" id="L17">		super(arguments);</span>
+<span class="fc" id="L18">		setStatusCode(STATUS_CODE_NOT_EXECUTED);</span>
+<span class="fc" id="L19">	}</span>
+
+	
+	/**
+	 * Deletes a file or directory
+	 * @param toDelete	file or directory to be deleted
+	 * @return 			true if file or directory specified has been deleted successfully, 
+	 * 					else returns false
+	 */
+	@Override
+	public boolean delete(File toDelete) {
+		
+<span class="fc bfc" id="L31" title="All 2 branches covered.">		if (!toDelete.exists()) { </span>
+<span class="fc" id="L32">			setStatusCode(STATUS_CODE_INVALID_FILE_OR_DIRECTORY);</span>
+<span class="fc" id="L33">			return false;</span>
+		}
+		
+		else {
+<span class="fc" id="L37">			boolean isDeleted = toDelete.delete();</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">			if (isDeleted) {</span>
+<span class="fc" id="L39">				setStatusCode(STATUS_CODE_SUCCESSFUL);</span>
+<span class="fc" id="L40">				return true;</span>
+			}
+			else {
+<span class="fc" id="L43">				setStatusCode(STATUS_CODE_FAILED_TO_DELETE);</span>
+<span class="fc" id="L44">				return false;</span>
+			}
+		}
+	}
+
+	@Override
+	public String execute(File workingDir, String stdin) {
+		
+		// set status code as successful first
+		// if an error is encountered, it will be changed
+<span class="fc" id="L54">		setStatusCode(STATUS_CODE_SUCCESSFUL);</span>
+		
+<span class="pc bpc" id="L56" title="1 of 4 branches missed.">		if (args == null || args.length &lt; 1) {</span>
+<span class="fc" id="L57">			setStatusCode(STATUS_CODE_INVALID_ARGUMENTS);</span>
+<span class="fc" id="L58">			return &quot;delete: Invalid arguments given&quot;;</span>
+		}
+		
+<span class="fc bfc" id="L61" title="All 2 branches covered.">		for (int i=0; i&lt;args.length; ++i) {</span>
+<span class="fc" id="L62">			final String arg = args[i];</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">			if (arg.trim().isEmpty()) {</span>
+<span class="fc" id="L64">				setStatusCode(STATUS_CODE_INVALID_ARGUMENTS);</span>
+<span class="fc" id="L65">				return &quot;delete: Invalid arguments given&quot;;</span>
+			}
+<span class="fc" id="L67">			final File file = new File(arg);</span>
+<span class="fc" id="L68">			final boolean isDeleted = delete(file);</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">			if (!isDeleted) {</span>
+<span class="pc bpc" id="L70" title="1 of 3 branches missed.">				switch (getStatusCode()) {</span>
+					case 2:
+<span class="fc" id="L72">						return &quot;delete: &quot; + arg + &quot;: No such file or directory&quot;;</span>
+					case 3:
+<span class="fc" id="L74">						return &quot;delete: &quot; + arg + &quot;: Failed to delete - ensure the directory is empty&quot;;</span>
+					default:
+<span class="nc" id="L76">						return &quot;delete: Unknown error&quot;;</span>
+					
+				}
+			}
+		}
+<span class="fc" id="L81">		return &quot;&quot;;</span>
+	}
+	
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

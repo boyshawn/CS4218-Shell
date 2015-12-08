@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>CatWithGrepTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.integrationtest.fileutils</a> &gt; <span class="el_source">CatWithGrepTest.java</span></div><h1>CatWithGrepTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.integrationtest.fileutils;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+
+import static org.junit.Assert.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.extended1.IGrepTool;
+import sg.edu.nus.comp.cs4218.fileutils.ICatTool;
+import sg.edu.nus.comp.cs4218.impl.extended1.GrepTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.CatTool;
+
+<span class="fc" id="L24">public class CatWithGrepTest {</span>
+<span class="fc" id="L25">	private String content = </span>
+<span class="fc" id="L26">			&quot;word1 word2 word3&quot; + NEW_LINE +</span>
+<span class="fc" id="L27">			&quot;dog1 cat2 squirrel3&quot; + NEW_LINE +</span>
+<span class="fc" id="L28">			&quot;sakizaki+ pizicato2 dog3&quot;;</span>
+	private static final String FILE_PATH = &quot;__test__input__&quot;;
+<span class="fc" id="L30">	private static final String NEW_LINE = System.lineSeparator();</span>
+	
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+<span class="fc" id="L34">	}</span>
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+<span class="fc" id="L38">	}</span>
+
+	@Before
+	public void setUp() throws Exception {
+<span class="fc" id="L42">		createFile(FILE_PATH, content);</span>
+<span class="fc" id="L43">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L47">		deleteFile(FILE_PATH);</span>
+<span class="fc" id="L48">	}</span>
+
+	/**
+	 * Positive test
+	 * Pass the output of cat to grep
+	 * All valid and default args
+	 */
+	@Test
+	public void catGrepTest() {
+<span class="fc" id="L57">		String[] catArgs = {FILE_PATH};</span>
+<span class="fc" id="L58">		ICatTool catTool = new CatTool(catArgs);</span>
+<span class="fc" id="L59">		String catOutput = catTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+		
+		/**
+		 * Note:
+		 * Output from cat is passed as stdin (rather than file path)
+		 * to grep so that the interface matches.
+		 * 
+		 * The rest of the test cases follow similar approach.
+		 */
+<span class="fc" id="L68">		String[] grepArgs = {&quot;dog&quot;};</span>
+<span class="fc" id="L69">		IGrepTool grepTool = new GrepTool(grepArgs);</span>
+<span class="fc" id="L70">		String grepOutput = grepTool.execute(new File(&quot;&quot;), catOutput);</span>
+		
+<span class="fc" id="L72">		String expected = </span>
+<span class="fc" id="L73">				&quot;dog1 cat2 squirrel3&quot; + NEW_LINE +</span>
+<span class="fc" id="L74">				&quot;sakizaki+ pizicato2 dog3&quot; + NEW_LINE;</span>
+		
+<span class="fc" id="L76">		assertEquals(expected, grepOutput);</span>
+<span class="fc" id="L77">	}</span>
+
+	/**
+	 * Negative test
+	 * Pass the output of cat to grep
+	 * File not exist
+	 */
+	@Test
+	public void catGrepFileNotExistTest() {
+<span class="fc" id="L86">		String[] catArgs = {&quot;_NON_EXISTING_FILE_&quot;};</span>
+<span class="fc" id="L87">		ICatTool catTool = new CatTool(catArgs);</span>
+<span class="fc" id="L88">		String catOutput = catTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+		
+<span class="fc" id="L90">		String[] grepArgs = {&quot;dog&quot;};</span>
+<span class="fc" id="L91">		IGrepTool grepTool = new GrepTool(grepArgs);</span>
+<span class="fc" id="L92">		String grepOutput = grepTool.execute(new File(&quot;&quot;), catOutput);</span>
+		
+<span class="fc" id="L94">		String expected = &quot;&quot;;</span>
+<span class="fc" id="L95">		assertEquals(expected, grepOutput);</span>
+<span class="fc" id="L96">	}</span>
+	
+	/**
+	 * Positive test
+	 * Pass the output of grep to cat
+	 * All valid and default args
+	 */
+	@Test
+	public void grepCatTest() {
+<span class="fc" id="L105">		String[] grepArgs = {&quot;dog&quot;, FILE_PATH};</span>
+<span class="fc" id="L106">		IGrepTool grepTool = new GrepTool(grepArgs);</span>
+<span class="fc" id="L107">		String grepOutput = grepTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+		
+<span class="fc" id="L109">		String[] catArgs = null;</span>
+<span class="fc" id="L110">		ICatTool catTool = new CatTool(catArgs);</span>
+<span class="fc" id="L111">		String catOutput = catTool.execute(new File(&quot;&quot;), grepOutput);</span>
+		
+		
+<span class="fc" id="L114">		String expected = </span>
+<span class="fc" id="L115">				&quot;dog1 cat2 squirrel3&quot; + NEW_LINE +</span>
+<span class="fc" id="L116">				&quot;sakizaki+ pizicato2 dog3&quot; + NEW_LINE;</span>
+		
+<span class="fc" id="L118">		assertEquals(expected, catOutput);</span>
+<span class="fc" id="L119">	}</span>
+
+	/**
+	 * Negative test
+	 * Pass the output of grep to cat
+	 * File not exist
+	 */
+	@Test
+	public void grepCatFileNotExistTest() {
+<span class="fc" id="L128">		String[] grepArgs = {&quot;dog&quot;, &quot;_NON_EXISTING_FILE_&quot;};</span>
+<span class="fc" id="L129">		IGrepTool grepTool = new GrepTool(grepArgs);</span>
+<span class="fc" id="L130">		String grepOutput = grepTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+		
+<span class="fc" id="L132">		String[] catArgs = null;</span>
+<span class="fc" id="L133">		ICatTool catTool = new CatTool(catArgs);</span>
+<span class="fc" id="L134">		String catOutput = catTool.execute(new File(&quot;&quot;), grepOutput);</span>
+		
+<span class="fc" id="L136">		String expected = GrepTool.ERR_MSG_IO;</span>
+<span class="fc" id="L137">		assertEquals(expected, catOutput);</span>
+<span class="fc" id="L138">	}</span>
+
+	
+	/**
+	 * Helper method to create temporary file
+	 * @param path
+	 * @param content
+	 */
+	public void createFile(String path, String content) {
+		try {
+<span class="fc" id="L148">			Writer out = new BufferedWriter(new OutputStreamWriter(</span>
+<span class="fc" id="L149">					new FileOutputStream(path), &quot;UTF-8&quot;));</span>
+<span class="fc" id="L150">			out.write(content);</span>
+<span class="fc" id="L151">			out.close();</span>
+<span class="pc" id="L152">		} catch (UnsupportedEncodingException e) {</span>
+<span class="nc" id="L153">			e.printStackTrace();</span>
+<span class="nc" id="L154">		} catch (FileNotFoundException e) {</span>
+<span class="nc" id="L155">			e.printStackTrace();</span>
+<span class="nc" id="L156">		} catch (IOException e) {</span>
+<span class="nc" id="L157">			e.printStackTrace();</span>
+		}
+<span class="fc" id="L159">	}</span>
+	
+	/**
+	 * Helper method to delete temporary file
+	 * @param path
+	 */
+	public void deleteFile(String path) {
+<span class="fc" id="L166">		File file = new File(path);</span>
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">		if (!file.exists()) {</span>
+<span class="nc" id="L168">			return;</span>
+		}
+		
+<span class="fc" id="L171">		file.delete();</span>
+<span class="fc" id="L172">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>GrepCutToolIntegrationTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.integrationtest.extended2</a> &gt; <span class="el_source">GrepCutToolIntegrationTest.java</span></div><h1>GrepCutToolIntegrationTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.integrationtest.extended2;
+
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.ITool;
+import sg.edu.nus.comp.cs4218.impl.extended1.GrepTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.CutTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.CatTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.EchoTool;
+
+<span class="fc" id="L20">public class GrepCutToolIntegrationTest {</span>
+	// Constants
+	private static final String PATTERN_STR = &quot;12345&quot;;
+	private static final String DELIM = &quot;','&quot;;
+	private static final String FIELDS = &quot;1-5&quot;;
+	private static final String OPTION_D = &quot;-d&quot;;
+	private static final String OPTION_F = &quot;-f&quot;;
+
+	// Static Variables
+	private static File workingDir;
+	private static File tempDir;
+	private static File input;
+	private static String inputStr;
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws IOException {
+<span class="fc" id="L36">		File file = new File(&quot;tempDir&quot;);</span>
+<span class="pc bpc" id="L37" title="1 of 2 branches missed.">		if (file.exists()) {</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">			if (file.isDirectory()) {</span>
+<span class="nc" id="L39">				deleteFolder(file);</span>
+<span class="nc" id="L40">			} else {</span>
+<span class="nc" id="L41">				file.delete();</span>
+			}
+		}
+
+<span class="fc" id="L45">		workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+
+		/* Creation of directories and files for testing purposes */
+<span class="fc" id="L48">		tempDir = new File(Files.createDirectory(</span>
+<span class="fc" id="L49">				new File(workingDir.toString() + &quot;\\tempDir&quot;).toPath())</span>
+<span class="fc" id="L50">				.toString());</span>
+
+<span class="fc" id="L52">		input = new File(tempDir.toString() + &quot;/input&quot;);</span>
+<span class="fc" id="L53">		input.createNewFile();</span>
+
+		/* Writing of content into files */
+<span class="fc" id="L56">		inputStr = &quot;2646092288,4311234592,9690455268,2529595359,5428495892,1284064174,&quot;</span>
+<span class="fc" id="L57">				+ System.lineSeparator()</span>
+<span class="fc" id="L58">				+ &quot;2396530712,1928897215,6617707331,9252085938,8288890579&quot;</span>
+<span class="fc" id="L59">				+ System.lineSeparator()</span>
+<span class="fc" id="L60">				+ &quot;354273143,8622722423,7875251808,1275094909,4342409207,7724706832,&quot;</span>
+<span class="fc" id="L61">				+ System.lineSeparator()</span>
+<span class="fc" id="L62">				+ &quot;3840505297,6167492113,812345852,7917456693,9685436941&quot;</span>
+<span class="fc" id="L63">				+ System.lineSeparator()</span>
+<span class="fc" id="L64">				+ &quot;6072698664,3129084872,1885554904,4766850783,6781773406,7400763971,4402990716,1076157683,13714252,3264203801,3931545764&quot;</span>
+<span class="fc" id="L65">				+ System.lineSeparator()</span>
+<span class="fc" id="L66">				+ &quot;9998098015,8379065321,5809855665,9431101122,5703518445,7761383473,4065081664,&quot;</span>
+<span class="fc" id="L67">				+ System.lineSeparator()</span>
+<span class="fc" id="L68">				+ &quot;7421754539,9628953405,6199633573,3525398541&quot;</span>
+<span class="fc" id="L69">				+ System.lineSeparator()</span>
+<span class="fc" id="L70">				+ &quot;4137833917,3245739227,4161696366,9526775555,4147765123,6474557823,4312645125,1664679466,9384882899,9182060858,7917820634&quot;</span>
+<span class="fc" id="L71">				+ System.lineSeparator()</span>
+<span class="fc" id="L72">				+ &quot;1456650293,7674132533,4487276538,4105352452,6032135581,702497468,9630068581,7605132856,9889164183,2752505206,2109406576&quot;</span>
+<span class="fc" id="L73">				+ System.lineSeparator()</span>
+<span class="fc" id="L74">				+ &quot;7799396634,7112951700,8832315456,5674123459,3652797141,5246522001,2501089074,4716429507,8161287444,&quot;</span>
+<span class="fc" id="L75">				+ System.lineSeparator()</span>
+<span class="fc" id="L76">				+ &quot;4081530852,8628286170,&quot;</span>
+<span class="fc" id="L77">				+ System.lineSeparator()</span>
+<span class="fc" id="L78">				+ &quot;5793419374,7644655677,44121234517,3766357937,56175406,7490576563,1328960661,8867706901,6652920543,7341174000,6802973399&quot;</span>
+<span class="fc" id="L79">				+ System.lineSeparator()</span>
+<span class="fc" id="L80">				+ &quot;3318463660,4634073461,8552676395,1630444444,7535170784,4931913464,5401932805,9318021915,7823892344,5154018347,1550721589&quot;</span>
+<span class="fc" id="L81">				+ System.lineSeparator()</span>
+<span class="fc" id="L82">				+ &quot;5438032620,9063391621,2126743467,2431269592,6358404029,678493960,2626673380,1106413442,2944742588,3865548624,2500001731&quot;</span>
+<span class="fc" id="L83">				+ System.lineSeparator()</span>
+<span class="fc" id="L84">				+ &quot;1397645548,3294602769,5851234594,1803558677,5609275305,2619218872,7165947858,8421436585,9949704287,5047946138,2352184155&quot;</span>
+<span class="fc" id="L85">				+ System.lineSeparator()</span>
+<span class="fc" id="L86">				+ &quot;2027002862,951100469,6591163134,7214348766,&quot;</span>
+<span class="fc" id="L87">				+ System.lineSeparator()</span>
+<span class="fc" id="L88">				+ &quot;8729041505,340031095,6527274301,6536091455,7171411504,1406330173,2847226666&quot;</span>
+<span class="fc" id="L89">				+ System.lineSeparator()</span>
+<span class="fc" id="L90">				+ &quot;658250281,3274663482,3471902506,1294209658,2233879820,9625846095,3562706327,8453130552,6727123450,6693155860,5855527439&quot;</span>
+<span class="fc" id="L91">				+ System.lineSeparator()</span>
+<span class="fc" id="L92">				+ &quot;553011716,3048967804,2921711580,1085529069,2366102244,9117948676,7346184597,5804511837,171995590,2237115688,9430627918&quot;;</span>
+
+<span class="fc" id="L94">		Files.write(input.toPath(), inputStr.getBytes(),</span>
+<span class="fc" id="L95">				StandardOpenOption.APPEND);</span>
+
+<span class="fc" id="L97">	}</span>
+
+	@AfterClass
+	public static void tearDownAfterClass() throws IOException {
+		/* Delete all temporary testing files */
+<span class="fc" id="L102">		Files.delete(input.toPath());</span>
+<span class="fc" id="L103">		Files.delete(tempDir.toPath());</span>
+
+		/* Setting all file objects to null */
+<span class="fc" id="L106">		workingDir = null;</span>
+<span class="fc" id="L107">		tempDir = null;</span>
+<span class="fc" id="L108">		input = null;</span>
+
+		/* Setting all file object Strings to null */
+<span class="fc" id="L111">		inputStr = null;</span>
+<span class="fc" id="L112">	}</span>
+
+	@Test
+	public void positive_GrepThenCut_Output() {
+
+<span class="fc" id="L117">		final String[] grepArgs = { PATTERN_STR, input.toString() };</span>
+<span class="fc" id="L118">		ITool grepTool = new GrepTool(grepArgs);</span>
+
+<span class="fc" id="L120">		String grepOutput = grepTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L122">		final String[] cutArgs = { OPTION_D, DELIM, OPTION_F, FIELDS };</span>
+<span class="fc" id="L123">		ITool cutTool = new CutTool(cutArgs);</span>
+
+<span class="fc" id="L125">		final String cutOutput = cutTool.execute(workingDir, grepOutput);</span>
+
+<span class="fc" id="L127">		final String expectedMessage = &quot;2646092288,4311234592,9690455268,2529595359,5428495892&quot;</span>
+<span class="fc" id="L128">				+ System.lineSeparator()</span>
+<span class="fc" id="L129">				+ &quot;3840505297,6167492113,812345852,7917456693,9685436941&quot;</span>
+<span class="fc" id="L130">				+ System.lineSeparator()</span>
+<span class="fc" id="L131">				+ &quot;7799396634,7112951700,8832315456,5674123459,3652797141&quot;</span>
+<span class="fc" id="L132">				+ System.lineSeparator()</span>
+<span class="fc" id="L133">				+ &quot;5793419374,7644655677,44121234517,3766357937,56175406&quot;</span>
+<span class="fc" id="L134">				+ System.lineSeparator()</span>
+<span class="fc" id="L135">				+ &quot;1397645548,3294602769,5851234594,1803558677,5609275305&quot;</span>
+<span class="fc" id="L136">				+ System.lineSeparator()</span>
+<span class="fc" id="L137">				+ &quot;658250281,3274663482,3471902506,1294209658,2233879820&quot;;</span>
+
+<span class="fc" id="L139">		assertEquals(expectedMessage, cutOutput);</span>
+
+<span class="fc" id="L141">	}</span>
+
+	@Test
+	public void positive_CutThenCat_Output() {
+
+<span class="fc" id="L146">		final String[] cutArgs = { OPTION_D, DELIM, OPTION_F, FIELDS,</span>
+<span class="fc" id="L147">				input.toString() };</span>
+<span class="fc" id="L148">		ITool cutTool = new CutTool(cutArgs);</span>
+
+<span class="fc" id="L150">		final String cutOutput = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L152">		final String[] catArgs = { &quot;-&quot; };</span>
+<span class="fc" id="L153">		ITool catTool = new CatTool(catArgs);</span>
+
+<span class="fc" id="L155">		final String catOutput = catTool.execute(workingDir, cutOutput);</span>
+
+<span class="fc" id="L157">		final String expectedMessage = &quot;2646092288,4311234592,9690455268,2529595359,5428495892&quot;</span>
+<span class="fc" id="L158">				+ System.lineSeparator()</span>
+<span class="fc" id="L159">				+ &quot;2396530712,1928897215,6617707331,9252085938,8288890579&quot;</span>
+<span class="fc" id="L160">				+ System.lineSeparator()</span>
+<span class="fc" id="L161">				+ &quot;354273143,8622722423,7875251808,1275094909,4342409207&quot;</span>
+<span class="fc" id="L162">				+ System.lineSeparator()</span>
+<span class="fc" id="L163">				+ &quot;3840505297,6167492113,812345852,7917456693,9685436941&quot;</span>
+<span class="fc" id="L164">				+ System.lineSeparator()</span>
+<span class="fc" id="L165">				+ &quot;6072698664,3129084872,1885554904,4766850783,6781773406&quot;</span>
+<span class="fc" id="L166">				+ System.lineSeparator()</span>
+<span class="fc" id="L167">				+ &quot;9998098015,8379065321,5809855665,9431101122,5703518445&quot;</span>
+<span class="fc" id="L168">				+ System.lineSeparator()</span>
+<span class="fc" id="L169">				+ &quot;7421754539,9628953405,6199633573,3525398541&quot;</span>
+<span class="fc" id="L170">				+ System.lineSeparator()</span>
+<span class="fc" id="L171">				+ &quot;4137833917,3245739227,4161696366,9526775555,4147765123&quot;</span>
+<span class="fc" id="L172">				+ System.lineSeparator()</span>
+<span class="fc" id="L173">				+ &quot;1456650293,7674132533,4487276538,4105352452,6032135581&quot;</span>
+<span class="fc" id="L174">				+ System.lineSeparator()</span>
+<span class="fc" id="L175">				+ &quot;7799396634,7112951700,8832315456,5674123459,3652797141&quot;</span>
+<span class="fc" id="L176">				+ System.lineSeparator()</span>
+<span class="fc" id="L177">				+ &quot;4081530852,8628286170&quot;</span>
+<span class="fc" id="L178">				+ System.lineSeparator()</span>
+<span class="fc" id="L179">				+ &quot;5793419374,7644655677,44121234517,3766357937,56175406&quot;</span>
+<span class="fc" id="L180">				+ System.lineSeparator()</span>
+<span class="fc" id="L181">				+ &quot;3318463660,4634073461,8552676395,1630444444,7535170784&quot;</span>
+<span class="fc" id="L182">				+ System.lineSeparator()</span>
+<span class="fc" id="L183">				+ &quot;5438032620,9063391621,2126743467,2431269592,6358404029&quot;</span>
+<span class="fc" id="L184">				+ System.lineSeparator()</span>
+<span class="fc" id="L185">				+ &quot;1397645548,3294602769,5851234594,1803558677,5609275305&quot;</span>
+<span class="fc" id="L186">				+ System.lineSeparator()</span>
+<span class="fc" id="L187">				+ &quot;2027002862,951100469,6591163134,7214348766&quot;</span>
+<span class="fc" id="L188">				+ System.lineSeparator()</span>
+<span class="fc" id="L189">				+ &quot;8729041505,340031095,6527274301,6536091455,7171411504&quot;</span>
+<span class="fc" id="L190">				+ System.lineSeparator()</span>
+<span class="fc" id="L191">				+ &quot;658250281,3274663482,3471902506,1294209658,2233879820&quot;</span>
+<span class="fc" id="L192">				+ System.lineSeparator()</span>
+<span class="fc" id="L193">				+ &quot;553011716,3048967804,2921711580,1085529069,2366102244&quot;;</span>
+
+<span class="fc" id="L195">		assertEquals(expectedMessage, catOutput);</span>
+
+<span class="fc" id="L197">	}</span>
+
+	@Test
+	public void positive_CutThenEcho_Output() {
+
+<span class="fc" id="L202">		final String[] cutArgs = { OPTION_D, DELIM, OPTION_F, FIELDS,</span>
+<span class="fc" id="L203">				input.toString() };</span>
+<span class="fc" id="L204">		ITool cutTool = new CutTool(cutArgs);</span>
+
+<span class="fc" id="L206">		final String cutOutput = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L208">		final String[] echoArgs = { cutOutput };</span>
+<span class="fc" id="L209">		ITool echoTool = new EchoTool(echoArgs);</span>
+
+<span class="fc" id="L211">		final String echoOutput = echoTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L213">		final String expectedMessage = &quot;2646092288,4311234592,9690455268,2529595359,5428495892&quot;</span>
+<span class="fc" id="L214">				+ System.lineSeparator();</span>
+
+<span class="fc" id="L216">		assertEquals(expectedMessage, echoOutput);</span>
+
+<span class="fc" id="L218">	}</span>
+
+	@Test
+	public void negative_GrepThenCut_ErrorMessageReturned() {
+
+<span class="fc" id="L223">		final String[] grepArgs = { PATTERN_STR, &quot;fileNotExist&quot; };</span>
+<span class="fc" id="L224">		ITool grepTool = new GrepTool(grepArgs);</span>
+
+<span class="fc" id="L226">		final String grepOutput = grepTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L228">		final String[] cutArgs = { OPTION_D, DELIM, OPTION_F, FIELDS };</span>
+<span class="fc" id="L229">		ITool cutTool = new CutTool(cutArgs);</span>
+
+<span class="fc" id="L231">		final String cutOutput = cutTool.execute(workingDir, grepOutput);</span>
+
+<span class="fc" id="L233">		final String expectedMessage = &quot;Error: Reading or writing problem. Please retry and check that file path is correct&quot;;</span>
+
+<span class="fc" id="L235">		assertEquals(expectedMessage, cutOutput);</span>
+
+<span class="fc" id="L237">	}</span>
+
+	@Test
+	public void negative_CutThenCat_ErrorMessageReturned() {
+
+<span class="fc" id="L242">		final String[] cutArgs = { OPTION_D, DELIM, OPTION_F, FIELDS,</span>
+<span class="fc" id="L243">				&quot;fileNotExist&quot; };</span>
+<span class="fc" id="L244">		ITool cutTool = new CutTool(cutArgs);</span>
+
+<span class="fc" id="L246">		final String cutOutput = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L248">		final String[] catArgs = { &quot;-&quot; };</span>
+<span class="fc" id="L249">		ITool catTool = new CatTool(catArgs);</span>
+
+<span class="fc" id="L251">		final String catOutput = catTool.execute(workingDir, cutOutput);</span>
+
+<span class="fc" id="L253">		final String expectedMessage = &quot;cut: fileNotExist: No such file or directory&quot;;</span>
+
+<span class="fc" id="L255">		assertEquals(expectedMessage, catOutput);</span>
+
+<span class="fc" id="L257">	}</span>
+
+	@Test
+	public void negative_CutThenEcho_ErrorMessageReturned() {
+
+<span class="fc" id="L262">		final String[] cutArgs = { OPTION_D, DELIM, OPTION_F, FIELDS,</span>
+<span class="fc" id="L263">				&quot;fileNotExist&quot; };</span>
+<span class="fc" id="L264">		ITool cutTool = new CutTool(cutArgs);</span>
+
+<span class="fc" id="L266">		final String cutOutput = cutTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L268">		final String[] echoArgs = { cutOutput };</span>
+<span class="fc" id="L269">		ITool echoTool = new EchoTool(echoArgs);</span>
+
+<span class="fc" id="L271">		final String echoOutput = echoTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L273">		final String expectedMessage = &quot;cut: fileNotExist: No such file or directory&quot;</span>
+<span class="fc" id="L274">				+ System.lineSeparator();</span>
+
+<span class="fc" id="L276">		assertEquals(expectedMessage, echoOutput);</span>
+
+<span class="fc" id="L278">	}</span>
+
+	public static void deleteFolder(File folder) {
+<span class="nc" id="L281">		File[] files = folder.listFiles();</span>
+<span class="nc bnc" id="L282" title="All 2 branches missed.">		if (files != null) { // some JVMs return null for empty dirs</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">			for (File f : files) {</span>
+<span class="nc bnc" id="L284" title="All 2 branches missed.">				if (f.isDirectory()) {</span>
+<span class="nc" id="L285">					deleteFolder(f);</span>
+<span class="nc" id="L286">				} else {</span>
+<span class="nc" id="L287">					f.delete();</span>
+				}
+			}
+		}
+<span class="nc" id="L291">		folder.delete();</span>
+<span class="nc" id="L292">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

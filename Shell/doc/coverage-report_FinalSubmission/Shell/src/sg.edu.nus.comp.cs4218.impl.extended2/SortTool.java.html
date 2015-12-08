@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>SortTool.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">src</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.extended2</a> &gt; <span class="el_source">SortTool.java</span></div><h1>SortTool.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.extended2;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import sg.edu.nus.comp.cs4218.extended2.ISortTool;
+import sg.edu.nus.comp.cs4218.impl.ATool;
+
+public class SortTool extends ATool implements ISortTool {
+	private static final String TOOL_NAME = &quot;sort: &quot;;
+
+	private static final String MISSING_OPERAND_ERROR = TOOL_NAME
+			+ &quot;missing operand &quot;;
+	private static final int MISSING_OPERAND_ERROR_CODE = 2;
+
+	private static final String OPTION_ERROR = TOOL_NAME + &quot;unknown option -- &quot;;
+	private static final int OPTION_ERROR_CODE = 3;
+	
+	private static final String EXTRA_OPERAND_ERROR = TOOL_NAME + &quot;extra operand &quot;;
+	private static final int EXTRA_OPERAND_ERROR_CODE = 3;
+
+	private static final String FILE_NOT_FOUND = &quot;No such file or directory&quot;;
+	private static final int FILE_NOT_FOUND_ERROR = 4;
+	
+	private static final String DIRECTORY_ERROR = &quot;: Is a directory&quot;; 
+	private static final int DIRECTORY_ERROR_CODE = 5;
+
+	private static final String SUGGEST_SEE_HELP = &quot;Try 'sort -help' for more information&quot;;
+	
+	private static final int NOT_EXECUTED_FINISH_CODE = -1;
+	private static final int EXECUTED_FINISHED_CODE = 0;
+	
+	public SortTool(String[] arguments) {
+<span class="fc" id="L43">		super(arguments);</span>
+<span class="fc" id="L44">	}</span>
+
+	@Override
+	public String sortFile(String input) {
+<span class="fc" id="L48">		setStatusCode(NOT_EXECUTED_FINISH_CODE);</span>
+		
+<span class="fc bfc" id="L50" title="All 2 branches covered.">		if (input == null) {</span>
+<span class="fc" id="L51">			setStatusCode(MISSING_OPERAND_ERROR_CODE);</span>
+<span class="fc" id="L52">			return &quot;sort: missing operand&quot; + System.lineSeparator()</span>
+<span class="fc" id="L53">					+ SUGGEST_SEE_HELP;</span>
+		}
+
+<span class="fc" id="L56">		List&lt;String&gt; fileInput = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L57">		fileInput.add(input);</span>
+		
+<span class="fc" id="L59">		String result = sortMultipleFiles(fileInput);</span>
+		
+<span class="fc bfc" id="L61" title="All 2 branches covered.">		if(getStatusCode() == NOT_EXECUTED_FINISH_CODE){</span>
+<span class="fc" id="L62">			setStatusCode(EXECUTED_FINISHED_CODE);</span>
+		}
+		
+<span class="fc" id="L65">		return result;</span>
+	}
+
+	@Override
+	public String checkIfSorted(String input) {
+<span class="fc" id="L70">		setStatusCode(NOT_EXECUTED_FINISH_CODE);</span>
+		
+<span class="fc bfc" id="L72" title="All 2 branches covered.">		if (input == null) {</span>
+<span class="fc" id="L73">			setStatusCode(MISSING_OPERAND_ERROR_CODE);</span>
+<span class="fc" id="L74">			return &quot;sort: missing operand&quot; + System.lineSeparator()</span>
+<span class="fc" id="L75">					+ SUGGEST_SEE_HELP;</span>
+		}
+		
+<span class="fc" id="L78">		File file = new File(input);</span>
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">		if(file.isDirectory()){</span>
+<span class="nc" id="L80">			setStatusCode(DIRECTORY_ERROR_CODE);</span>
+<span class="nc" id="L81">			return TOOL_NAME + &quot;: &quot; + input + DIRECTORY_ERROR;</span>
+		}
+
+<span class="fc" id="L84">		StringBuilder sortedOutput = new StringBuilder();</span>
+
+<span class="fc" id="L86">		List&lt;String&gt; linesInFile = null;</span>
+<span class="fc" id="L87">		Path inputPath = FileSystems.getDefault().getPath(input);</span>
+
+		try {
+<span class="fc" id="L90">			linesInFile = Files.readAllLines(inputPath,</span>
+<span class="fc" id="L91">					Charset.defaultCharset());</span>
+<span class="fc" id="L92">		} catch (IOException e1) {</span>
+<span class="fc" id="L93">			setStatusCode(FILE_NOT_FOUND_ERROR);</span>
+			// Must use early termination here, or else there will be error at
+			// later part of the program
+<span class="fc" id="L96">			return TOOL_NAME + &quot;open failed: &quot; + input + &quot;: &quot; + FILE_NOT_FOUND;</span>
+		}
+
+		// Compare result
+<span class="fc" id="L100">		boolean isSorted = true;</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">		if (linesInFile.size() &gt; 1) {</span>
+<span class="fc" id="L102">			int counter = 1;</span>
+<span class="fc bfc" id="L103" title="All 4 branches covered.">			while (isSorted &amp;&amp; counter &lt; linesInFile.size()) {</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">				if (linesInFile.get(counter - 1).compareTo(</span>
+<span class="fc" id="L105">						linesInFile.get(counter)) &gt; 0) {</span>
+<span class="fc" id="L106">					sortedOutput.append(TOOL_NAME + input + &quot;:&quot; + (counter + 1)</span>
+<span class="fc" id="L107">							+ &quot;: disorder: &quot; + linesInFile.get(counter));</span>
+<span class="fc" id="L108">					isSorted = false;</span>
+				}
+<span class="fc" id="L110">				counter++;</span>
+			}
+		}
+		
+<span class="fc" id="L114">		setStatusCode(EXECUTED_FINISHED_CODE);</span>
+<span class="fc" id="L115">		return sortedOutput.toString();</span>
+	}
+
+	/**
+	 * Returns the help message for the tool
+	 * @return help message for Sort Tool
+	 */
+	@Override
+	public String getHelp() {
+<span class="fc" id="L124">		StringBuilder output = new StringBuilder();</span>
+<span class="fc" id="L125">		File file = new File(&quot;help_files&quot; + File.separator + &quot;sort_help&quot;);</span>
+
+<span class="fc" id="L127">		BufferedReader br = null;</span>
+
+		String line;
+		try {
+<span class="fc" id="L131">			br = new BufferedReader(new FileReader(file));</span>
+
+<span class="fc bfc" id="L133" title="All 2 branches covered.">			while ((line = br.readLine()) != null) {</span>
+<span class="fc" id="L134">				output.append(line + System.lineSeparator());</span>
+			}
+
+<span class="fc" id="L137">			br.close();</span>
+<span class="pc" id="L138">		} catch (IOException e) {</span>
+<span class="nc" id="L139">			return TOOL_NAME + &quot;Help file cannot be found&quot;;</span>
+		}
+		
+<span class="fc bfc" id="L142" title="All 2 branches covered.">		if(getStatusCode() == NOT_EXECUTED_FINISH_CODE){</span>
+<span class="fc" id="L143">			setStatusCode(EXECUTED_FINISHED_CODE);</span>
+		}
+
+<span class="fc" id="L146">		return output.toString().trim();</span>
+	}
+
+	@Override
+	public String execute(File workingDir, String stdin) {
+<span class="fc" id="L151">		setStatusCode(NOT_EXECUTED_FINISH_CODE);</span>
+<span class="fc" id="L152">		String sortedResult = null;</span>
+		
+		//No arguments
+<span class="fc bfc" id="L155" title="All 4 branches covered.">		if(args == null || args.length == 0){</span>
+<span class="fc" id="L156">			setStatusCode(MISSING_OPERAND_ERROR_CODE);</span>
+<span class="fc" id="L157">			return MISSING_OPERAND_ERROR + System.lineSeparator()</span>
+<span class="fc" id="L158">					+ SUGGEST_SEE_HELP;</span>
+		}
+		
+		// Get help
+<span class="fc bfc" id="L162" title="All 2 branches covered.">		for (int i = 0; i &lt; args.length; i++) {</span>
+<span class="fc bfc" id="L163" title="All 2 branches covered.">			if(&quot;-help&quot;.equals(args[i])){</span>
+<span class="fc" id="L164">				return getHelp();</span>
+			}
+		}
+		
+<span class="fc" id="L168">		sortedResult = checkForWrongOption();</span>
+		 
+<span class="fc bfc" id="L170" title="All 2 branches covered.">		if(&quot;&quot;.equals(sortedResult)){</span>
+
+			//From this point onwards, no more invalid option
+<span class="fc" id="L173">			List&lt;String&gt; fileList = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L174">			boolean checkIfSort = false;</span>
+			
+			//Collect all the non-option file
+<span class="fc bfc" id="L177" title="All 2 branches covered.">			for(int i = 0; i &lt; args.length; i++){</span>
+<span class="fc bfc" id="L178" title="All 2 branches covered.">				if(!args[i].startsWith(&quot;-&quot;)){</span>
+<span class="fc" id="L179">					fileList.add(args[i]);</span>
+<span class="fc" id="L180">				}</span>
+				else{
+<span class="fc" id="L182">					checkIfSort = true;</span>
+				}
+			}
+			
+<span class="fc bfc" id="L186" title="All 2 branches covered.">			if(!checkIfSort){</span>
+<span class="fc" id="L187">				sortedResult = sortMultipleFiles(fileList);</span>
+<span class="fc" id="L188">			}</span>
+			else{
+<span class="pc bpc" id="L190" title="1 of 3 branches missed.">				switch(fileList.size()){</span>
+				case 0:
+<span class="nc" id="L192">					setStatusCode(MISSING_OPERAND_ERROR_CODE);</span>
+<span class="nc" id="L193">					sortedResult = MISSING_OPERAND_ERROR + System.lineSeparator() + SUGGEST_SEE_HELP;</span>
+<span class="nc" id="L194">					break;</span>
+				case 1:
+<span class="fc" id="L196">					sortedResult = checkIfSorted(fileList.get(0));</span>
+<span class="fc" id="L197">					break;</span>
+				default:
+<span class="fc" id="L199">					setStatusCode(EXTRA_OPERAND_ERROR_CODE);</span>
+<span class="fc" id="L200">					sortedResult = EXTRA_OPERAND_ERROR + &quot;'&quot; + fileList.get(1)	+ &quot;' not allowed with -c&quot;;</span>
+					break;
+				}
+			}
+		}
+		
+<span class="fc bfc" id="L206" title="All 2 branches covered.">		if(getStatusCode() == NOT_EXECUTED_FINISH_CODE){</span>
+<span class="fc" id="L207">			setStatusCode(EXECUTED_FINISHED_CODE);</span>
+		}
+
+<span class="fc" id="L210">		return sortedResult;</span>
+	}
+
+	private String sortMultipleFiles(List&lt;String&gt; inputFiles){
+<span class="fc" id="L214">		StringBuilder sortedOutput = new StringBuilder();</span>
+<span class="fc" id="L215">		List&lt;String&gt; allFilesLines = new ArrayList&lt;&gt;();</span>
+		
+<span class="fc bfc" id="L217" title="All 2 branches covered.">		for (int i = 0; i &lt; inputFiles.size(); i++) {</span>
+<span class="fc" id="L218">			List&lt;String&gt; linesInFile = null;</span>
+<span class="fc" id="L219">			Path inputPath = FileSystems.getDefault()</span>
+<span class="fc" id="L220">					.getPath(inputFiles.get(i));</span>
+
+			try {
+<span class="fc" id="L223">				linesInFile = Files.readAllLines(inputPath,</span>
+<span class="fc" id="L224">						Charset.defaultCharset());</span>
+<span class="fc" id="L225">			}  catch (IOException e1){</span>
+<span class="fc" id="L226">				setStatusCode(FILE_NOT_FOUND_ERROR);</span>
+<span class="fc bfc" id="L227" title="All 2 branches covered.">				if (i == 0) {</span>
+<span class="fc" id="L228">					return TOOL_NAME + &quot;open failed: &quot; + inputFiles.get(i)</span>
+<span class="fc" id="L229">							+ &quot;: &quot; + FILE_NOT_FOUND;</span>
+				} else {
+<span class="fc" id="L231">					return TOOL_NAME + &quot;stat failed: &quot; + inputFiles.get(i)</span>
+<span class="fc" id="L232">							+ &quot;: &quot; + FILE_NOT_FOUND;</span>
+				}
+			}
+<span class="fc" id="L235">			allFilesLines.addAll(linesInFile);</span>
+		}
+
+<span class="fc" id="L238">		Collections.sort(allFilesLines);</span>
+
+		// Building result
+<span class="fc bfc" id="L241" title="All 2 branches covered.">		for (int i = 0; i &lt; allFilesLines.size(); i++) {</span>
+<span class="fc" id="L242">			sortedOutput.append(allFilesLines.get(i));</span>
+<span class="fc" id="L243">			sortedOutput.append(System.lineSeparator());</span>
+		}
+
+		// Trim the last unnecessary new line
+<span class="fc bfc" id="L247" title="All 2 branches covered.">		if(sortedOutput.length() &gt; 0){</span>
+<span class="fc" id="L248">			sortedOutput.setLength(sortedOutput.lastIndexOf(System.lineSeparator()));</span>
+		}
+		
+<span class="fc" id="L251">		return sortedOutput.toString();</span>
+	}
+	
+	private String checkForWrongOption() {
+<span class="fc" id="L255">		String errorMessage = &quot;&quot;; </span>
+		
+<span class="fc bfc" id="L257" title="All 2 branches covered.">		for (int i = 0; i &lt; args.length; i++) {</span>
+<span class="fc bfc" id="L258" title="All 2 branches covered.">			if (args[i].startsWith(&quot;-&quot;)) {</span>
+				//FIXME: Need to handle corner case where it is only &quot;-&quot;
+<span class="fc" id="L260">				boolean foundWrongOption = false;</span>
+<span class="fc" id="L261">				int counter = 1;</span>
+<span class="fc bfc" id="L262" title="All 4 branches covered.">				while (!foundWrongOption &amp;&amp; counter &lt; args[i].length()) {</span>
+<span class="fc" id="L263">					char substring = args[i].charAt(counter);</span>
+<span class="fc bfc" id="L264" title="All 2 branches covered.">					if (substring != 'c') {</span>
+<span class="fc" id="L265">						setStatusCode(OPTION_ERROR_CODE);</span>
+<span class="fc" id="L266">						errorMessage = OPTION_ERROR + substring</span>
+<span class="fc" id="L267">								+ System.lineSeparator() + SUGGEST_SEE_HELP;</span>
+<span class="fc" id="L268">						foundWrongOption = true;</span>
+					}
+<span class="fc" id="L270">					counter++;</span>
+				}
+			}
+		}
+		
+<span class="fc" id="L275">		return errorMessage;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

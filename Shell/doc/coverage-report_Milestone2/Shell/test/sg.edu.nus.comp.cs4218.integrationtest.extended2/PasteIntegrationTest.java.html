@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>PasteIntegrationTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.integrationtest.extended2</a> &gt; <span class="el_source">PasteIntegrationTest.java</span></div><h1>PasteIntegrationTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.integrationtest.extended2;
+
+import static org.junit.Assert.assertEquals;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.extended1.IGrepTool;
+import sg.edu.nus.comp.cs4218.extended2.IPasteTool;
+import sg.edu.nus.comp.cs4218.fileutils.ICatTool;
+import sg.edu.nus.comp.cs4218.fileutils.IEchoTool;
+import sg.edu.nus.comp.cs4218.impl.extended1.GrepTool;
+import sg.edu.nus.comp.cs4218.impl.extended2.PasteTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.CatTool;
+import sg.edu.nus.comp.cs4218.impl.fileutils.EchoTool;
+
+<span class="fc" id="L29">public class PasteIntegrationTest {</span>
+<span class="fc" id="L30">	private String content1 = </span>
+<span class="fc" id="L31">			&quot;word1 word2 word3&quot; + NEW_LINE +</span>
+<span class="fc" id="L32">			&quot;dog1 cat2 squirrel3&quot; + NEW_LINE +</span>
+<span class="fc" id="L33">			&quot;sakizaki+ pizicato2 dog3&quot;;</span>
+	
+<span class="fc" id="L35">	private String content2 = </span>
+<span class="fc" id="L36">			&quot;mystere mani&quot; + NEW_LINE +</span>
+<span class="fc" id="L37">			&quot;saltimbanco&quot; + NEW_LINE +</span>
+<span class="fc" id="L38">			&quot;zumanity zed allegria freetempo&quot;;</span>
+	
+	private static final String FILE_PATH_1 = &quot;__test__input__1__&quot;;
+	private static final String FILE_PATH_2 = &quot;__test__input__2__&quot;;
+	private static final String FILE_PATH_NOT_EXISTS = &quot;__file__not__exists&quot;;
+	
+<span class="fc" id="L44">	private static final String NEW_LINE = System.lineSeparator();</span>
+	
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+<span class="fc" id="L48">	}</span>
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+<span class="fc" id="L52">	}</span>
+
+	@Before
+	public void setUp() throws Exception {
+		// In case file exists.
+<span class="fc" id="L57">		deleteFile(FILE_PATH_NOT_EXISTS);</span>
+		
+<span class="fc" id="L59">		createFile(FILE_PATH_1, content1);</span>
+<span class="fc" id="L60">		createFile(FILE_PATH_2, content2);</span>
+<span class="fc" id="L61">	}</span>
+
+	@After
+	public void tearDown() throws Exception {
+<span class="fc" id="L65">		deleteFile(FILE_PATH_1);</span>
+<span class="fc" id="L66">		deleteFile(FILE_PATH_2);</span>
+		
+<span class="fc" id="L68">		deleteFile(FILE_PATH_NOT_EXISTS);</span>
+<span class="fc" id="L69">	}</span>
+
+	/**
+	 * Positive test
+	 * Pass the output of grep to paste
+	 * All with default valid args
+	 */
+	@Test
+	public void GrepWithPasteTest() {
+<span class="fc" id="L78">		String[] grepArgs = {&quot;dog&quot;, FILE_PATH_1};</span>
+<span class="fc" id="L79">		IGrepTool grepTool = new GrepTool(grepArgs);</span>
+<span class="fc" id="L80">		String grepOutput = grepTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+		
+		// Grep output will be passed to paste as a stdin
+<span class="fc" id="L83">		String[] pasteArgs = {&quot;-&quot;, FILE_PATH_2};</span>
+<span class="fc" id="L84">		IPasteTool pasteTool = new PasteTool(pasteArgs);</span>
+<span class="fc" id="L85">		String pasteOutput = pasteTool.execute(new File(&quot;&quot;), grepOutput);</span>
+		
+<span class="fc" id="L87">		String expected = </span>
+<span class="fc" id="L88">				&quot;dog1 cat2 squirrel3\tmystere mani&quot; + NEW_LINE +</span>
+<span class="fc" id="L89">				&quot;sakizaki+ pizicato2 dog3\tsaltimbanco&quot; + NEW_LINE +</span>
+<span class="fc" id="L90">				&quot;\tzumanity zed allegria freetempo&quot;;</span>
+<span class="fc" id="L91">		assertEquals(expected, pasteOutput);</span>
+<span class="fc" id="L92">	}</span>
+	
+	/**
+	 * Negative test
+	 * Pass the output of grep to paste
+	 * Grep reads from non existing file
+	 */
+	@Test
+	public void GrepWithPasteNonExistingFileTest() {
+<span class="fc" id="L101">		String[] grepArgs = {&quot;dog&quot;, FILE_PATH_NOT_EXISTS};</span>
+<span class="fc" id="L102">		IGrepTool grepTool = new GrepTool(grepArgs);</span>
+<span class="fc" id="L103">		String grepOutput = grepTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+		
+		// Grep output will be passed to paste as a stdin
+<span class="fc" id="L106">		String[] pasteArgs = {&quot;-&quot;, FILE_PATH_2};</span>
+<span class="fc" id="L107">		IPasteTool pasteTool = new PasteTool(pasteArgs);</span>
+<span class="fc" id="L108">		String pasteOutput = pasteTool.execute(new File(&quot;&quot;), grepOutput);</span>
+		
+<span class="fc" id="L110">		String expected = </span>
+<span class="fc" id="L111">				GrepTool.ERR_MSG_IO.trim() + &quot;\tmystere mani&quot; + NEW_LINE +</span>
+<span class="fc" id="L112">				&quot;\tsaltimbanco&quot; + NEW_LINE +</span>
+<span class="fc" id="L113">				&quot;\tzumanity zed allegria freetempo&quot;;</span>
+<span class="fc" id="L114">		assertEquals(expected, pasteOutput);</span>
+<span class="fc" id="L115">	}</span>
+	
+	/**
+	 * Positive test
+	 * Pass the output of paste to echo
+	 * All with default valid args
+	 */
+	@Test
+	public void PasteWithEchoTest() {
+<span class="fc" id="L124">		String[] pasteArgs = {FILE_PATH_1, FILE_PATH_2};</span>
+<span class="fc" id="L125">		IPasteTool pasteTool = new PasteTool(pasteArgs);</span>
+<span class="fc" id="L126">		String pasteOutput = pasteTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+		
+<span class="fc" id="L128">		String[] echoArgs = {pasteOutput};</span>
+<span class="fc" id="L129">		IEchoTool echoTool = new EchoTool(echoArgs);</span>
+<span class="fc" id="L130">		String echoOutput = echoTool.execute(new File(&quot;&quot;), pasteOutput);</span>
+		
+<span class="fc" id="L132">		String expected = </span>
+<span class="fc" id="L133">				&quot;word1 word2 word3\tmystere mani&quot; + NEW_LINE;</span>
+<span class="fc" id="L134">		assertEquals(expected, echoOutput);</span>
+<span class="fc" id="L135">	}</span>
+	
+	/**
+	 * Negative test
+	 * Pass the output of paste to echo
+	 * Paste reads from non existing file
+	 */
+	@Test
+	public void PasteWithEchoNonExistingFileTest() {
+<span class="fc" id="L144">		String[] pasteArgs = {FILE_PATH_1, FILE_PATH_NOT_EXISTS};</span>
+<span class="fc" id="L145">		IPasteTool pasteTool = new PasteTool(pasteArgs);</span>
+<span class="fc" id="L146">		String pasteOutput = pasteTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+		
+<span class="fc" id="L148">		String[] echoArgs = {pasteOutput};</span>
+<span class="fc" id="L149">		IEchoTool echoTool = new EchoTool(echoArgs);</span>
+<span class="fc" id="L150">		String echoOutput = echoTool.execute(new File(&quot;&quot;), pasteOutput);</span>
+		
+<span class="fc" id="L152">		String expected = String.format(</span>
+<span class="fc" id="L153">				PasteTool.ERR_MSG_FILE_NOT_EXIST, FILE_PATH_NOT_EXISTS)</span>
+<span class="fc" id="L154">				+ NEW_LINE;</span>
+<span class="fc" id="L155">		assertEquals(expected, echoOutput);</span>
+<span class="fc" id="L156">	}</span>
+	
+	/**
+	 * Positive test
+	 * Pass the output of paste to echo
+	 * All with default valid args
+	 */
+	@Test
+	public void PasteWithCatTest() {
+<span class="fc" id="L165">		String[] pasteArgs = {FILE_PATH_1, FILE_PATH_2};</span>
+<span class="fc" id="L166">		IPasteTool pasteTool = new PasteTool(pasteArgs);</span>
+<span class="fc" id="L167">		String pasteOutput = pasteTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+		
+<span class="fc" id="L169">		ICatTool catTool = new CatTool();</span>
+<span class="fc" id="L170">		String echoOutput = catTool.execute(new File(&quot;&quot;), pasteOutput);</span>
+		
+<span class="fc" id="L172">		String expected = </span>
+<span class="fc" id="L173">				&quot;word1 word2 word3\tmystere mani&quot; + NEW_LINE +</span>
+<span class="fc" id="L174">				&quot;dog1 cat2 squirrel3\tsaltimbanco&quot; + NEW_LINE +</span>
+<span class="fc" id="L175">				&quot;sakizaki+ pizicato2 dog3\tzumanity zed allegria freetempo&quot;;</span>
+<span class="fc" id="L176">		assertEquals(expected, echoOutput);</span>
+<span class="fc" id="L177">	}</span>
+	
+	/**
+	 * Negative test
+	 * Pass the output of paste to echo
+	 * Paste has invalid option
+	 */
+	@Test
+	public void PasteWithCatInvalidOptionTest() {
+<span class="fc" id="L186">		String[] pasteArgs = {&quot;-a&quot;, FILE_PATH_1, FILE_PATH_2};</span>
+<span class="fc" id="L187">		IPasteTool pasteTool = new PasteTool(pasteArgs);</span>
+<span class="fc" id="L188">		String pasteOutput = pasteTool.execute(new File(&quot;&quot;), &quot;&quot;);</span>
+		
+<span class="fc" id="L190">		ICatTool catTool = new CatTool();</span>
+<span class="fc" id="L191">		String echoOutput = catTool.execute(new File(&quot;&quot;), pasteOutput);</span>
+		
+<span class="fc" id="L193">		String expected = String.format(</span>
+<span class="fc" id="L194">				PasteTool.ERR_MSG_INVALID_OPTION, &quot;-a&quot;);</span>
+<span class="fc" id="L195">		assertEquals(expected, echoOutput);</span>
+<span class="fc" id="L196">	}</span>
+
+	/**
+	 * Helper method to create temporary file
+	 * @param path
+	 * @param content
+	 */
+	public void createFile(String path, String content) {
+		try {
+<span class="fc" id="L205">			Writer out = new BufferedWriter(new OutputStreamWriter(</span>
+<span class="fc" id="L206">					new FileOutputStream(path), &quot;UTF-8&quot;));</span>
+<span class="fc" id="L207">			out.write(content);</span>
+<span class="fc" id="L208">			out.close();</span>
+<span class="pc" id="L209">		} catch (UnsupportedEncodingException e) {</span>
+<span class="nc" id="L210">			e.printStackTrace();</span>
+<span class="nc" id="L211">		} catch (FileNotFoundException e) {</span>
+<span class="nc" id="L212">			e.printStackTrace();</span>
+<span class="nc" id="L213">		} catch (IOException e) {</span>
+<span class="nc" id="L214">			e.printStackTrace();</span>
+		}
+<span class="fc" id="L216">	}</span>
+	
+	/**
+	 * Helper method to delete temporary file
+	 * @param path
+	 */
+	public void deleteFile(String path) {
+<span class="fc" id="L223">		File file = new File(path);</span>
+<span class="fc bfc" id="L224" title="All 2 branches covered.">		if (!file.exists()) {</span>
+<span class="fc" id="L225">			return;</span>
+		}
+		
+<span class="pc bpc" id="L228" title="1 of 2 branches missed.">		if (!file.delete()) {</span>
+<span class="nc" id="L229">			System.err.println(path + &quot; deletion fails.&quot;);</span>
+<span class="nc" id="L230">			System.err.println(&quot;Please delete the file manually.&quot;);</span>
+		}
+<span class="fc" id="L232">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>

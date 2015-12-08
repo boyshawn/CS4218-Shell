@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>CopyTool.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">test (Apr 24, 2014 5:46:26 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">src</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.fileutils</a> &gt; <span class="el_source">CopyTool.java</span></div><h1>CopyTool.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.fileutils;
+
+import java.io.IOException;
+import java.io.FileNotFoundException;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.File;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Paths;
+
+import sg.edu.nus.comp.cs4218.fileutils.ICopyTool;
+import sg.edu.nus.comp.cs4218.impl.ATool;
+
+public class CopyTool extends ATool implements ICopyTool {
+	// Constants
+<span class="fc" id="L16">	private final int FILE_ALREADY_EXISTS = 2;</span>
+<span class="fc" id="L17">	private final int FILE_NOT_FOUND = 1;</span>
+<span class="fc" id="L18">	private final int FILE_COPIED = 0;</span>
+<span class="fc" id="L19">	private final int MISSING_ARGS = -1;</span>
+<span class="fc" id="L20">	private final int MISSING_DEST = -2;</span>
+<span class="fc" id="L21">	private final int SAME_FILE = -3;</span>
+<span class="fc" id="L22">	private final int NOT_A_DIRECTORY = -4;</span>
+<span class="fc" id="L23">	private final int INITIAL_STATUS = 111;</span>
+
+	// Variables
+	private String fileNotFound;
+	private String fileAlreadyExists;
+
+	// Constructor
+	/**
+	 * Creates a new CopyTool instance.
+	 * 
+	 * @param arguments
+	 *            This represents the arguments passed to the command for
+	 *            execution.
+	 */
+	public CopyTool(String[] arguments) {
+<span class="fc" id="L38">		super(arguments);</span>
+		// TODO Auto-generated constructor stub
+<span class="fc" id="L40">		this.fileNotFound = &quot;&quot;;</span>
+<span class="fc" id="L41">		this.fileAlreadyExists = &quot;&quot;;</span>
+<span class="fc" id="L42">		setStatusCode(INITIAL_STATUS);</span>
+<span class="fc" id="L43">	}</span>
+
+	/**
+	 * Copies the Source File/Directory (from) to its new Destination
+	 * File/Directory (to) and sets the command's execution statusCode to 0 if
+	 * the copy was successful.
+	 * 
+	 * If the Source File/Directory is not found, a FileNotFoundException would
+	 * be thrown and the statusCode would be set to 1.
+	 * 
+	 * If the Destination File/Directory already exists, a
+	 * FileAlreadyExistsException would be thrown and the statusCode would set
+	 * to 2.
+	 * 
+	 * @param from
+	 *            Source File/Directory.
+	 * 
+	 * @param to
+	 *            Destination File/Directory.
+	 * 
+	 * @return true if the file/directory was copied successfully, else false.
+	 * 
+	 */
+	@Override
+	public boolean copy(File from, File to) {
+		// TODO Auto-generated method stub
+		try {
+<span class="fc bfc" id="L70" title="All 2 branches covered.">			if (from.exists()) {</span>
+<span class="fc" id="L71">				boolean sameFileExists = new File(to.toString()</span>
+<span class="fc" id="L72">						+ File.separator + from.getName()).exists();</span>
+
+<span class="fc bfc" id="L74" title="All 4 branches covered.">				if (to.isDirectory() &amp;&amp; !sameFileExists) {</span>
+<span class="fc" id="L75">					final File newFile = new File(to.toString() + &quot;/&quot;</span>
+<span class="fc" id="L76">							+ from.getName());</span>
+<span class="fc" id="L77">					newFile.createNewFile();</span>
+<span class="fc" id="L78">					writeToDest(from, newFile);</span>
+<span class="fc" id="L79">				} else {</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">					if (!to.exists()) {</span>
+<span class="fc" id="L81">						to.createNewFile();</span>
+<span class="fc" id="L82">						writeToDest(from, to);</span>
+<span class="fc" id="L83">					} else {</span>
+<span class="fc" id="L84">						throw new FileAlreadyExistsException(null);</span>
+					}
+				}
+			} else {
+<span class="fc" id="L88">				throw new FileNotFoundException();</span>
+			}
+
+<span class="fc" id="L91">			return true;</span>
+
+<span class="fc" id="L93">		} catch (FileAlreadyExistsException fExists) {</span>
+<span class="fc" id="L94">			setStatusCode(FILE_ALREADY_EXISTS);</span>
+<span class="fc" id="L95">			fileAlreadyExists = Paths.get(to.getName().toString())</span>
+<span class="fc" id="L96">					.getFileName().toString();</span>
+<span class="fc" id="L97">		} catch (FileNotFoundException fNotFound) {</span>
+<span class="fc" id="L98">			setStatusCode(FILE_NOT_FOUND);</span>
+<span class="fc" id="L99">			fileNotFound = Paths.get(from.getName().toString()).getFileName()</span>
+<span class="fc" id="L100">					.toString();</span>
+<span class="nc" id="L101">		} catch (IOException e) {</span>
+			// TODO Auto-generated catch block
+<span class="nc" id="L103">			e.printStackTrace();</span>
+		}
+
+<span class="fc" id="L106">		return false;</span>
+	}
+
+	/**
+	 * Executes the tool with the arguments specified in the constructor.
+	 * 
+	 * @param workingDir
+	 *            The current working directory path.
+	 * 
+	 * @param stdin
+	 *            The default input that the user enters if &quot;-&quot; was specified as
+	 *            the sole argument in the command's argument.
+	 * 
+	 * @return The appropriate message to be displayed on the shell. An empty
+	 *         message would be returned if the executed command returns no
+	 *         errors.
+	 * 
+	 */
+	@Override
+	public String execute(File workingDir, String stdin) {
+		// TODO Auto-generated method stub
+<span class="fc bfc" id="L127" title="All 4 branches covered.">		if (args == null || args.length == 0) {</span>
+<span class="fc" id="L128">			setStatusCode(MISSING_ARGS);</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">		} else if (args.length == 1) {</span>
+<span class="fc" id="L130">			setStatusCode(MISSING_DEST);</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">		} else if (args.length &gt; 2) {</span>
+<span class="fc" id="L132">			String returnMessage = &quot;&quot;;</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">			if (isDirectory(args[args.length - 1])) {</span>
+<span class="fc" id="L134">				returnMessage = copyMultipleFiles(workingDir);</span>
+<span class="fc" id="L135">				return returnMessage.trim();</span>
+			} else {
+<span class="fc" id="L137">				setStatusCode(NOT_A_DIRECTORY);</span>
+			}
+<span class="fc bfc" id="L139" title="All 2 branches covered.">		} else if (args[0].equals(args[1])) {</span>
+<span class="fc" id="L140">			setStatusCode(SAME_FILE);</span>
+<span class="fc" id="L141">		} else {</span>
+<span class="fc" id="L142">			copy(createFileObject(args[0], workingDir),</span>
+<span class="fc" id="L143">					createFileObject(args[1], workingDir));</span>
+		}
+
+<span class="fc" id="L146">		return getReturnMessage(getStatusCode()).trim();</span>
+	}
+
+	/**
+	 * Method to copy the contents of a file/directory to its designated
+	 * location.
+	 * 
+	 * @param from
+	 *            Source File/Directory.
+	 * @param to
+	 *            Destination File/Directory.
+	 */
+	private void writeToDest(File from, File to) {
+
+		try {
+<span class="fc" id="L161">			final FileInputStream fIs = new FileInputStream(from);</span>
+<span class="fc" id="L162">			final FileOutputStream fOs = new FileOutputStream(to);</span>
+
+<span class="fc" id="L164">			final byte[] data = new byte[2048];</span>
+
+<span class="fc bfc" id="L166" title="All 2 branches covered.">			while (fIs.read(data) != -1) {</span>
+<span class="fc" id="L167">				fOs.write(data, 0, data.length);</span>
+			}
+
+<span class="fc" id="L170">			fIs.close();</span>
+<span class="fc" id="L171">			fOs.close();</span>
+
+<span class="fc" id="L173">			setStatusCode(FILE_COPIED);</span>
+<span class="pc" id="L174">		} catch (IOException i) {</span>
+<span class="nc" id="L175">			i.printStackTrace();</span>
+		}
+
+<span class="fc" id="L178">	}</span>
+
+	/**
+	 * Creates a file object to passed to the move method. If the file specified
+	 * in the parameter (argument) exists within the current working directory,
+	 * the argument would be concatenated with the current working directory's
+	 * path, else just the argument would be used to create the file object.
+	 * 
+	 * @param argument
+	 *            The file/directory path
+	 * 
+	 * @param workingDir
+	 *            The current working directory path
+	 * 
+	 * @return a file object pointing to the specified path.
+	 * 
+	 */
+	public File createFileObject(String argument, File workingDir) {
+
+<span class="fc" id="L197">		File fileObj = null;</span>
+<span class="fc" id="L198">		final boolean fileInWorkingDir = new File(workingDir, argument)</span>
+<span class="fc" id="L199">				.exists();</span>
+
+<span class="fc bfc" id="L201" title="All 2 branches covered.">		if (!fileInWorkingDir) {</span>
+<span class="fc" id="L202">			fileObj = new File(argument);</span>
+<span class="fc" id="L203">		} else {</span>
+<span class="fc" id="L204">			fileObj = new File(workingDir.toString() + File.separator</span>
+<span class="fc" id="L205">					+ argument);</span>
+		}
+
+<span class="fc" id="L208">		return fileObj;</span>
+	}
+
+	/**
+	 * Checks if the argument specified is a directory.
+	 * 
+	 * @param The
+	 *            file/directory path.
+	 * 
+	 * @return true if the argument is a directory, else false.
+	 * 
+	 */
+	public boolean isDirectory(String argument) {
+
+<span class="fc" id="L222">		final File dir = new File(argument);</span>
+
+<span class="fc bfc" id="L224" title="All 2 branches covered.">		if (dir.isDirectory()) {</span>
+<span class="fc" id="L225">			return true;</span>
+		}
+
+<span class="fc" id="L228">		return false;</span>
+	}
+
+	/**
+	 * Checks the current statusCode of the executed command and returns the
+	 * appropriate message.
+	 * 
+	 * @return The appropriate message to be displayed on the shell. Null would
+	 *         be returned if the statusCode is not found within any of the
+	 *         cases.
+	 * 
+	 */
+	public String getReturnMessage(int statusCode) {
+
+<span class="fc bfc" id="L242" title="All 2 branches covered.">		if (statusCode == FILE_COPIED) {</span>
+<span class="fc" id="L243">			return System.lineSeparator();</span>
+<span class="fc bfc" id="L244" title="All 2 branches covered.">		} else if (statusCode == FILE_NOT_FOUND) {</span>
+<span class="fc" id="L245">			return &quot;copy: '&quot; + this.fileNotFound</span>
+<span class="fc" id="L246">					+ &quot;': No such file or directory&quot; + System.lineSeparator();</span>
+<span class="fc bfc" id="L247" title="All 2 branches covered.">		} else if (statusCode == FILE_ALREADY_EXISTS) {</span>
+<span class="fc" id="L248">			return &quot;copy: '&quot; + this.fileAlreadyExists</span>
+<span class="fc" id="L249">					+ &quot;': File already exists&quot;;</span>
+<span class="fc bfc" id="L250" title="All 2 branches covered.">		} else if (statusCode == NOT_A_DIRECTORY) {</span>
+<span class="fc" id="L251">			return &quot;copy: target '&quot; + args[args.length - 1]</span>
+<span class="fc" id="L252">					+ &quot;' is not a directory&quot;;</span>
+<span class="fc bfc" id="L253" title="All 2 branches covered.">		} else if (statusCode == MISSING_ARGS) {</span>
+<span class="fc" id="L254">			return &quot;copy: missing file operand&quot;;</span>
+<span class="fc bfc" id="L255" title="All 2 branches covered.">		} else if (statusCode == MISSING_DEST) {</span>
+<span class="fc" id="L256">			return &quot;copy: missing destination file operand after '&quot; + args[0]</span>
+<span class="fc" id="L257">					+ &quot;'&quot;;</span>
+		}
+
+<span class="fc" id="L260">		return &quot;copy: '&quot; + args[0] + &quot;' and '&quot; + args[1]</span>
+<span class="fc" id="L261">				+ &quot;' are the same file&quot;;</span>
+	}
+
+	/**
+	 * Method to copy multiple files to a directory. For every invocation of the
+	 * move method, the appropriate return message would be concatenated.
+	 * 
+	 * @param workingDir
+	 *            The current working directory path.
+	 * 
+	 * @return the concatenated return message.
+	 * 
+	 */
+	public String copyMultipleFiles(File workingDir) {
+
+<span class="fc" id="L276">		StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L277">		int start = 0;</span>
+<span class="fc" id="L278">		final int end = args.length - 2;</span>
+
+<span class="fc bfc" id="L280" title="All 2 branches covered.">		while (start &lt;= end) {</span>
+
+<span class="fc" id="L282">			copy(createFileObject(args[start], workingDir),</span>
+<span class="fc" id="L283">					createFileObject(args[args.length - 1], workingDir));</span>
+<span class="fc" id="L284">			sb.append(getReturnMessage(getStatusCode()));</span>
+<span class="fc" id="L285">			start++;</span>
+		}
+
+<span class="fc" id="L288">		return sb.toString();</span>
+
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>test (Apr 24, 2014 5:46:26 PM)</div></body></html>

@@ -1,0 +1,625 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../.resources/report.gif" type="image/gif"/><title>GrepToolTest.java</title><link rel="stylesheet" href="../../../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../../../.sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Test (Mar 16, 2014 5:35:02 PM)</a> &gt; <a href="../../index.html" class="el_group">Shell</a> &gt; <a href="../index.html" class="el_bundle">test</a> &gt; <a href="index.html" class="el_package">sg.edu.nus.comp.cs4218.impl.extended1</a> &gt; <span class="el_source">GrepToolTest.java</span></div><h1>GrepToolTest.java</h1><pre class="source lang-java linenums">package sg.edu.nus.comp.cs4218.impl.extended1;
+
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import sg.edu.nus.comp.cs4218.extended1.IGrepTool;
+
+<span class="fc" id="L18">public class GrepToolTest {</span>
+	// Constants
+<span class="fc" id="L20">	private final String PATTERN_STR = &quot;opening&quot;;</span>
+<span class="fc" id="L21">	private final int NUM_OF_LINES = 3;</span>
+
+	// Variables
+	private IGrepTool grepTool;
+	private static File tempDir;
+	private static File input;
+	private static File output_getMatchingLinesOnly;
+	private static File output_getMatchingLinesOnlyMatchingPart;
+	private static File output_getMatchingLinesWithLeadingContext;
+	private static File output_getMatchingLinesWithTrailingContext;
+	private static File output_getMatchinLinesWithOutputContext;
+	private static File output_getNonMatchingLines;
+	private static File workingDir;
+	private static String inputStr;
+	private static String output_getMatchingLinesOnlyStr;
+	private static String output_getMatchingLinesOnlyMatchingPartStr;
+	private static String output_getMatchingLinesWithLeadingContextStr;
+	private static String output_getMatchingLinesWithTrailingContextStr;
+	private static String output_getMatchinLinesWithOutputContextStr;
+	private static String output_getNonMatchingLinesStr;
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+<span class="fc" id="L44">		workingDir = new File(System.getProperty(&quot;user.dir&quot;));</span>
+
+<span class="fc" id="L46">		tempDir = new File(&quot;___tempDir&quot;);</span>
+<span class="fc" id="L47">		Files.createDirectories(tempDir.toPath());</span>
+
+<span class="fc" id="L49">		input = new File(tempDir.toString() + File.separator + &quot;input&quot;);</span>
+<span class="fc" id="L50">		input.createNewFile();</span>
+
+<span class="fc" id="L52">		output_getMatchingLinesOnly = new File(tempDir.toString()</span>
+<span class="fc" id="L53">				+ File.separator + &quot;output_getMatchingLinesOnly&quot;);</span>
+<span class="fc" id="L54">		output_getMatchingLinesOnly.createNewFile();</span>
+
+<span class="fc" id="L56">		output_getMatchingLinesOnlyMatchingPart = new File(tempDir.toString()</span>
+<span class="fc" id="L57">				+ File.separator + &quot;output_getMatchingLinesOnlyMatchingPart&quot;);</span>
+<span class="fc" id="L58">		output_getMatchingLinesOnlyMatchingPart.createNewFile();</span>
+
+<span class="fc" id="L60">		output_getMatchingLinesWithLeadingContext = new File(tempDir.toString()</span>
+<span class="fc" id="L61">				+ File.separator + &quot;output_getMatchingLinesWithLeadingContext&quot;);</span>
+<span class="fc" id="L62">		output_getMatchingLinesWithLeadingContext.createNewFile();</span>
+
+<span class="fc" id="L64">		output_getMatchingLinesWithTrailingContext = new File(</span>
+<span class="fc" id="L65">				tempDir.toString() + File.separator</span>
+<span class="fc" id="L66">						+ &quot;output_getMatchingLinesWithTrailingContext&quot;);</span>
+<span class="fc" id="L67">		output_getMatchingLinesWithTrailingContext.createNewFile();</span>
+
+<span class="fc" id="L69">		output_getMatchinLinesWithOutputContext = new File(tempDir.toString()</span>
+<span class="fc" id="L70">				+ File.separator + &quot;output_getMatchinLinesWithOutputContext&quot;);</span>
+<span class="fc" id="L71">		output_getMatchinLinesWithOutputContext.createNewFile();</span>
+
+<span class="fc" id="L73">		output_getNonMatchingLines = new File(tempDir.toString()</span>
+<span class="fc" id="L74">				+ File.separator + &quot;output_getNonMatchingLines&quot;);</span>
+<span class="fc" id="L75">		output_getNonMatchingLines.createNewFile();</span>
+
+		/* Writing of content into files */
+<span class="fc" id="L78">		inputStr = &quot;It may also be objected that my opening remark about the appealing character of Pyrrhonism is wrong or surprising, given that it is not possible for anyone to think that the stance I have presented is attractive and worth adopting.&quot;</span>
+<span class="fc" id="L79">				+ System.lineSeparator()</span>
+<span class="fc" id="L80">				+ System.lineSeparator()</span>
+<span class="fc" id="L81">				+ &quot;For instance, not only does the Skeptic not promise that the suspensive attitude will certainly make possible the attainment of ataraxia, but he does not even regard this as an aim that is intrinsic to his philosophy.&quot;</span>
+<span class="fc" id="L82">				+ System.lineSeparator()</span>
+<span class="fc" id="L83">				+ System.lineSeparator()</span>
+<span class="fc" id="L84">				+ &quot;To this objection, I would first reply that the appeal of Skepticism seems to lie in the sort of radical changes that this philosophy may entail in a person's life.&quot;</span>
+<span class="fc" id="L85">				+ System.lineSeparator()</span>
+<span class="fc" id="L86">				+ System.lineSeparator()</span>
+<span class="fc" id="L87">				+ &quot;For, if adopted, the cautious Pyrrhonean attitude will prevent one from making rash judgments about any topic that one has not examined or found final answers to, which in turn will prevent one from acting hastily.&quot;</span>
+<span class="fc" id="L88">				+ System.lineSeparator()</span>
+<span class="fc" id="L89">				+ System.lineSeparator()</span>
+<span class="fc" id="L90">				+ &quot;Another profound change consists in the fact that, even if at some point the Skeptic broke some of the most important moral rules of the society to which he belongs, he would perhaps experience some kind of discomfort, but he would not believe that he has done something objectively wrong.&quot;</span>
+<span class="fc" id="L91">				+ System.lineSeparator()</span>
+<span class="fc" id="L92">				+ System.lineSeparator()</span>
+<span class="fc" id="L93">				+ &quot;This would free him from the shame and remorse that those who believe that such an action is morally incorrect would experience in the same situation.&quot;</span>
+<span class="fc" id="L94">				+ System.lineSeparator()</span>
+<span class="fc" id="L95">				+ System.lineSeparator()</span>
+<span class="fc" id="L96">				+ &quot;In sum, the Pyrrhonean philosophy would produce, if adopted, profound changes in a person's thoughts, feelings, and actions; changes that at first glance seem to be beneficial.&quot;</span>
+<span class="fc" id="L97">				+ System.lineSeparator()</span>
+<span class="fc" id="L98">				+ System.lineSeparator()</span>
+<span class="fc" id="L99">				+ &quot;But secondly, I think that whether or not Pyrrhonism is an appealing philosophy cannot in the end be determined a priori.&quot;</span>
+<span class="fc" id="L100">				+ System.lineSeparator()</span>
+<span class="fc" id="L101">				+ System.lineSeparator()</span>
+<span class="fc" id="L102">				+ &quot;For it depends on whether one values such attitudes as caution, open-mindedness, and intellectual modesty; or, if one does, on whether these attitudes are preferred to, for example, the sense of assurance that one may experience when espousing philosophic systems or religious beliefs.&quot;</span>
+<span class="fc" id="L103">				+ System.lineSeparator()</span>
+<span class="fc" id="L104">				+ System.lineSeparator()</span>
+<span class="fc" id="L105">				+ &quot;This is why my opening comment was just that Pyrrhonism may still be found attractive and worth adopting.&quot;;</span>
+
+<span class="fc" id="L107">		output_getMatchingLinesOnlyStr = &quot;It may also be objected that my opening remark about the appealing character of Pyrrhonism is wrong or surprising, given that it is not possible for anyone to think that the stance I have presented is attractive and worth adopting.&quot;</span>
+<span class="fc" id="L108">				+ System.lineSeparator()</span>
+<span class="fc" id="L109">				+ &quot;This is why my opening comment was just that Pyrrhonism may still be found attractive and worth adopting.&quot;</span>
+<span class="fc" id="L110">				+ System.lineSeparator();</span>
+
+<span class="fc" id="L112">		output_getMatchingLinesOnlyMatchingPartStr = &quot;opening&quot;</span>
+<span class="fc" id="L113">				+ System.lineSeparator() + &quot;opening&quot; + System.lineSeparator();</span>
+
+<span class="fc" id="L115">		output_getMatchingLinesWithLeadingContextStr = &quot;It may also be objected that my opening remark about the appealing character of Pyrrhonism is wrong or surprising, given that it is not possible for anyone to think that the stance I have presented is attractive and worth adopting.&quot;</span>
+<span class="fc" id="L116">				+ System.lineSeparator()</span>
+<span class="fc" id="L117">				+ &quot;--&quot;</span>
+<span class="fc" id="L118">				+ System.lineSeparator()</span>
+<span class="fc" id="L119">				+ System.lineSeparator()</span>
+<span class="fc" id="L120">				+ &quot;For it depends on whether one values such attitudes as caution, open-mindedness, and intellectual modesty; or, if one does, on whether these attitudes are preferred to, for example, the sense of assurance that one may experience when espousing philosophic systems or religious beliefs.&quot;</span>
+<span class="fc" id="L121">				+ System.lineSeparator()</span>
+<span class="fc" id="L122">				+ System.lineSeparator()</span>
+<span class="fc" id="L123">				+ &quot;This is why my opening comment was just that Pyrrhonism may still be found attractive and worth adopting.&quot;</span>
+<span class="fc" id="L124">				+ System.lineSeparator();</span>
+
+<span class="fc" id="L126">		output_getMatchingLinesWithTrailingContextStr = &quot;It may also be objected that my opening remark about the appealing character of Pyrrhonism is wrong or surprising, given that it is not possible for anyone to think that the stance I have presented is attractive and worth adopting.&quot;</span>
+<span class="fc" id="L127">				+ System.lineSeparator()</span>
+<span class="fc" id="L128">				+ System.lineSeparator()</span>
+<span class="fc" id="L129">				+ &quot;For instance, not only does the Skeptic not promise that the suspensive attitude will certainly make possible the attainment of ataraxia, but he does not even regard this as an aim that is intrinsic to his philosophy.&quot;</span>
+<span class="fc" id="L130">				+ System.lineSeparator()</span>
+<span class="fc" id="L131">				+ System.lineSeparator()</span>
+<span class="fc" id="L132">				+ &quot;--&quot;</span>
+<span class="fc" id="L133">				+ System.lineSeparator()</span>
+<span class="fc" id="L134">				+ &quot;This is why my opening comment was just that Pyrrhonism may still be found attractive and worth adopting.&quot;</span>
+<span class="fc" id="L135">				+ System.lineSeparator();</span>
+
+<span class="fc" id="L137">		output_getMatchinLinesWithOutputContextStr = &quot;It may also be objected that my opening remark about the appealing character of Pyrrhonism is wrong or surprising, given that it is not possible for anyone to think that the stance I have presented is attractive and worth adopting.&quot;</span>
+<span class="fc" id="L138">				+ System.lineSeparator()</span>
+<span class="fc" id="L139">				+ System.lineSeparator()</span>
+<span class="fc" id="L140">				+ &quot;For instance, not only does the Skeptic not promise that the suspensive attitude will certainly make possible the attainment of ataraxia, but he does not even regard this as an aim that is intrinsic to his philosophy.&quot;</span>
+<span class="fc" id="L141">				+ System.lineSeparator()</span>
+<span class="fc" id="L142">				+ System.lineSeparator()</span>
+<span class="fc" id="L143">				+ &quot;--&quot;</span>
+<span class="fc" id="L144">				+ System.lineSeparator()</span>
+<span class="fc" id="L145">				+ System.lineSeparator()</span>
+<span class="fc" id="L146">				+ &quot;For it depends on whether one values such attitudes as caution, open-mindedness, and intellectual modesty; or, if one does, on whether these attitudes are preferred to, for example, the sense of assurance that one may experience when espousing philosophic systems or religious beliefs.&quot;</span>
+<span class="fc" id="L147">				+ System.lineSeparator()</span>
+<span class="fc" id="L148">				+ System.lineSeparator()</span>
+<span class="fc" id="L149">				+ &quot;This is why my opening comment was just that Pyrrhonism may still be found attractive and worth adopting.&quot;</span>
+<span class="fc" id="L150">				+ System.lineSeparator();</span>
+
+<span class="fc" id="L152">		output_getNonMatchingLinesStr = System.lineSeparator()</span>
+<span class="fc" id="L153">				+ &quot;For instance, not only does the Skeptic not promise that the suspensive attitude will certainly make possible the attainment of ataraxia, but he does not even regard this as an aim that is intrinsic to his philosophy.&quot;</span>
+<span class="fc" id="L154">				+ System.lineSeparator()</span>
+<span class="fc" id="L155">				+ System.lineSeparator()</span>
+<span class="fc" id="L156">				+ &quot;To this objection, I would first reply that the appeal of Skepticism seems to lie in the sort of radical changes that this philosophy may entail in a person's life.&quot;</span>
+<span class="fc" id="L157">				+ System.lineSeparator()</span>
+<span class="fc" id="L158">				+ System.lineSeparator()</span>
+<span class="fc" id="L159">				+ &quot;For, if adopted, the cautious Pyrrhonean attitude will prevent one from making rash judgments about any topic that one has not examined or found final answers to, which in turn will prevent one from acting hastily.&quot;</span>
+<span class="fc" id="L160">				+ System.lineSeparator()</span>
+<span class="fc" id="L161">				+ System.lineSeparator()</span>
+<span class="fc" id="L162">				+ &quot;Another profound change consists in the fact that, even if at some point the Skeptic broke some of the most important moral rules of the society to which he belongs, he would perhaps experience some kind of discomfort, but he would not believe that he has done something objectively wrong.&quot;</span>
+<span class="fc" id="L163">				+ System.lineSeparator()</span>
+<span class="fc" id="L164">				+ System.lineSeparator()</span>
+<span class="fc" id="L165">				+ &quot;This would free him from the shame and remorse that those who believe that such an action is morally incorrect would experience in the same situation.&quot;</span>
+<span class="fc" id="L166">				+ System.lineSeparator()</span>
+<span class="fc" id="L167">				+ System.lineSeparator()</span>
+<span class="fc" id="L168">				+ &quot;In sum, the Pyrrhonean philosophy would produce, if adopted, profound changes in a person's thoughts, feelings, and actions; changes that at first glance seem to be beneficial.&quot;</span>
+<span class="fc" id="L169">				+ System.lineSeparator()</span>
+<span class="fc" id="L170">				+ System.lineSeparator()</span>
+<span class="fc" id="L171">				+ &quot;But secondly, I think that whether or not Pyrrhonism is an appealing philosophy cannot in the end be determined a priori.&quot;</span>
+<span class="fc" id="L172">				+ System.lineSeparator()</span>
+<span class="fc" id="L173">				+ System.lineSeparator()</span>
+<span class="fc" id="L174">				+ &quot;For it depends on whether one values such attitudes as caution, open-mindedness, and intellectual modesty; or, if one does, on whether these attitudes are preferred to, for example, the sense of assurance that one may experience when espousing philosophic systems or religious beliefs.&quot;</span>
+<span class="fc" id="L175">				+ System.lineSeparator() + System.lineSeparator();</span>
+
+<span class="fc" id="L177">		Files.write(input.toPath(), inputStr.getBytes(),</span>
+<span class="fc" id="L178">				StandardOpenOption.APPEND);</span>
+
+<span class="fc" id="L180">		Files.write(output_getMatchingLinesOnly.toPath(),</span>
+<span class="fc" id="L181">				output_getMatchingLinesOnlyStr.getBytes(),</span>
+<span class="fc" id="L182">				StandardOpenOption.APPEND);</span>
+
+<span class="fc" id="L184">		Files.write(output_getMatchingLinesOnlyMatchingPart.toPath(),</span>
+<span class="fc" id="L185">				output_getMatchingLinesOnlyMatchingPartStr.getBytes(),</span>
+<span class="fc" id="L186">				StandardOpenOption.APPEND);</span>
+
+<span class="fc" id="L188">		Files.write(output_getMatchingLinesWithLeadingContext.toPath(),</span>
+<span class="fc" id="L189">				output_getMatchingLinesWithLeadingContextStr.getBytes(),</span>
+<span class="fc" id="L190">				StandardOpenOption.APPEND);</span>
+
+<span class="fc" id="L192">		Files.write(output_getMatchingLinesWithTrailingContext.toPath(),</span>
+<span class="fc" id="L193">				output_getMatchingLinesWithTrailingContextStr.getBytes(),</span>
+<span class="fc" id="L194">				StandardOpenOption.APPEND);</span>
+
+<span class="fc" id="L196">		Files.write(output_getMatchinLinesWithOutputContext.toPath(),</span>
+<span class="fc" id="L197">				output_getMatchinLinesWithOutputContextStr.getBytes(),</span>
+<span class="fc" id="L198">				StandardOpenOption.APPEND);</span>
+
+<span class="fc" id="L200">		Files.write(output_getNonMatchingLines.toPath(),</span>
+<span class="fc" id="L201">				output_getNonMatchingLinesStr.getBytes(),</span>
+<span class="fc" id="L202">				StandardOpenOption.APPEND);</span>
+
+<span class="fc" id="L204">	}</span>
+
+	@Before
+	public void setUp() {
+<span class="fc" id="L208">		grepTool = new GrepTool(null);</span>
+<span class="fc" id="L209">	}</span>
+
+	@After
+	public void tearDown() {
+<span class="fc" id="L213">		grepTool = null;</span>
+
+<span class="fc" id="L215">	}</span>
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+		/* Delete all temporary testing files */
+<span class="fc" id="L220">		Files.delete(input.toPath());</span>
+<span class="fc" id="L221">		Files.delete(output_getMatchingLinesOnly.toPath());</span>
+<span class="fc" id="L222">		Files.delete(output_getMatchingLinesOnlyMatchingPart.toPath());</span>
+<span class="fc" id="L223">		Files.delete(output_getMatchingLinesWithLeadingContext.toPath());</span>
+<span class="fc" id="L224">		Files.delete(output_getMatchingLinesWithTrailingContext.toPath());</span>
+<span class="fc" id="L225">		Files.delete(output_getMatchinLinesWithOutputContext.toPath());</span>
+<span class="fc" id="L226">		Files.delete(output_getNonMatchingLines.toPath());</span>
+<span class="fc" id="L227">		Files.delete(tempDir.toPath());</span>
+
+		/* Setting all file objects to null */
+<span class="fc" id="L230">		tempDir = null;</span>
+<span class="fc" id="L231">		input = null;</span>
+<span class="fc" id="L232">		workingDir = null;</span>
+<span class="fc" id="L233">		inputStr = null;</span>
+<span class="fc" id="L234">	}</span>
+
+	// Black Box Positive Testing
+
+	@Test
+	public void defaultConstructor_StatusCodeZero() {
+<span class="fc" id="L240">		IGrepTool grepTool = new GrepTool();</span>
+<span class="fc" id="L241">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L242">	}</span>
+	
+	@Test
+	public void getOnlyMatchingLines_StatusCodeZero() throws IOException {
+
+<span class="fc" id="L247">		final String resultStr = grepTool.getOnlyMatchingLines(PATTERN_STR,</span>
+<span class="fc" id="L248">				inputStr);</span>
+
+<span class="fc" id="L250">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L251">		assertEquals(output_getMatchingLinesOnlyStr, resultStr);</span>
+
+<span class="fc" id="L253">	}</span>
+
+	@Test
+	public void getMatchingLinesWithTrailingContext_StatusCodeZero()
+			throws IOException {
+
+<span class="fc" id="L259">		final String resultStr = grepTool.getMatchingLinesWithTrailingContext(</span>
+<span class="fc" id="L260">				NUM_OF_LINES, PATTERN_STR, inputStr);</span>
+
+<span class="fc" id="L262">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L263">		assertEquals(output_getMatchingLinesWithTrailingContextStr, resultStr);</span>
+
+<span class="fc" id="L265">	}</span>
+
+	@Test
+	public void getMatchingLinesWithLeadingContext_StatusCodeZero()
+			throws IOException {
+
+<span class="fc" id="L271">		final String resultStr = grepTool.getMatchingLinesWithLeadingContext(</span>
+<span class="fc" id="L272">				NUM_OF_LINES, PATTERN_STR, inputStr);</span>
+
+<span class="fc" id="L274">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L275">		assertEquals(output_getMatchingLinesWithLeadingContextStr, resultStr);</span>
+
+<span class="fc" id="L277">	}</span>
+
+	@Test
+	public void getMatchingLinesWithOutputContext_StatusCodeZero()
+			throws IOException {
+
+<span class="fc" id="L283">		final String resultStr = grepTool.getMatchingLinesWithOutputContext(</span>
+<span class="fc" id="L284">				NUM_OF_LINES, PATTERN_STR, inputStr);</span>
+
+<span class="fc" id="L286">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L287">		assertEquals(output_getMatchinLinesWithOutputContextStr, resultStr);</span>
+
+<span class="fc" id="L289">	}</span>
+
+	@Test
+	public void getCountOfMatchingLines_StatusCodeZero() {
+
+<span class="fc" id="L294">		final int numOfMatchingLines = grepTool.getCountOfMatchingLines(</span>
+<span class="fc" id="L295">				PATTERN_STR, inputStr);</span>
+
+<span class="fc" id="L297">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L298">		assertEquals(2, numOfMatchingLines);</span>
+
+<span class="fc" id="L300">	}</span>
+
+	@Test
+	public void getMatchingLinesOnlyMatchingPart_StatusCodeZero()
+			throws IOException {
+
+<span class="fc" id="L306">		final String resultStr = grepTool.getMatchingLinesOnlyMatchingPart(</span>
+<span class="fc" id="L307">				PATTERN_STR, inputStr);</span>
+
+<span class="fc" id="L309">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L310">		assertEquals(output_getMatchingLinesOnlyMatchingPartStr, resultStr);</span>
+
+<span class="fc" id="L312">	}</span>
+
+	@Test
+	public void getNonMatchingLines_StatusCodeZero() throws IOException {
+
+<span class="fc" id="L317">		final String resultStr = grepTool.getNonMatchingLines(PATTERN_STR,</span>
+<span class="fc" id="L318">				inputStr);</span>
+
+<span class="fc" id="L320">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L321">		assertEquals(output_getNonMatchingLinesStr, resultStr);</span>
+
+<span class="fc" id="L323">	}</span>
+
+	@Test
+	public void getHelp_StatusCodeZero() throws IOException {
+
+<span class="fc" id="L328">		final String expectedMessage = new String(Files.readAllBytes(new File(</span>
+<span class="fc" id="L329">				&quot;help_files&quot; + File.separator + &quot;grep_help&quot;).toPath()));</span>
+<span class="fc" id="L330">		final String returnMessage = grepTool.getHelp();</span>
+
+<span class="fc" id="L332">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L333">		assertEquals(expectedMessage, returnMessage);</span>
+
+<span class="fc" id="L335">	}</span>
+
+	@Test
+	public void execute_GetMatchingLinesOnly_StatusCodeZero()
+			throws IOException {
+
+<span class="fc" id="L341">		final String[] args = { PATTERN_STR, input.toString() };</span>
+
+<span class="fc" id="L343">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L344">		final String resultStr = grepTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L346">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L347">		assertEquals(output_getMatchingLinesOnlyStr, resultStr);</span>
+<span class="fc" id="L348">	}</span>
+
+	@Test
+	public void execute_GetMatchingLinesWithTrailingContext_StatusCodeZero()
+			throws IOException {
+
+<span class="fc" id="L354">		final String[] args = { &quot;-A&quot;, Integer.toString(NUM_OF_LINES),</span>
+<span class="fc" id="L355">				PATTERN_STR, input.toString() };</span>
+
+<span class="fc" id="L357">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L358">		final String resultStr = grepTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L360">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L361">		assertEquals(output_getMatchingLinesWithTrailingContextStr, resultStr);</span>
+
+<span class="fc" id="L363">	}</span>
+	
+	@Test
+	public void execute_GetMatchingLinesWithTrailingContextFromStdin_StatusCodeZero()
+			throws IOException {
+
+<span class="fc" id="L369">		final String[] args = { &quot;-A&quot;, Integer.toString(NUM_OF_LINES),</span>
+<span class="fc" id="L370">				PATTERN_STR};</span>
+
+<span class="fc" id="L372">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L373">		final String resultStr = grepTool.execute(workingDir, inputStr);</span>
+
+<span class="fc" id="L375">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L376">		assertEquals(output_getMatchingLinesWithTrailingContextStr, resultStr);</span>
+
+<span class="fc" id="L378">	}</span>
+
+	@Test
+	public void execute_GetMatchingLinesWithLeadingContext_StatusCodeZero()
+			throws IOException {
+
+<span class="fc" id="L384">		final String[] args = { &quot;-B&quot;, Integer.toString(NUM_OF_LINES),</span>
+<span class="fc" id="L385">				PATTERN_STR, input.toString() };</span>
+
+<span class="fc" id="L387">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L388">		final String resultStr = grepTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L390">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L391">		assertEquals(output_getMatchingLinesWithLeadingContextStr, resultStr);</span>
+
+<span class="fc" id="L393">	}</span>
+	
+	@Test
+	public void execute_GetMatchingLinesWithLeadingContextFromStdin_StatusCodeZero()
+			throws IOException {
+
+<span class="fc" id="L399">		final String[] args = { &quot;-B&quot;, Integer.toString(NUM_OF_LINES),</span>
+<span class="fc" id="L400">				PATTERN_STR};</span>
+
+<span class="fc" id="L402">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L403">		final String resultStr = grepTool.execute(workingDir, inputStr);</span>
+
+<span class="fc" id="L405">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L406">		assertEquals(output_getMatchingLinesWithLeadingContextStr, resultStr);</span>
+
+<span class="fc" id="L408">	}</span>
+
+
+	@Test
+	public void execute_GetMatchingLinesWithOutputContext_StatusCodeZero()
+			throws IOException {
+
+<span class="fc" id="L415">		final String[] args = { &quot;-C&quot;, Integer.toString(NUM_OF_LINES),</span>
+<span class="fc" id="L416">				PATTERN_STR, input.toString() };</span>
+
+<span class="fc" id="L418">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L419">		final String resultStr = grepTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L421">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L422">		assertEquals(output_getMatchinLinesWithOutputContextStr, resultStr);</span>
+
+<span class="fc" id="L424">	}</span>
+	
+	@Test
+	public void execute_GetMatchingLinesWithOutputContextFromStdin_StatusCodeZero()
+			throws IOException {
+
+<span class="fc" id="L430">		final String[] args = { &quot;-C&quot;, Integer.toString(NUM_OF_LINES),</span>
+<span class="fc" id="L431">				PATTERN_STR };</span>
+
+<span class="fc" id="L433">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L434">		final String resultStr = grepTool.execute(workingDir, inputStr);</span>
+
+<span class="fc" id="L436">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L437">		assertEquals(output_getMatchinLinesWithOutputContextStr, resultStr);</span>
+
+<span class="fc" id="L439">	}</span>
+
+	@Test
+	public void execute_GetCountMatchingLines_StatusCodeZero()
+			throws IOException {
+
+<span class="fc" id="L445">		final String[] args = { &quot;-c&quot;, PATTERN_STR, input.toString() };</span>
+
+<span class="fc" id="L447">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L448">		final String resultStr = grepTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L450">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L451">		assertEquals(2, Integer.parseInt(resultStr.trim()));</span>
+
+<span class="fc" id="L453">	}</span>
+	
+	@Test
+	public void execute_GetCountMatchingLinesFromStdin_StatusCodeZero()
+			throws IOException {
+
+<span class="fc" id="L459">		final String[] args = { &quot;-c&quot;, PATTERN_STR};</span>
+
+<span class="fc" id="L461">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L462">		final String resultStr = grepTool.execute(workingDir, inputStr);</span>
+
+<span class="fc" id="L464">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L465">		assertEquals(2, Integer.parseInt(resultStr.trim()));</span>
+
+<span class="fc" id="L467">	}</span>
+
+	@Test
+	public void execute_GetMatchingLinesOnlyMatchingPart_StatusCodeZero()
+			throws IOException {
+
+<span class="fc" id="L473">		final String[] args = { &quot;-o&quot;, PATTERN_STR, input.toString() };</span>
+
+<span class="fc" id="L475">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L476">		final String resultStr = grepTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L478">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L479">		assertEquals(output_getMatchingLinesOnlyMatchingPartStr, resultStr);</span>
+
+<span class="fc" id="L481">	}</span>
+	
+	@Test
+	public void execute_GetMatchingLinesOnlyMatchingPartFromStdin_StatusCodeZero()
+			throws IOException {
+
+<span class="fc" id="L487">		final String[] args = { &quot;-o&quot;, PATTERN_STR};</span>
+
+<span class="fc" id="L489">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L490">		final String resultStr = grepTool.execute(workingDir, inputStr);</span>
+
+<span class="fc" id="L492">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L493">		assertEquals(output_getMatchingLinesOnlyMatchingPartStr.trim(), resultStr.trim());</span>
+
+<span class="fc" id="L495">	}</span>
+	
+	@Test
+	public void execute_GetNonMatchingLines_StatusCodeZero() throws IOException {
+
+<span class="fc" id="L500">		final String[] args = { &quot;-v&quot;, PATTERN_STR, input.toString() };</span>
+
+<span class="fc" id="L502">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L503">		final String resultStr = grepTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L505">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L506">		assertEquals(output_getNonMatchingLinesStr, resultStr);</span>
+
+<span class="fc" id="L508">	}</span>
+	
+	@Test
+	public void execute_GetNonMatchingLinesStdin_StatusCodeZero() throws IOException {
+
+<span class="fc" id="L513">		final String[] args = { &quot;-v&quot;, PATTERN_STR};</span>
+
+<span class="fc" id="L515">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L516">		final String resultStr = grepTool.execute(workingDir, inputStr);</span>
+
+<span class="fc" id="L518">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L519">		assertEquals(output_getNonMatchingLinesStr, resultStr);</span>
+
+<span class="fc" id="L521">	}</span>
+
+	@Test
+	public void execute_GetHelp_StatusCodeZero() throws IOException {
+
+<span class="fc" id="L526">		final String[] args = { &quot;-help&quot; };</span>
+
+<span class="fc" id="L528">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L529">		final String expectedResultStr = new String(</span>
+<span class="fc" id="L530">				Files.readAllBytes(new File(&quot;help_files&quot; + File.separator</span>
+<span class="fc" id="L531">						+ &quot;grep_help&quot;).toPath()));</span>
+<span class="fc" id="L532">		final String resultStr = grepTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L534">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L535">		assertEquals(expectedResultStr, resultStr);</span>
+
+<span class="fc" id="L537">	}</span>
+
+	@Test
+	public void execute_GetMatchingLinesOnlyWithStandardInput_StatusCodeZero()
+			throws IOException {
+
+<span class="fc" id="L543">		final String[] args = { PATTERN_STR };</span>
+
+<span class="fc" id="L545">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L546">		final String resultStr = grepTool.execute(workingDir, inputStr);</span>
+
+<span class="fc" id="L548">		assertEquals(0, grepTool.getStatusCode());</span>
+<span class="fc" id="L549">		assertEquals(output_getMatchingLinesOnlyStr, resultStr);</span>
+
+<span class="fc" id="L551">	}</span>
+
+	// Black Box Negative Testing
+
+	@Test
+	public void execute_NoArguments_StatusCodeNonZero() throws IOException {
+
+<span class="fc" id="L558">		final String[] args = {};</span>
+
+<span class="fc" id="L560">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L561">		final String resultStr = grepTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L563">		assertEquals(GrepTool.ERR_CODE_INVALID_ARG, grepTool.getStatusCode());</span>
+<span class="fc" id="L564">		assertEquals(GrepTool.ERR_MSG_INVALID_ARG, resultStr);</span>
+
+<span class="fc" id="L566">	}</span>
+
+	@Test
+	public void execute_SingleArgument_StatusCodeNonZero() throws IOException {
+
+<span class="fc" id="L571">		final String[] args = { PATTERN_STR };</span>
+
+<span class="fc" id="L573">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L574">		final String resultStr = grepTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L576">		assertEquals(GrepTool.ERR_CODE_INVALID_ARG, grepTool.getStatusCode());</span>
+<span class="fc" id="L577">		assertEquals(GrepTool.ERR_MSG_INVALID_ARG, resultStr);</span>
+<span class="fc" id="L578">	}</span>
+
+	@Test
+	public void execute_InputFileNotFound_StatusCodeNonZero()
+			throws IOException {
+
+<span class="fc" id="L584">		final String filePath = workingDir.toString()</span>
+<span class="fc" id="L585">				+ &quot;/inputFileNotFound&quot;;</span>
+
+<span class="fc" id="L587">		final String[] args = { PATTERN_STR, filePath };</span>
+
+<span class="fc" id="L589">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L590">		final String resultStr = grepTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L592">		assertEquals(GrepTool.ERR_CODE_IO, grepTool.getStatusCode());</span>
+<span class="fc" id="L593">		assertEquals(GrepTool.ERR_MSG_IO, resultStr);</span>
+
+<span class="fc" id="L595">	}</span>
+
+	@Test
+	public void execute_MissingNumValue_StatusCodeNonZero() throws IOException {
+
+<span class="fc" id="L600">		final String[] args = { &quot;-A&quot;, PATTERN_STR, input.toString() };</span>
+
+<span class="fc" id="L602">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L603">		final String resultStr = grepTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L605">		assertEquals(GrepTool.ERR_CODE_INVALID_ARG, grepTool.getStatusCode());</span>
+<span class="fc" id="L606">		assertEquals(&quot;grep: &quot; + args[1] + &quot;: invalid context length argument&quot;,</span>
+<span class="fc" id="L607">				resultStr);</span>
+
+<span class="fc" id="L609">	}</span>
+
+	@Test
+	public void execute_InvalidOption_StatusCodeNonZero() throws IOException {
+
+<span class="fc" id="L614">		final String[] args = { &quot;----A&quot;, Integer.toString(NUM_OF_LINES),</span>
+<span class="fc" id="L615">				PATTERN_STR, input.toString() };</span>
+
+<span class="fc" id="L617">		grepTool = new GrepTool(args);</span>
+<span class="fc" id="L618">		final String resultStr = grepTool.execute(workingDir, null);</span>
+
+<span class="fc" id="L620">		assertEquals(GrepTool.ERR_CODE_INVALID_ARG, grepTool.getStatusCode());</span>
+<span class="fc" id="L621">		assertEquals(GrepTool.ERR_MSG_INVALID_ARG, resultStr);</span>
+<span class="fc" id="L622">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span>Test (Mar 16, 2014 5:35:02 PM)</div></body></html>
